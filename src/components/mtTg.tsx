@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import WebApp from "@twa-dev/sdk";
+import WebApp from "@twa-dev/sdk";
 import Script from "next/script";
 import { Telegram } from "@twa-dev/types";
 
@@ -30,12 +30,12 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-    //   WebApp.ready();
+      WebApp.ready();
 
-    //   if (WebApp.initDataUnsafe.user) {
-    //     setUserData(WebApp.initDataUnsafe.user as UserData);
-    //   }
-    //   setIsLoading(false);
+      if (WebApp.initDataUnsafe.user) {
+        setUserData(WebApp.initDataUnsafe.user as UserData);
+      }
+      setIsLoading(false);
     }
   }, []);
 
@@ -156,9 +156,9 @@ export default function Home() {
       )}
 
       {/* Кнопка закрытия */}
-      {/* <button style={styles.closeButton} onClick={() => WebApp.close()}>
+      <button style={styles.closeButton} onClick={() => WebApp.close()}>
         Закрыть
-      </button> */}
+      </button>
     </main>
   );
 }
