@@ -17,9 +17,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <head>
-        <Script src="https://telegram.org/js/telegram-web-app.js?56" strategy="beforeInteractive" />
-      </head>
       <body className={inter.className} suppressHydrationWarning>
         {children}
       </body>
