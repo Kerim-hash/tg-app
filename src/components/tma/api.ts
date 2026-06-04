@@ -1,4 +1,4 @@
-export const API_BASE = "";
+export const API_BASE = "https://fglove.online";
 
 const memoryStore: Record<string, string> = {};
 
