@@ -47,6 +47,25 @@ async function setupMenuButton() {
 }
 
 async function handleUpdate(update) {
+  // Handle Pre-Checkout Query for Telegram Stars/Payments
+  if (update.pre_checkout_query) {
+    const queryId = update.pre_checkout_query.id;
+    console.log(`[Bot] Pre-checkout query received: ID ${queryId}, Amount: ${update.pre_checkout_query.total_amount}`);
+    
+    // Automatically approve pre-checkout queries
+    const result = await apiCall('answerPreCheckoutQuery', {
+      pre_checkout_query_id: queryId,
+      ok: true
+    });
+    
+    if (result.ok) {
+      console.log(`[Bot] ✅ Pre-checkout query approved successfully.`);
+    } else {
+      console.error(`[Bot] ❌ Failed to approve pre-checkout query:`, result.description);
+    }
+    return;
+  }
+
   if (!update.message) return;
 
   const chatId = update.message.chat.id;
@@ -54,6 +73,18 @@ async function handleUpdate(update) {
   const firstName = update.message.from.first_name || 'User';
 
   console.log(`[Bot] Message from ${firstName} (${chatId}): ${text}`);
+
+  // Handle successful payment notification
+  if (update.message.successful_payment) {
+    console.log(`[Bot] 💰 Successful payment from ${firstName} (${chatId})! Amount: ${update.message.successful_payment.total_amount} Stars`);
+    
+    await apiCall('sendMessage', {
+      chat_id: chatId,
+      text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка FGuard VPN успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
+      parse_mode: 'Markdown'
+    });
+    return;
+  }
 
   if (text.startsWith('/start')) {
     const messageText = `👋 Привет, ${firstName}!\n\nДобро пожаловать в **FGuard VPN**.\n\nНажмите на кнопку ниже, чтобы открыть приложение 👇`;
@@ -91,7 +122,7 @@ async function startPolling() {
       const response = await apiCall('getUpdates', {
         offset: offset,
         timeout: 30,
-        allowed_updates: ['message']
+        allowed_updates: ['message', 'pre_checkout_query']
       });
 
       if (response.ok && response.result) {
