@@ -60,10 +60,10 @@ async function signInitData(botToken: string, tgUser: any) {
 
     const enc = new TextEncoder();
     
-    // Compute secretKey = HMAC-SHA256("WebappData", botToken)
+    // Compute secretKey = HMAC-SHA256("WebAppData", botToken)
     const webappDataKey = await window.crypto.subtle.importKey(
       "raw",
-      enc.encode("WebappData"),
+      enc.encode("WebAppData"),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["sign"]
@@ -215,7 +215,7 @@ export default function TMA() {
     } else {
       // If running outside Telegram or using a browser debugger that passes "string",
       // dynamically sign a valid test payload using the bot token.
-      const BOT_TOKEN = "8991036137:AAExlKIlV-2Giw3Y7X6BuedQFeyZhivy2Lc";
+      const BOT_TOKEN = "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
       signInitData(BOT_TOKEN, tgUser).then((signedData) => {
         console.log("[IGuard] Injected valid signed init_data:", signedData);
         runAuth(signedData);

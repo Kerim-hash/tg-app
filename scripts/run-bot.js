@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const BOT_TOKEN = "8991036137:AAExlKIlV-2Giw3Y7X6BuedQFeyZhivy2Lc";
+const BOT_TOKEN = "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
 const WEBAPP_URL = "https://tg-app-ri5g.vercel.app";
 
 const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
