@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
@@ -61,6 +62,26 @@ export default function HomeScreen({
   const [isKeySheetOpen, setIsKeySheetOpen] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    const isAnySheetOpen = isPlanSheetOpen || isKeySheetOpen || isPaymentSheetOpen;
+    if (isAnySheetOpen) {
+      mainEl.style.overflowY = "hidden";
+    } else {
+      mainEl.style.overflowY = "auto";
+    }
+    return () => {
+      mainEl.style.overflowY = "auto";
+    };
+  }, [isPlanSheetOpen, isKeySheetOpen, isPaymentSheetOpen]);
 
   const hasActivePlan = !!user.activePlan;
   const activeKey = personalKey || "https://fglove.online/x/dFcGjeCq4zwjYfLL";
@@ -610,7 +631,7 @@ export default function HomeScreen({
       </div>
 
       {/* ─── BOTTOM SHEET 1: Choose a plan ────────────────────────────────────── */}
-      {isPlanSheetOpen && (
+      {isPlanSheetOpen && mounted && createPortal(
         <>
           <div
             onClick={() => setIsPlanSheetOpen(false)}
@@ -634,6 +655,8 @@ export default function HomeScreen({
               width: "100%",
               maxWidth: "480px",
               height: "448px",
+              maxHeight: "90vh",
+              overflowY: "auto",
               background: "#000", // Solid obsidian black
               border: "1px solid rgba(255,255,255,0.08)",
               borderBottom: "none",
@@ -796,11 +819,12 @@ export default function HomeScreen({
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {/* ─── BOTTOM SHEET 2: Use your personal code ───────────────────────────── */}
-      {isKeySheetOpen && (
+      {isKeySheetOpen && mounted && createPortal(
         <>
           <div
             onClick={() => setIsKeySheetOpen(false)}
@@ -824,6 +848,8 @@ export default function HomeScreen({
               width: "100%",
               maxWidth: "480px",
               height: "340px",
+              maxHeight: "90vh",
+              overflowY: "auto",
               background: "#000",
               border: "1px solid rgba(255,255,255,0.08)",
               borderBottom: "none",
@@ -917,11 +943,12 @@ export default function HomeScreen({
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {/* ─── BOTTOM SHEET 3: Select a payment method ──────────────────────────── */}
-      {isPaymentSheetOpen && selectedPlan && (
+      {isPaymentSheetOpen && selectedPlan && mounted && createPortal(
         <>
           <div
             onClick={() => {
@@ -948,6 +975,8 @@ export default function HomeScreen({
               transform: "translateX(-50%)",
               width: "100%",
               maxWidth: "480px",
+              maxHeight: "90vh",
+              overflowY: "auto",
               background: "#000",
               border: "1px solid rgba(255,255,255,0.08)",
               borderBottom: "none",
@@ -1277,7 +1306,8 @@ export default function HomeScreen({
               )}
             </button>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

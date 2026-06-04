@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import type { Plan, PaymentMethod, Translations, HapticType, Tab } from "./types";
 import GradientBlock from "../GradientBlock";
@@ -108,6 +109,26 @@ export default function GuideScreen({
   const [copied, setCopied] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    if (isPaymentSheetOpen) {
+      mainEl.style.overflowY = "hidden";
+    } else {
+      mainEl.style.overflowY = "auto";
+    }
+    return () => {
+      mainEl.style.overflowY = "auto";
+    };
+  }, [isPaymentSheetOpen]);
+
   const activeKey = personalKey || "https://fglove.online/x/dFcGjeCq4zwjYfLL";
 
   const handleCopy = () => {
@@ -753,7 +774,7 @@ export default function GuideScreen({
       </div>
 
       {/* ─── BOTTOM SHEET: Select a payment method ──────────────────────────── */}
-      {isPaymentSheetOpen && selectedPlan && (
+      {isPaymentSheetOpen && selectedPlan && mounted && createPortal(
         <>
           <div
             onClick={() => {
@@ -780,6 +801,8 @@ export default function GuideScreen({
               transform: "translateX(-50%)",
               width: "100%",
               maxWidth: "480px",
+              maxHeight: "90vh",
+              overflowY: "auto",
               background: "#000",
               border: "1px solid rgba(255,255,255,0.08)",
               borderBottom: "none",
@@ -1109,7 +1132,8 @@ export default function GuideScreen({
               )}
             </button>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

@@ -81,6 +81,16 @@ export default function TMA() {
       : user.activePlan,
   };
 
+  // Reset scroll on tab change and ensure navbar is visible
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mainEl = document.querySelector("main");
+    if (mainEl) {
+      mainEl.scrollTop = 0;
+    }
+    setIsNavbarVisible(true);
+  }, [currentTab]);
+
   // ─── Init: auth + language ─────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;

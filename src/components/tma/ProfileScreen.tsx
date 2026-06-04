@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Language, Translations, UserData, Notifications, HapticType } from "./types";
 
 interface ProfileScreenProps {
@@ -67,6 +67,20 @@ export default function ProfileScreen({
   onToggleActivePlan,
 }: ProfileScreenProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    if (dropdownOpen) {
+      mainEl.style.overflowY = "hidden";
+    } else {
+      mainEl.style.overflowY = "auto";
+    }
+    return () => {
+      mainEl.style.overflowY = "auto";
+    };
+  }, [dropdownOpen]);
 
   const initials = user.firstName
     .split(" ")
@@ -293,7 +307,7 @@ export default function ProfileScreen({
       {/* Notifications */}
       <div
         style={{
-          opacity: dropdownOpen ? 0 : 1,
+          opacity: 1,
           pointerEvents: dropdownOpen ? "none" : "auto",
           transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
@@ -335,7 +349,7 @@ export default function ProfileScreen({
           height: "1px",
           backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
           margin: "24px 0",
-          opacity: dropdownOpen ? 0 : 1,
+          opacity: 1,
           transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       />
@@ -344,7 +358,7 @@ export default function ProfileScreen({
       <div
         style={{
           paddingBottom: "24px",
-          opacity: dropdownOpen ? 0 : 1,
+          opacity: 1,
           pointerEvents: dropdownOpen ? "none" : "auto",
           transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
