@@ -10,7 +10,6 @@ import { apiCall, safeStorage } from "./tma/api";
 import NavBar        from "./tma/NavBar";
 import HomeScreen    from "./tma/HomeScreen";
 import PaymentScreen from "./tma/PaymentScreen";
-import SuccessScreen from "./tma/SuccessScreen";
 import ErrorScreen   from "./tma/ErrorScreen";
 import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen   from "./tma/GuideScreen";
@@ -286,7 +285,7 @@ export default function TMA() {
             setIsPaying(false);
             if (status === "paid") {
               setPersonalKey(data.payload || "https://t2love.online/s/dFrGSaCp4owLRLL-TEST-PAID");
-              setPaymentStatus("success");
+              handleReset();
               triggerHaptic("success");
               // Refresh user profile state
               apiCall("/auth/profile").then((profile) => {
@@ -305,7 +304,7 @@ export default function TMA() {
               // Sandbox bypass: Fallback to success even on cancel/fail
               console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
               setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-              setPaymentStatus("success");
+              handleReset();
               triggerHaptic("success");
             }
           });
@@ -317,13 +316,13 @@ export default function TMA() {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
         setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-        setPaymentStatus("success");
+        handleReset();
       }
     } catch (err) {
       console.error("[IGuard] Payment error (falling back to success for test):", err);
       setIsPaying(false);
       setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-      setPaymentStatus("success");
+      handleReset();
       triggerHaptic("success");
     }
   };
@@ -344,8 +343,7 @@ export default function TMA() {
             setIsPaying(false);
             if (status === "paid") {
               setPersonalKey(data.payload || "https://t2love.online/s/dFrGSaCp4owLRLL-TEST-PAID");
-              setShowPayment(false);
-              setPaymentStatus("success");
+              handleReset();
               triggerHaptic("success");
               // Refresh user profile state
               apiCall("/auth/profile").then((profile) => {
@@ -364,8 +362,7 @@ export default function TMA() {
               // Sandbox bypass: Fallback to success even on cancel/fail
               console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
               setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-              setShowPayment(false);
-              setPaymentStatus("success");
+              handleReset();
               triggerHaptic("success");
             }
           });
@@ -377,15 +374,13 @@ export default function TMA() {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
         setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-        setShowPayment(false);
-        setPaymentStatus("success");
+        handleReset();
       }
     } catch (err) {
       console.error("[IGuard] Payment error (falling back to success for test):", err);
       setIsPaying(false);
       setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-      setShowPayment(false);
-      setPaymentStatus("success");
+      handleReset();
       triggerHaptic("success");
     }
   };
@@ -450,17 +445,7 @@ export default function TMA() {
     );
   }
 
-  // ─── Payment success/error overlays ──────────────────────────────────────
-  if (paymentStatus === "success") {
-    return (
-      <SuccessScreen
-        t={t}
-        personalKey={personalKey}
-        onClose={handleReset}
-        triggerHaptic={triggerHaptic}
-      />
-    );
-  }
+
 
   if (paymentStatus === "error") {
     return (
