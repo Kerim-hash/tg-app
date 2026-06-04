@@ -3,7 +3,7 @@ const path = require('path');
 
 // Configuration
 const BOT_TOKEN = "8991036137:AAExlKIlV-2Giw3Y7X6BuedQFeyZhivy2Lc";
-const WEBAPP_URL = "https://4c5e-95-87-74-224.ngrok-free.app";
+const WEBAPP_URL = "https://tg-app-ri5g.vercel.app";
 
 const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
