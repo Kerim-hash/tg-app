@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: `FGuard VPN - ${label}`,
+        title: `IGuard VPN - ${label}`,
         description: `Premium access to FGuard VPN for ${label}`,
         payload: `payload-key-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
         provider_token: "", // Must be empty for Telegram Stars

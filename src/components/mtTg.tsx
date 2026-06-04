@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 
-import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications } from "./tma/types";
+import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage } from "./tma/api";
 
@@ -98,6 +98,28 @@ async function signInitData(botToken: string, tgUser: any) {
   }
 }
 
+function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
+  if (!expirationStr) return undefined;
+  const expDate = new Date(expirationStr);
+  const now = new Date();
+  if (isNaN(expDate.getTime()) || expDate <= now) {
+    return undefined;
+  }
+  
+  const diffTime = expDate.getTime() - now.getTime();
+  const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = String(expDate.getDate()).padStart(2, "0");
+  const month = months[expDate.getMonth()];
+  const year = expDate.getFullYear();
+  const nextBilling = `${day} ${month}, ${year}`;
+  
+  const name = daysLeft > 45 ? "1 Year" : "30 days";
+
+  return { name, daysLeft, nextBilling };
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function TMA() {
   // Core
@@ -107,8 +129,8 @@ export default function TMA() {
 
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
-  // Simulator active plan state (enabled by default)
-  const [simulateActivePlan, setSimulateActivePlan] = useState(true);
+  // Simulator active plan state (disabled by default)
+  const [simulateActivePlan, setSimulateActivePlan] = useState(false);
 
   // Navbar dynamic scroll visibility state
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -195,7 +217,7 @@ export default function TMA() {
                   username:   profile.username || tgUser?.username,
                   photoUrl:   profile.photo_url || profile.photoUrl || tgUser?.photo_url,
                   isPremium:  profile.is_premium || profile.isPremium || false,
-                  activePlan: profile.active_plan || profile.activePlan,
+                  activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
                 });
               }
             } catch (err) {
@@ -296,7 +318,7 @@ export default function TMA() {
                     username:   profile.username || WebApp.initDataUnsafe?.user?.username,
                     photoUrl:   profile.photo_url || profile.photoUrl || WebApp.initDataUnsafe?.user?.photo_url,
                     isPremium:  profile.is_premium || profile.isPremium || false,
-                    activePlan: profile.active_plan || profile.activePlan,
+                    activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
                   });
                 }
               }).catch(() => {});
@@ -354,7 +376,7 @@ export default function TMA() {
                     username:   profile.username || WebApp.initDataUnsafe?.user?.username,
                     photoUrl:   profile.photo_url || profile.photoUrl || WebApp.initDataUnsafe?.user?.photo_url,
                     isPremium:  profile.is_premium || profile.isPremium || false,
-                    activePlan: profile.active_plan || profile.activePlan,
+                    activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
                   });
                 }
               }).catch(() => {});

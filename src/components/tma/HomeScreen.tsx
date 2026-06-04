@@ -383,7 +383,7 @@ export default function HomeScreen({
 
 
         {/* Plan cards selector inside Main Screen — GradientBlock Figma Spec */}
-        <div style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: "12px", width: "100%", justifyContent: "center", flexWrap: "wrap" }}>
           {plans.map((plan) => {
             const isYearly = plan.periodMonths === 12;
             const isActive = selectedPlan?.id === plan.id;
