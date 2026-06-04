@@ -87,8 +87,57 @@ export default function HomeScreen({
         position: "relative",
       }}
     >
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(16px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-fade-in-up {
+            opacity: 0;
+            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+          .hover-scale-btn {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+          }
+          .hover-scale-btn:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+          }
+          @keyframes drawerSlideUp {
+            from {
+              transform: translate(-50%, 100%);
+            }
+            to {
+              transform: translate(-50%, 0);
+            }
+          }
+          @keyframes backdropFadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+          .animate-drawer {
+            animation: drawerSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+          .animate-backdrop {
+            animation: backdropFadeIn 0.3s ease forwards;
+          }
+        `,
+      }} />
+
       {/* Nav title */}
       <p
+        className="animate-fade-in-up"
         style={{
           textAlign: "center",
           fontSize: "14px",
@@ -96,6 +145,7 @@ export default function HomeScreen({
           color: "#40D1FD",
           fontFamily: "var(--font-mono), monospace",
           marginBottom: "30px",
+          animationDelay: "0ms",
         }}
       >
         {t.nav.home}
@@ -103,19 +153,29 @@ export default function HomeScreen({
 
       {/* Welcome heading */}
       <h1
+        className="animate-fade-in-up"
         style={{
           fontSize: "22px",
           textAlign: "center",
           color: "#fff",
           margin: 0,
           lineHeight: 1.2,
+          animationDelay: "100ms",
         }}
       >
         {t.home.welcome}
       </h1>
 
       {/* Active plan card — GradientBlock with overlay content */}
-      <div style={{ position: "relative", borderRadius: "70px", overflow: "hidden" }}>
+      <div
+        className="animate-fade-in-up"
+        style={{
+          position: "relative",
+          borderRadius: "70px",
+          overflow: "hidden",
+          animationDelay: "200ms",
+        }}
+      >
         <GradientBlock
           label=""
           primaryColor={hasActivePlan ? "#FF44DD" : "#567780"}
@@ -208,8 +268,18 @@ export default function HomeScreen({
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: "10px", margin: "auto" }}>
+      <div
+        className="animate-fade-in-up"
+        style={{
+          display: "flex",
+          gap: "10px",
+          margin: "auto",
+          width: "100%",
+          animationDelay: "300ms",
+        }}
+      >
         <button
+          className="hover-scale-btn"
           onClick={() => {
             triggerHaptic("medium");
             setIsKeySheetOpen(true);
@@ -239,6 +309,7 @@ export default function HomeScreen({
           {t.home.connectDevice.toUpperCase()}
         </button>
         <button
+          className="hover-scale-btn"
           onClick={() => {
             triggerHaptic("medium");
             setIsPlanSheetOpen(true);
@@ -261,10 +332,27 @@ export default function HomeScreen({
         </button>
       </div>
 
-      <div style={{ height: "1px", backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)", margin: "16px 0" }} />
+      <div
+        className="animate-fade-in-up"
+        style={{
+          height: "1px",
+          backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+          margin: "16px 0",
+          animationDelay: "350ms",
+        }}
+      />
 
       {/* Choose a plan (HomeScreen embedded preview) */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "30px", width: "100%" }}>
+      <div
+        className="animate-fade-in-up"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "30px",
+          width: "100%",
+          animationDelay: "400ms",
+        }}
+      >
         <div style={{ textAlign: "center" }}>
           <h2 style={{ fontSize: "24px", color: "#fff", margin: "0 0 6px" }}>
             {t.home.choosePlan}
@@ -526,6 +614,7 @@ export default function HomeScreen({
         <>
           <div
             onClick={() => setIsPlanSheetOpen(false)}
+            className="animate-backdrop"
             style={{
               position: "fixed",
               inset: 0,
@@ -536,6 +625,7 @@ export default function HomeScreen({
             }}
           />
           <div
+            className="animate-drawer"
             style={{
               position: "fixed",
               bottom: 0,
@@ -549,7 +639,6 @@ export default function HomeScreen({
               borderBottom: "none",
               borderRadius: "32px 32px 0 0",
               padding: "24px 20px 60px",
-              animation: "home-slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards",
               zIndex: 210,
               boxShadow: "0 -12px 40px rgba(0,0,0,0.6)",
               display: "flex",
@@ -558,15 +647,6 @@ export default function HomeScreen({
               boxSizing: "border-box",
             }}
           >
-            <style dangerouslySetInnerHTML={{
-              __html: `
-                @keyframes home-slide-up {
-                  from { transform: translate(-50%, 100%); }
-                  to { transform: translate(-50%, 0); }
-                }
-              `
-            }} />
-
             {/* Drag handle */}
             <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 8px" }} />
 
@@ -724,6 +804,7 @@ export default function HomeScreen({
         <>
           <div
             onClick={() => setIsKeySheetOpen(false)}
+            className="animate-backdrop"
             style={{
               position: "fixed",
               inset: 0,
@@ -734,6 +815,7 @@ export default function HomeScreen({
             }}
           />
           <div
+            className="animate-drawer"
             style={{
               position: "fixed",
               bottom: 0,
@@ -747,7 +829,6 @@ export default function HomeScreen({
               borderBottom: "none",
               borderRadius: "32px 32px 0 0",
               padding: "24px 20px 32px",
-              animation: "home-slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards",
               zIndex: 210,
               boxShadow: "0 -12px 40px rgba(0,0,0,0.6)",
               display: "flex",
@@ -756,14 +837,6 @@ export default function HomeScreen({
               boxSizing: "border-box",
             }}
           >
-            <style dangerouslySetInnerHTML={{
-              __html: `
-                @keyframes home-slide-up {
-                  from { transform: translate(-50%, 100%); }
-                  to { transform: translate(-50%, 0); }
-                }
-              `
-            }} />
             {/* Drag handle */}
             <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 8px" }} />
 
@@ -856,6 +929,7 @@ export default function HomeScreen({
                 setIsPaymentSheetOpen(false);
               }
             }}
+            className="animate-backdrop"
             style={{
               position: "fixed",
               inset: 0,
@@ -866,6 +940,7 @@ export default function HomeScreen({
             }}
           />
           <div
+            className="animate-drawer"
             style={{
               position: "fixed",
               bottom: 0,
@@ -883,7 +958,6 @@ export default function HomeScreen({
               display: "flex",
               flexDirection: "column",
               gap: "20px",
-              animation: "slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
             }}
           >
             {/* Drag handle */}

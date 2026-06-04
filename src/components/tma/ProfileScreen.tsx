@@ -86,13 +86,46 @@ export default function ProfileScreen({
 
   return (
     <div style={{ padding: "16px 16px 8px", fontFamily: "var(--font-onest), sans-serif" }}>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes dropdownScaleIn {
+            from {
+              opacity: 0;
+              transform: scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          .animate-dropdown {
+            animation: dropdownScaleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          }
+          .hover-scale-btn {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+          }
+          .hover-scale-btn:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+          }
+        `,
+      }} />
+
       {/* Nav title */}
       <p style={{ textAlign: "center", fontSize: "13px", fontWeight: 600, color: "#00D1FF", marginBottom: "24px", margin: "0 0 24px" }}>
         {t.profile.title}
       </p>
 
       {/* User header */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", marginBottom: "32px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "32px",
+        }}
+      >
         {user.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -129,10 +162,13 @@ export default function ProfileScreen({
       </div>
 
       {/* Language dropdown */}
-      <div style={{ position: "relative", marginBottom: "32px", height: "72px" }}>
+      <div
+        style={{ position: "relative", marginBottom: "32px", height: "72px", zIndex: 9 }}
+      >
         {!dropdownOpen ? (
           <button
             onClick={() => { triggerHaptic("light"); setDropdownOpen(true); }}
+            className="hover-scale-btn"
             style={{
               width: "100%",
               height: "72px",
@@ -166,18 +202,19 @@ export default function ProfileScreen({
           </button>
         ) : (
           <div
+            className="animate-dropdown"
             style={{
               position: "absolute",
               left: 0,
               right: 0,
               top: 0,
-              background: "rgba(25, 28, 38, 0.72)", // Frosted glass iPhone background
-              backdropFilter: "blur(28px)",
-              WebkitBackdropFilter: "blur(28px)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              background: "linear-gradient(135deg, #181B26 0%, #0A0B10 100%)",
+              backdropFilter: "blur(40px) saturate(200%)",
+              WebkitBackdropFilter: "blur(40px) saturate(200%)",
+              border: "1px solid rgba(255, 255, 255, 0.22)",
               borderRadius: "28px",
-              zIndex: 150,
-              boxShadow: "0 16px 48px rgba(0,0,0,0.55)",
+              zIndex: 1000,
+              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.4)",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
@@ -254,7 +291,13 @@ export default function ProfileScreen({
       </div>
 
       {/* Notifications */}
-      <div>
+      <div
+        style={{
+          opacity: dropdownOpen ? 0 : 1,
+          pointerEvents: dropdownOpen ? "none" : "auto",
+          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
         <h3 style={{ fontSize: "24px", textAlign: "center", color: "#fff", margin: "0 0 16px" }}>
           {t.profile.notifications}
         </h3>
@@ -287,10 +330,25 @@ export default function ProfileScreen({
       </div>
 
       {/* Separator dots */}
-      <div style={{ height: "1px", backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)", margin: "24px 0" }} />
+      <div
+        style={{
+          height: "1px",
+          backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+          margin: "24px 0",
+          opacity: dropdownOpen ? 0 : 1,
+          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      />
 
       {/* Simulator / Developer Settings */}
-      <div style={{ paddingBottom: "24px" }}>
+      <div
+        style={{
+          paddingBottom: "24px",
+          opacity: dropdownOpen ? 0 : 1,
+          pointerEvents: dropdownOpen ? "none" : "auto",
+          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
         <h3 style={{ fontSize: "24px", textAlign: "center", color: "#fff", margin: "0 0 16px" }}>
           Simulator
         </h3>

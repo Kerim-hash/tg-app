@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Onest, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const onest = Onest({
@@ -26,6 +27,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className={`${onest.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={onest.className} suppressHydrationWarning>
         {children}
       </body>

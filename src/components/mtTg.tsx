@@ -5,7 +5,7 @@ import WebApp from "@twa-dev/sdk";
 
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
-import { apiCall } from "./tma/api";
+import { apiCall, safeStorage } from "./tma/api";
 
 import NavBar        from "./tma/NavBar";
 import HomeScreen    from "./tma/HomeScreen";
@@ -50,6 +50,10 @@ export default function TMA() {
   // Simulator active plan state (enabled by default)
   const [simulateActivePlan, setSimulateActivePlan] = useState(true);
 
+  // Navbar dynamic scroll visibility state
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+
   // Plans
   const [plans,        setPlans]        = useState<Plan[]>(DEFAULT_PLANS);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -81,14 +85,20 @@ export default function TMA() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    WebApp.ready();
-    WebApp.expand();
+    let tgUser: any = null;
+    let rawInitData = "";
 
-    // Language from Telegram
-    setLanguage(getDefaultLanguage());
+    try {
+      WebApp.ready();
+      WebApp.expand();
+      setLanguage(getDefaultLanguage());
+      tgUser = WebApp.initDataUnsafe?.user;
+      rawInitData = WebApp.initData;
+    } catch (e) {
+      console.error("[IGuard] Telegram WebApp SDK initialization failed:", e);
+    }
 
-    // Prefill user from Telegram SDK
-    const tgUser = WebApp.initDataUnsafe.user;
+    // Prefill user from Telegram SDK if available
     if (tgUser) {
       setUser({
         id:        tgUser.id,
@@ -100,28 +110,33 @@ export default function TMA() {
     }
 
     // Authenticate with backend
-    const rawInitData = WebApp.initData;
-    const startParam  = WebApp.initDataUnsafe.start_param;
-
     if (rawInitData) {
       apiCall("/auth/telegram/mini-app", "POST", {
-        initData:    rawInitData,
-        start_param: startParam || "",
+        init_data: rawInitData,
       })
-        .then((data) => {
-          if (data?.token) localStorage.setItem("iguard_jwt_token", data.token);
-          if (data?.user) {
-            setUser({
-              id:         data.user.id,
-              firstName:  data.user.first_name  || data.user.firstName  || tgUser?.first_name  || "User",
-              username:   data.user.username     || tgUser?.username,
-              photoUrl:   data.user.photo_url    || data.user.photoUrl   || tgUser?.photo_url,
-              isPremium:  data.user.is_premium   || data.user.isPremium  || false,
-              activePlan: data.user.active_plan,
-            });
+        .then(async (data) => {
+          if (data?.access_token) {
+            safeStorage.setItem("iguard_jwt_token", data.access_token);
+            try {
+              const profile = await apiCall("/auth/profile", "GET");
+              if (profile) {
+                setUser({
+                  id:         profile.id || profile.user_id || tgUser?.id || 0,
+                  firstName:  profile.first_name || profile.firstName || tgUser?.first_name || "User",
+                  username:   profile.username || tgUser?.username,
+                  photoUrl:   profile.photo_url || profile.photoUrl || tgUser?.photo_url,
+                  isPremium:  profile.is_premium || profile.isPremium || false,
+                  activePlan: profile.active_plan || profile.activePlan,
+                });
+              }
+            } catch (err) {
+              console.error("[IGuard] Profile fetch error:", err);
+            }
           }
         })
-        .catch(() => {}) // sandbox mode — silently ignore
+        .catch((err) => {
+          console.error("[IGuard] Auth error:", err);
+        })
         .finally(() => setIsLoadingAuth(false));
     } else {
       setIsLoadingAuth(false);
@@ -132,11 +147,34 @@ export default function TMA() {
   useEffect(() => {
     apiCall("/payment/prices/telegram")
       .then((data) => {
-        if (Array.isArray(data?.plans) && data.plans.length > 0) {
-          setPlans(data.plans);
+        if (Array.isArray(data) && data.length > 0) {
+          const mappedPlans = data.map((price: any) => {
+            let periodMonths = price.period || 1;
+            if (price.period_types === "year") {
+              periodMonths = (price.period || 1) * 12;
+            } else if (price.period_types === "day" || price.period_types === "days") {
+              periodMonths = (price.period || 30) / 30;
+            }
+
+            const usdTotal = price.amount_usd || 0;
+            const usdPerMonth = periodMonths > 0 ? usdTotal / periodMonths : usdTotal;
+
+            return {
+              id: String(price.id),
+              label: price.name || `${price.period} ${price.period_types || 'month'}`,
+              starsPrice: price.amount_stars || 0,
+              usdTotal: usdTotal,
+              usdPerMonth: usdPerMonth,
+              periodMonths: periodMonths,
+              badge: price.description || (price.period_types === "year" ? "Best Value" : undefined)
+            };
+          });
+          setPlans(mappedPlans);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[IGuard] Fetch prices error:", err);
+      });
   }, []);
 
   // ─── Haptic ───────────────────────────────────────────────────────────────
@@ -158,29 +196,48 @@ export default function TMA() {
     setIsPaying(true);
 
     try {
-      const data = await apiCall("/payment/stars/invoice", "POST", {
-        planId: selectedPlan.id,
-        method: method,
-      });
-
-      if (method === "stars" && data?.invoice_url) {
-        WebApp.openInvoice(data.invoice_url, (status) => {
-          setIsPaying(false);
-          if (status === "paid") {
-            setPersonalKey(data.personal_key || data.access_key || "");
-            setPaymentStatus("success");
-          } else {
-            setPaymentStatus("error");
-          }
+      if (method === "stars") {
+        const data = await apiCall("/payment/stars/invoice", "POST", {
+          price_id: Number(selectedPlan.id),
         });
+
+        if (data?.invoice_url) {
+          WebApp.openInvoice(data.invoice_url, (status) => {
+            setIsPaying(false);
+            if (status === "paid") {
+              setPersonalKey(data.payload || "");
+              setPaymentStatus("success");
+              triggerHaptic("success");
+              // Refresh user profile state
+              apiCall("/auth/profile").then((profile) => {
+                if (profile) {
+                  setUser({
+                    id:         profile.id || profile.user_id || WebApp.initDataUnsafe?.user?.id || 0,
+                    firstName:  profile.first_name || profile.firstName || WebApp.initDataUnsafe?.user?.first_name || "User",
+                    username:   profile.username || WebApp.initDataUnsafe?.user?.username,
+                    photoUrl:   profile.photo_url || profile.photoUrl || WebApp.initDataUnsafe?.user?.photo_url,
+                    isPremium:  profile.is_premium || profile.isPremium || false,
+                    activePlan: profile.active_plan || profile.activePlan,
+                  });
+                }
+              }).catch(() => {});
+            } else {
+              setPaymentStatus("error");
+              triggerHaptic("warning");
+            }
+          });
+        } else {
+          throw new Error("No invoice URL returned");
+        }
       } else {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
-        setPersonalKey(data?.personal_key || "KEY-" + Math.random().toString(36).substring(2, 10).toUpperCase());
+        setPersonalKey("KEY-" + Math.random().toString(36).substring(2, 10).toUpperCase());
         setPaymentStatus("success");
       }
-    } catch {
+    } catch (err) {
+      console.error("[IGuard] Payment error:", err);
       setIsPaying(false);
       setPaymentStatus("error");
     }
@@ -192,32 +249,50 @@ export default function TMA() {
     setIsPaying(true);
 
     try {
-      const data = await apiCall("/payment/stars/invoice", "POST", {
-        planId: selectedPlan.id,
-        method: selectedMethod,
-      });
-
-      if (selectedMethod === "stars" && data?.invoice_url) {
-        WebApp.openInvoice(data.invoice_url, (status) => {
-          setIsPaying(false);
-          if (status === "paid") {
-            setPersonalKey(data.personal_key || data.access_key || "");
-            setShowPayment(false);
-            setPaymentStatus("success");
-            triggerHaptic("success");
-          } else if (status === "failed") {
-            setShowPayment(false);
-            setPaymentStatus("error");
-            triggerHaptic("warning");
-          } else {
-            triggerHaptic("light"); // cancelled
-          }
+      if (selectedMethod === "stars") {
+        const data = await apiCall("/payment/stars/invoice", "POST", {
+          price_id: Number(selectedPlan.id),
         });
-      } else if (data?.redirect_url) {
-        WebApp.openLink(data.redirect_url);
-        setIsPaying(false);
+
+        if (data?.invoice_url) {
+          WebApp.openInvoice(data.invoice_url, (status) => {
+            setIsPaying(false);
+            if (status === "paid") {
+              setPersonalKey(data.payload || "");
+              setShowPayment(false);
+              setPaymentStatus("success");
+              triggerHaptic("success");
+              // Refresh user profile state
+              apiCall("/auth/profile").then((profile) => {
+                if (profile) {
+                  setUser({
+                    id:         profile.id || profile.user_id || WebApp.initDataUnsafe?.user?.id || 0,
+                    firstName:  profile.first_name || profile.firstName || WebApp.initDataUnsafe?.user?.first_name || "User",
+                    username:   profile.username || WebApp.initDataUnsafe?.user?.username,
+                    photoUrl:   profile.photo_url || profile.photoUrl || WebApp.initDataUnsafe?.user?.photo_url,
+                    isPremium:  profile.is_premium || profile.isPremium || false,
+                    activePlan: profile.active_plan || profile.activePlan,
+                  });
+                }
+              }).catch(() => {});
+            } else if (status === "failed") {
+              setShowPayment(false);
+              setPaymentStatus("error");
+              triggerHaptic("warning");
+            } else {
+              triggerHaptic("light"); // cancelled
+            }
+          });
+        } else {
+          throw new Error("No payment URL returned");
+        }
       } else {
-        throw new Error("No payment URL returned");
+        // Other methods simulated
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setIsPaying(false);
+        setPersonalKey("KEY-" + Math.random().toString(36).substring(2, 10).toUpperCase());
+        setShowPayment(false);
+        setPaymentStatus("success");
       }
     } catch (err) {
       console.error("[IGuard] Payment error:", err);
@@ -236,7 +311,7 @@ export default function TMA() {
         setPaymentStatus("error");
         triggerHaptic("warning");
       } else {
-        // Dev sandbox: simulate success so designers can preview the screen
+        // Dev sandbox fallback
         setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL...");
         setShowPayment(false);
         setPaymentStatus("success");
@@ -357,54 +432,84 @@ export default function TMA() {
         position: "relative",
       }}
     >
-      <main style={{ flex: 1, overflowY: "auto", position: "relative", paddingBottom: "110px" }}>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes screenFade {
+            from { opacity: 0; transform: scale(0.99); }
+            to { opacity: 1; transform: scale(1); }
+          }
+          .animate-screen-fade {
+            animation: screenFade 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+        `,
+      }} />
+      <main
+        onScroll={(e) => {
+          const scrollTop = e.currentTarget.scrollTop;
+          if (scrollTop > lastScrollTop && scrollTop > 60) {
+            setIsNavbarVisible(false);
+          } else {
+            setIsNavbarVisible(true);
+          }
+          setLastScrollTop(scrollTop);
+        }}
+        style={{ flex: 1, overflowY: "auto", position: "relative", paddingBottom: "110px" }}
+      >
         {currentTab === "home" && (
-          <HomeScreen
-            t={t}
-            user={simulatedUser}
-            plans={plans}
-            selectedPlan={selectedPlan}
-            onSelectPlan={setSelectedPlan}
-            triggerHaptic={triggerHaptic}
-            onTabChange={setCurrentTab}
-            personalKey={personalKey}
-            onProceedPayment={handleProceedPayment}
-            isPaying={isPaying}
-          />
+          <div className="animate-screen-fade">
+            <HomeScreen
+              t={t}
+              user={simulatedUser}
+              plans={plans}
+              selectedPlan={selectedPlan}
+              onSelectPlan={setSelectedPlan}
+              triggerHaptic={triggerHaptic}
+              onTabChange={setCurrentTab}
+              personalKey={personalKey}
+              onProceedPayment={handleProceedPayment}
+              isPaying={isPaying}
+            />
+          </div>
         )}
 
         {currentTab === "guide" && (
-          <GuideScreen
-            t={t}
-            personalKey={personalKey}
-            onTabChange={setCurrentTab}
-            triggerHaptic={triggerHaptic}
-            plans={plans}
-            selectedPlan={selectedPlan}
-            onSelectPlan={setSelectedPlan}
-            onProceedPayment={handleProceedPayment}
-            isPaying={isPaying}
-          />
+          <div className="animate-screen-fade">
+            <GuideScreen
+              t={t}
+              personalKey={personalKey}
+              onTabChange={setCurrentTab}
+              triggerHaptic={triggerHaptic}
+              plans={plans}
+              selectedPlan={selectedPlan}
+              onSelectPlan={setSelectedPlan}
+              onProceedPayment={handleProceedPayment}
+              isPaying={isPaying}
+            />
+          </div>
         )}
 
         {currentTab === "profile" && (
-          <ProfileScreen
-            t={t}
-            user={simulatedUser}
-            language={language}
-            onLanguageChange={setLanguage}
-            notifs={notifs}
-            onNotifsChange={setNotifs}
-            triggerHaptic={triggerHaptic}
-            onToggleActivePlan={handleToggleActivePlan}
-          />
+          <div className="animate-screen-fade">
+            <ProfileScreen
+              t={t}
+              user={simulatedUser}
+              language={language}
+              onLanguageChange={setLanguage}
+              notifs={notifs}
+              onNotifsChange={setNotifs}
+              triggerHaptic={triggerHaptic}
+              onToggleActivePlan={handleToggleActivePlan}
+            />
+          </div>
         )}
 
         {currentTab === "support" && (
-          <SupportScreen
-            t={t}
-            triggerHaptic={triggerHaptic}
-          />
+          <div className="animate-screen-fade">
+            <SupportScreen
+              t={t}
+              triggerHaptic={triggerHaptic}
+            />
+          </div>
         )}
       </main>
 
@@ -412,9 +517,11 @@ export default function TMA() {
       <NavBar
         t={t}
         currentTab={currentTab}
+        isVisible={isNavbarVisible}
         onTabChange={(tab) => {
           triggerHaptic("light");
           setCurrentTab(tab);
+          setIsNavbarVisible(true);
         }}
       />
     </div>

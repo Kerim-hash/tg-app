@@ -136,21 +136,70 @@ export default function GuideScreen({
         fontFamily: "var(--font-onest), sans-serif",
       }}
     >
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(16px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-fade-in-up {
+            opacity: 0;
+            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+          .hover-scale-btn {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+          }
+          @keyframes drawerSlideUp {
+            from {
+              transform: translate(-50%, 100%);
+            }
+            to {
+              transform: translate(-50%, 0);
+            }
+          }
+          @keyframes backdropFadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+          .animate-drawer {
+            animation: drawerSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+          .animate-backdrop {
+            animation: backdropFadeIn 0.3s ease forwards;
+          }
+        `,
+      }} />
+
       {/* Nav title */}
       <p
+        className="animate-fade-in-up"
         style={{
           textAlign: "center",
           fontSize: "14px",
           color: "#40D1FD",
           fontFamily: "JetBrains Mono",
           margin: 0,
+          animationDelay: "0ms",
         }}
       >
         {t.guide.title}
       </p>
 
       {/* Header heading */}
-      <div style={{ textAlign: "center" }}>
+      <div
+        className="animate-fade-in-up"
+        style={{ textAlign: "center", animationDelay: "100ms" }}
+      >
         <h1
           style={{
             fontSize: "24px",
@@ -168,7 +217,10 @@ export default function GuideScreen({
       {/* Steps list */}
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Step 1 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div
+          className="animate-fade-in-up"
+          style={{ display: "flex", flexDirection: "column", gap: "12px", animationDelay: "200ms" }}
+        >
           <div style={{ display: "flex", gap: "12px", alignItems: "start" }}>
             <div
               style={{
@@ -193,6 +245,7 @@ export default function GuideScreen({
           </div>
 
           <button
+            className="hover-scale-btn"
             onClick={() => handleOpenLink("https://apps.apple.com/app/iguard-vpn")}
             style={{
               alignSelf: "center",
@@ -218,10 +271,21 @@ export default function GuideScreen({
         </div>
 
         {/* Separator dots */}
-        <div style={{ height: "1px", backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)", margin: "4px 0 16px" }} />
+        <div
+          className="animate-fade-in-up"
+          style={{
+            height: "1px",
+            backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+            margin: "4px 0 16px",
+            animationDelay: "250ms",
+          }}
+        />
 
         {/* Step 2 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div
+          className="animate-fade-in-up"
+          style={{ display: "flex", flexDirection: "column", gap: "12px", animationDelay: "300ms" }}
+        >
           <div style={{ display: "flex", gap: "12px", alignItems: "start" }}>
             <div
               style={{
@@ -255,6 +319,7 @@ export default function GuideScreen({
                 return (
                   <button
                     key={plan.id}
+                    className="hover-scale-btn"
                     onClick={() => {
                       triggerHaptic("light");
                       onSelectPlan(plan);
@@ -349,6 +414,7 @@ export default function GuideScreen({
             </div>
 
             <button
+              className="hover-scale-btn"
               onClick={() => {
                 triggerHaptic("medium");
                 if (selectedPlan) {
@@ -386,10 +452,21 @@ export default function GuideScreen({
         </div>
 
         {/* Separator dots */}
-        <div style={{ height: "1px", backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)", margin: "4px 0 16px" }} />
+        <div
+          className="animate-fade-in-up"
+          style={{
+            height: "1px",
+            backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+            margin: "4px 0 16px",
+            animationDelay: "350ms",
+          }}
+        />
 
         {/* Step 3 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div
+          className="animate-fade-in-up"
+          style={{ display: "flex", flexDirection: "column", gap: "12px", animationDelay: "400ms" }}
+        >
           <div style={{ display: "flex", gap: "12px", alignItems: "start" }}>
             <div
               style={{
@@ -445,6 +522,7 @@ export default function GuideScreen({
             </GradientBlock>
 
             <button
+              className="hover-scale-btn"
               onClick={handleCopy}
               style={{
                 padding: "13px 15px",
@@ -476,10 +554,21 @@ export default function GuideScreen({
         </div>
 
         {/* Separator dots */}
-        <div style={{ height: "1px", backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)", margin: "4px 0 16px" }} />
+        <div
+          className="animate-fade-in-up"
+          style={{
+            height: "1px",
+            backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+            margin: "4px 0 16px",
+            animationDelay: "450ms",
+          }}
+        />
 
         {/* Step 4 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div
+          className="animate-fade-in-up"
+          style={{ display: "flex", flexDirection: "column", gap: "12px", animationDelay: "500ms" }}
+        >
           <div style={{ display: "flex", gap: "12px", alignItems: "start" }}>
             <div
               style={{
@@ -672,6 +761,7 @@ export default function GuideScreen({
                 setIsPaymentSheetOpen(false);
               }
             }}
+            className="animate-backdrop"
             style={{
               position: "fixed",
               inset: 0,
@@ -682,6 +772,7 @@ export default function GuideScreen({
             }}
           />
           <div
+            className="animate-drawer"
             style={{
               position: "fixed",
               bottom: 0,
@@ -699,7 +790,6 @@ export default function GuideScreen({
               display: "flex",
               flexDirection: "column",
               gap: "20px",
-              animation: "slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
             }}
           >
             {/* Drag handle */}
