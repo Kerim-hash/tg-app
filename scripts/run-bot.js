@@ -32,7 +32,7 @@ async function setupMenuButton() {
   const result = await apiCall('setChatMenuButton', {
     menu_button: {
       type: 'web_app',
-      text: '🛡️ FGuard VPN',
+      text: '🛡️ IGuard VPN',
       web_app: {
         url: WEBAPP_URL
       }
@@ -97,7 +97,7 @@ async function handleUpdate(update) {
         inline_keyboard: [
           [
             {
-              text: '🛡️ Запустить FGuard VPN',
+              text: '🛡️ Запустить IGuard VPN',
               web_app: {
                 url: WEBAPP_URL
               }

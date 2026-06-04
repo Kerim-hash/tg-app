@@ -11,7 +11,6 @@ interface ProfileScreenProps {
   notifs: Notifications;
   onNotifsChange: (notifs: Notifications) => void;
   triggerHaptic: (type: HapticType) => void;
-  onToggleActivePlan: () => void;
 }
 
 const LANG_OPTIONS: { value: Language; label: string }[] = [
@@ -64,7 +63,6 @@ export default function ProfileScreen({
   notifs,
   onNotifsChange,
   triggerHaptic,
-  onToggleActivePlan,
 }: ProfileScreenProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -340,55 +338,6 @@ export default function ProfileScreen({
               />
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Separator dots */}
-      <div
-        style={{
-          height: "1px",
-          backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
-          margin: "24px 0",
-          opacity: 1,
-          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
-      />
-
-      {/* Simulator / Developer Settings */}
-      <div
-        style={{
-          paddingBottom: "24px",
-          opacity: 1,
-          pointerEvents: dropdownOpen ? "none" : "auto",
-          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
-      >
-        <h3 style={{ fontSize: "24px", textAlign: "center", color: "#fff", margin: "0 0 16px" }}>
-          Simulator
-        </h3>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "15px 0",
-          }}
-        >
-          <div>
-            <p style={{ fontSize: "18px", color: "#fff", margin: "0 0 2px" }}>
-              {t.profile.simulateActivePlan}
-            </p>
-            <p style={{ fontSize: "14px", color: "#666", margin: 0 }}>
-              {t.profile.simulateActivePlanDesc}
-            </p>
-          </div>
-          <Toggle
-            value={!!user.activePlan}
-            onChange={() => {
-              triggerHaptic("light");
-              onToggleActivePlan();
-            }}
-          />
         </div>
       </div>
     </div>

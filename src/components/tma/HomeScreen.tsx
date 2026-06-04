@@ -162,7 +162,6 @@ export default function HomeScreen({
         style={{
           textAlign: "center",
           fontSize: "14px",
-          fontWeight: 400,
           color: "#40D1FD",
           fontFamily: "var(--font-mono), monospace",
           marginBottom: "30px",
@@ -229,7 +228,6 @@ export default function HomeScreen({
           <span
             style={{
               fontSize: "12px",
-              fontWeight: 400,
               letterSpacing: "0.14em",
               color: "#fff",
               background: "#1A1A1A",
@@ -564,7 +562,6 @@ export default function HomeScreen({
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "13px",
-                    fontWeight: 500,
                     color: "#fff",
                     background: "#1A1A1A",
                     padding: "6.5px 12px 6.5px 8px",
@@ -589,7 +586,6 @@ export default function HomeScreen({
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "13px",
-                    fontWeight: 500,
                     color: "#fff",
                     background: "#1A1A1A",
                     padding: "6.5px 12px 6.5px 8px",
@@ -614,7 +610,6 @@ export default function HomeScreen({
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "13px",
-                    fontWeight: 500,
                     color: "#fff",
                     background: "#1A1A1A",
                     padding: "6.5px 12px 6.5px 8px",
@@ -674,7 +669,7 @@ export default function HomeScreen({
             <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 8px" }} />
 
             <div style={{ textAlign: "center" }}>
-              <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#fff", margin: "0 0 4px" }}>
+              <h2 style={{ fontSize: "22px", color: "#fff", margin: "0 0 4px" }}>
                 {t.home.choosePlan}
               </h2>
               <p style={{ fontSize: "13px", color: "#8A94A6", margin: 0 }}>{t.home.moneyBack}</p>
@@ -752,7 +747,6 @@ export default function HomeScreen({
                           style={{
                             display: "inline-block",
                             fontSize: "11px",
-                            fontWeight: 600,
                             padding: "6px 14px",
                             borderRadius: "20px",
                             background: isYearly ? "rgba(0, 0, 0, 0.16)" : "rgba(255, 255, 255, 0.08)",
@@ -763,14 +757,14 @@ export default function HomeScreen({
                           {plan.label}
                         </span>
                         <div>
-                          <span style={{ display: "block", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+                          <span style={{ display: "block", fontSize: "28px", color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
                             $ {plan.usdPerMonth.toFixed(2)}
                           </span>
                           <span style={{ display: "block", fontSize: "10px", color: isYearly ? "rgba(255,255,255,0.85)" : "#8A94A6", marginTop: "2px" }}>
                             {t.home.perMonth}
                           </span>
                         </div>
-                        <span style={{ display: "block", fontSize: "11px", color: isYearly ? "#E0F2FE" : "#8A94A6", fontWeight: 500, opacity: isYearly ? 0.9 : 1 }}>
+                        <span style={{ display: "block", fontSize: "11px", color: isYearly ? "#E0F2FE" : "#8A94A6", opacity: isYearly ? 0.9 : 1 }}>
                           {isYearly ? t.home.billedYearly : t.home.billedMonthly}
                         </span>
                       </div>
@@ -804,7 +798,6 @@ export default function HomeScreen({
                   border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
                   color: selectedPlan ? "#000000" : "#FFFFFF",
                   fontSize: "12px",
-                  fontWeight: 800,
                   letterSpacing: "0.05em",
                   alignSelf: "center",
                   cursor: "pointer",
@@ -993,7 +986,7 @@ export default function HomeScreen({
             <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 4px" }} />
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#fff", margin: 0, textAlign: "left" }}>
+              <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left" }}>
                 Select a payment method
               </h2>
             </div>
@@ -1063,7 +1056,6 @@ export default function HomeScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      fontWeight: 600,
                       color: localSelectedMethod === "card" ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1073,7 +1065,6 @@ export default function HomeScreen({
                   <span
                     style={{
                       fontSize: "14px",
-                      fontWeight: 500,
                       color: "#8A94A6",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1146,7 +1137,6 @@ export default function HomeScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      fontWeight: 600,
                       color: localSelectedMethod === "crypto" ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1156,7 +1146,6 @@ export default function HomeScreen({
                   <span
                     style={{
                       fontSize: "14px",
-                      fontWeight: 500,
                       color: "#8A94A6",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1229,7 +1218,6 @@ export default function HomeScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      fontWeight: 600,
                       color: localSelectedMethod === "stars" ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1239,7 +1227,6 @@ export default function HomeScreen({
                   <span
                     style={{
                       fontSize: "14px",
-                      fontWeight: 500,
                       color: "#8A94A6",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1271,7 +1258,6 @@ export default function HomeScreen({
                 border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
                 color: localSelectedMethod ? "#000000" : "#FFFFFF",
                 fontSize: "12px",
-                fontWeight: 800,
                 letterSpacing: "0.05em",
                 alignSelf: "center",
                 cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",

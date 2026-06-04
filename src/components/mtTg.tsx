@@ -129,8 +129,6 @@ export default function TMA() {
 
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
-  // Simulator active plan state (disabled by default)
-  const [simulateActivePlan, setSimulateActivePlan] = useState(false);
 
   // Navbar dynamic scroll visibility state
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
@@ -151,17 +149,6 @@ export default function TMA() {
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
 
   const t = translations[language];
-
-  const simulatedUser = {
-    ...user,
-    activePlan: simulateActivePlan
-      ? {
-          name: "1 Year",
-          daysLeft: 17,
-          nextBilling: "26 May, 2026",
-        }
-      : user.activePlan,
-  };
 
   // Reset scroll on tab change and ensure navbar is visible
   useEffect(() => {
@@ -413,10 +400,6 @@ export default function TMA() {
     setShowPayment(false);
   };
 
-  const handleToggleActivePlan = () => {
-    setSimulateActivePlan((prev) => !prev);
-  };
-
   // ─── Loading screen ───────────────────────────────────────────────────────
   if (isLoadingAuth) {
     return (
@@ -537,7 +520,7 @@ export default function TMA() {
           <div className="animate-screen-fade">
             <HomeScreen
               t={t}
-              user={simulatedUser}
+              user={user}
               plans={plans}
               selectedPlan={selectedPlan}
               onSelectPlan={setSelectedPlan}
@@ -570,13 +553,12 @@ export default function TMA() {
           <div className="animate-screen-fade">
             <ProfileScreen
               t={t}
-              user={simulatedUser}
+              user={user}
               language={language}
               onLanguageChange={setLanguage}
               notifs={notifs}
               onNotifsChange={setNotifs}
               triggerHaptic={triggerHaptic}
-              onToggleActivePlan={handleToggleActivePlan}
             />
           </div>
         )}
