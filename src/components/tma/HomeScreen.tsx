@@ -5,41 +5,6 @@ import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 
-const PRESETS = {
-  opt1: {
-    label: "Stone_Opt.1",
-    primaryColor: "#FF82C9",
-    secondaryColor: "#5D1C89",
-    baseColor: "#09090b",
-    animationSpeed: 8,
-    glowIntensity: 1,
-    borderGlow: true,
-    enableMouseTracking: true,
-    animate: true,
-  },
-  opt2: {
-    label: "Stone_Opt.2",
-    primaryColor: "#cfdfe5",
-    secondaryColor: "#536971",
-    baseColor: "#08090a",
-    animationSpeed: 10,
-    glowIntensity: 0.9,
-    borderGlow: true,
-    enableMouseTracking: true,
-    animate: true,
-  },
-  opt3: {
-    label: "Custom_Opt.3",
-    primaryColor: "#D6FC00",
-    secondaryColor: "#00E5FF",
-    baseColor: "#0a0712",
-    animationSpeed: 5,
-    glowIntensity: 1.1,
-    borderGlow: true,
-    enableMouseTracking: true,
-    animate: true,
-  },
-};
 const SERVERS_ROW1 = [
   { name: "Germany", flag: "🇩🇪" },
   { name: "Cheh Republic", flag: "🇨🇿" },

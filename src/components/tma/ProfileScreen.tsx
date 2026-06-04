@@ -260,7 +260,7 @@ export default function ProfileScreen({
         </h3>
 
         <div>
-          {notifItems.map(({ key, label, desc }, idx) => (
+          {notifItems.map(({ key, label, desc }) => (
             <div
               key={key}
               style={{
