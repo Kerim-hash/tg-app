@@ -332,7 +332,7 @@ export default function GuideScreen({
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }}>
             {/* Interactive plan selection */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "10px", width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "10px", width: "100%", flexWrap: "wrap" }}>
               {plans.map((plan) => {
                 const isYearly = plan.periodMonths === 12;
                 const isActive = selectedPlan?.id === plan.id;
