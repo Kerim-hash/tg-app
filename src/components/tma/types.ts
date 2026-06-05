@@ -18,6 +18,8 @@ export interface Plan {
   starsPrice: number;
   usdTotal: number;
   usdPerMonth: number;
+  rubTotal?: number;
+  rubPerMonth?: number;
   periodMonths: number;
   badge?: string;
 }

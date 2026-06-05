@@ -18,20 +18,46 @@ import SupportScreen from "./tma/SupportScreen";
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [
   {
-    id: "1m",
+    id: "1",
     label: "30 days",
-    starsPrice: 250,
-    usdTotal: 11.00,
-    usdPerMonth: 11.00,
+    starsPrice: 1,
+    usdTotal: 10.00,
+    usdPerMonth: 10.00,
+    rubTotal: 299,
+    rubPerMonth: 299,
     periodMonths: 1,
     badge: "Best Monthly",
   },
   {
-    id: "12m",
+    id: "2",
+    label: "3 months",
+    starsPrice: 1,
+    usdTotal: 30.00,
+    usdPerMonth: 10.00,
+    rubTotal: 799,
+    rubPerMonth: 266.33,
+    periodMonths: 3,
+    badge: "Popular",
+  },
+  {
+    id: "3",
+    label: "6 months",
+    starsPrice: 1,
+    usdTotal: 60.00,
+    usdPerMonth: 10.00,
+    rubTotal: 1399,
+    rubPerMonth: 233.17,
+    periodMonths: 6,
+    badge: "Great Value",
+  },
+  {
+    id: "4",
     label: "1 Year",
-    starsPrice: 150,
-    usdTotal: 24.96,
-    usdPerMonth: 2.08,
+    starsPrice: 1,
+    usdTotal: 96.00,
+    usdPerMonth: 8.00,
+    rubTotal: 2149,
+    rubPerMonth: 179.08,
     periodMonths: 12,
     badge: "Best Value",
   },
@@ -246,6 +272,8 @@ export default function TMA() {
 
             const usdTotal = price.amount_usd || 0;
             const usdPerMonth = periodMonths > 0 ? usdTotal / periodMonths : usdTotal;
+            const rubTotal = price.amount_rub || 0;
+            const rubPerMonth = periodMonths > 0 ? rubTotal / periodMonths : rubTotal;
 
             return {
               id: String(price.id),
@@ -253,6 +281,8 @@ export default function TMA() {
               starsPrice: price.amount_stars || 0,
               usdTotal: usdTotal,
               usdPerMonth: usdPerMonth,
+              rubTotal: rubTotal,
+              rubPerMonth: rubPerMonth,
               periodMonths: periodMonths,
               badge: price.description || (price.period_types === "year" ? "Best Value" : undefined)
             };
@@ -466,6 +496,7 @@ export default function TMA() {
     return (
       <PaymentScreen
         t={t}
+        language={language}
         plan={selectedPlan}
         selectedMethod={selectedMethod}
         onSelectMethod={setSelectedMethod}

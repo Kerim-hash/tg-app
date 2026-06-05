@@ -1,9 +1,10 @@
 "use client";
 
-import type { Plan, Translations, PaymentMethod, HapticType } from "./types";
+import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./types";
 
 interface PaymentScreenProps {
   t: Translations;
+  language: Language;
   plan: Plan;
   selectedMethod: PaymentMethod | null;
   onSelectMethod: (method: PaymentMethod) => void;
@@ -21,6 +22,7 @@ const METHOD_CONFIG: { id: PaymentMethod; icon: string }[] = [
 
 export default function PaymentScreen({
   t,
+  language,
   plan,
   selectedMethod,
   onSelectMethod,
@@ -36,7 +38,11 @@ export default function PaymentScreen({
   };
 
   const getPrice = (m: PaymentMethod) => {
-    if (m === "card")   return t.payment.cardDesc(`$${plan.usdTotal.toFixed(2)}`);
+    if (m === "card") {
+      return language === "ru" && plan.rubTotal
+        ? `${plan.rubTotal} ₽`
+        : t.payment.cardDesc(`$${plan.usdTotal.toFixed(2)}`);
+    }
     if (m === "crypto") return t.payment.cryptoDesc(plan.usdTotal.toFixed(0));
     return t.payment.starsDesc(plan.starsPrice);
   };

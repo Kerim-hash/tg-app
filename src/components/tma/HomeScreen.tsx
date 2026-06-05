@@ -6,6 +6,46 @@ import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 
+function getPlanLabelText(periodMonths: number, lang: string): string {
+  if (lang === "ru") {
+    if (periodMonths === 1) return "30 дней";
+    if (periodMonths === 3) return "3 месяца";
+    if (periodMonths === 6) return "6 месяцев";
+    if (periodMonths === 12) return "1 год";
+    return `${periodMonths} мес.`;
+  } else if (lang === "es") {
+    if (periodMonths === 1) return "30 Días";
+    if (periodMonths === 3) return "3 Meses";
+    if (periodMonths === 6) return "6 Meses";
+    if (periodMonths === 12) return "1 Año";
+    return `${periodMonths} Meses`;
+  } else {
+    if (periodMonths === 1) return "30 Days";
+    if (periodMonths === 3) return "3 Months";
+    if (periodMonths === 6) return "6 Months";
+    if (periodMonths === 12) return "1 Year";
+    return `${periodMonths} Months`;
+  }
+}
+
+function getBilledFrequencyText(periodMonths: number, lang: string, t: any): string {
+  if (periodMonths === 1) {
+    return t.home.billedMonthly;
+  }
+  if (periodMonths === 12) {
+    return t.home.billedYearly;
+  }
+  if (lang === "ru") {
+    if (periodMonths === 3) return "Оплата каждые 3 месяца";
+    if (periodMonths === 6) return "Оплата каждые 6 месяцев";
+    return `Оплата каждые ${periodMonths} мес.`;
+  } else if (lang === "es") {
+    return `Facturado cada ${periodMonths} meses`;
+  } else {
+    return `Billed every ${periodMonths} months`;
+  }
+}
+
 const SERVERS_ROW1 = [
   { name: "Germany", flag: "🇩🇪" },
   { name: "Cheh Republic", flag: "🇨🇿" },
@@ -58,6 +98,7 @@ export default function HomeScreen({
   onProceedPayment,
   isPaying,
 }: HomeScreenProps) {
+  const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Inicio" ? "es" : "en";
   const [isPlanSheetOpen, setIsPlanSheetOpen] = useState(false);
   const [isKeySheetOpen, setIsKeySheetOpen] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
@@ -464,18 +505,26 @@ export default function HomeScreen({
                       textTransform: "capitalize"
                     }}
                   >
-                    {plan.label}
+                    {getPlanLabelText(plan.periodMonths, language)}
                   </span>
                   <div>
-                    <span style={{ display: "block", fontSize: "24px", color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
-                      $ {plan.usdPerMonth.toFixed(2)}
+                    <span style={{ 
+                      display: "block", 
+                      fontSize: language === "ru" ? "20px" : "24px", 
+                      color: "#fff", 
+                      lineHeight: 1.1, 
+                      letterSpacing: "-0.02em" 
+                    }}>
+                      {language === "ru" && plan.rubPerMonth 
+                        ? `${Math.round(plan.rubPerMonth)} ₽` 
+                        : `$ ${plan.usdPerMonth.toFixed(2)}`}
                     </span>
                     <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
                       {t.home.perMonth}
                     </span>
                   </div>
                   <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
-                    {isYearly ? t.home.billedYearly : t.home.billedMonthly}
+                    {getBilledFrequencyText(plan.periodMonths, language, t)}
                   </span>
                 </div>
               </button>
@@ -514,7 +563,12 @@ export default function HomeScreen({
           }}
         >
           {selectedPlan
-            ? `BUY FOR ${Math.round(selectedPlan.usdTotal)}$ OR ${selectedPlan.starsPrice} STARS`
+            ? t.home.buyFor(
+                language === "ru" && selectedPlan.rubTotal
+                  ? `${selectedPlan.rubTotal} ₽`
+                  : `${Math.round(selectedPlan.usdTotal)}$`,
+                selectedPlan.starsPrice
+              )
             : "SELECT AND BUY"}
         </button>
       </div>
@@ -754,18 +808,26 @@ export default function HomeScreen({
                             letterSpacing: "0.02em",
                           }}
                         >
-                          {plan.label}
+                          {getPlanLabelText(plan.periodMonths, language)}
                         </span>
                         <div>
-                          <span style={{ display: "block", fontSize: "28px", color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
-                            $ {plan.usdPerMonth.toFixed(2)}
+                          <span style={{ 
+                            display: "block", 
+                            fontSize: language === "ru" ? "24px" : "28px", 
+                            color: "#fff", 
+                            lineHeight: 1.1, 
+                            letterSpacing: "-0.02em" 
+                          }}>
+                            {language === "ru" && plan.rubPerMonth 
+                              ? `${Math.round(plan.rubPerMonth)} ₽` 
+                              : `$ ${plan.usdPerMonth.toFixed(2)}`}
                           </span>
                           <span style={{ display: "block", fontSize: "10px", color: isYearly ? "rgba(255,255,255,0.85)" : "#8A94A6", marginTop: "2px" }}>
                             {t.home.perMonth}
                           </span>
                         </div>
                         <span style={{ display: "block", fontSize: "11px", color: isYearly ? "#E0F2FE" : "#8A94A6", opacity: isYearly ? 0.9 : 1 }}>
-                          {isYearly ? t.home.billedYearly : t.home.billedMonthly}
+                          {getBilledFrequencyText(plan.periodMonths, language, t)}
                         </span>
                       </div>
                     </button>
@@ -807,7 +869,12 @@ export default function HomeScreen({
                 }}
               >
                 {selectedPlan
-                  ? `BUY FOR ${Math.round(selectedPlan.usdTotal)}$ OR ${selectedPlan.starsPrice} STARS`
+                  ? t.home.buyFor(
+                      language === "ru" && selectedPlan.rubTotal
+                        ? `${selectedPlan.rubTotal} ₽`
+                        : `${Math.round(selectedPlan.usdTotal)}$`,
+                      selectedPlan.starsPrice
+                    )
                   : "SELECT AND CONTI"}
               </button>
             </div>
@@ -1069,7 +1136,9 @@ export default function HomeScreen({
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
-                    $ {selectedPlan.usdTotal.toFixed(2)}
+                    {language === "ru" && selectedPlan.rubTotal
+                      ? `${selectedPlan.rubTotal} ₽`
+                      : `$ ${selectedPlan.usdTotal.toFixed(2)}`}
                   </span>
                 </div>
               </button>
