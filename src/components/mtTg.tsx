@@ -176,6 +176,41 @@ export default function TMA() {
 
   const t = translations[language];
 
+  const refreshUserData = async () => {
+    let tgUser: any = null;
+    try {
+      tgUser = WebApp.initDataUnsafe?.user;
+    } catch {}
+
+    try {
+      const profile = await apiCall("/auth/profile", "GET");
+      if (profile) {
+        setUser({
+          id:         profile.id || profile.user_id || tgUser?.id || 0,
+          firstName:  profile.first_name || profile.firstName || tgUser?.first_name || "User",
+          username:   profile.username || tgUser?.username,
+          photoUrl:   profile.photo_url || profile.photoUrl || tgUser?.photo_url,
+          isPremium:  profile.is_premium || profile.isPremium || false,
+          activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
+        });
+      }
+    } catch (err) {
+      console.error("[IGuard] Profile fetch error:", err);
+    }
+
+    try {
+      const keys = await apiCall("/users/config-keys/uk", "GET");
+      if (Array.isArray(keys)) {
+        const happKeys = keys.filter((k: any) => k.app === "happ");
+        if (happKeys.length > 0) {
+          setPersonalKey(happKeys[happKeys.length - 1].key);
+        }
+      }
+    } catch (err) {
+      console.error("[IGuard] Fetch config keys error:", err);
+    }
+  };
+
   // Reset scroll on tab change and ensure navbar is visible
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -221,21 +256,7 @@ export default function TMA() {
         .then(async (data) => {
           if (data?.access_token) {
             safeStorage.setItem("iguard_jwt_token", data.access_token);
-            try {
-              const profile = await apiCall("/auth/profile", "GET");
-              if (profile) {
-                setUser({
-                  id:         profile.id || profile.user_id || tgUser?.id || 0,
-                  firstName:  profile.first_name || profile.firstName || tgUser?.first_name || "User",
-                  username:   profile.username || tgUser?.username,
-                  photoUrl:   profile.photo_url || profile.photoUrl || tgUser?.photo_url,
-                  isPremium:  profile.is_premium || profile.isPremium || false,
-                  activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
-                });
-              }
-            } catch (err) {
-              console.error("[IGuard] Profile fetch error:", err);
-            }
+            await refreshUserData();
           }
         })
         .catch((err) => {
@@ -323,22 +344,9 @@ export default function TMA() {
           WebApp.openInvoice(data.invoice_url, (status) => {
             setIsPaying(false);
             if (status === "paid") {
-              setPersonalKey(data.payload || "https://t2love.online/s/dFrGSaCp4owLRLL-TEST-PAID");
               handleReset();
               triggerHaptic("success");
-              // Refresh user profile state
-              apiCall("/auth/profile").then((profile) => {
-                if (profile) {
-                  setUser({
-                    id:         profile.id || profile.user_id || WebApp.initDataUnsafe?.user?.id || 0,
-                    firstName:  profile.first_name || profile.firstName || WebApp.initDataUnsafe?.user?.first_name || "User",
-                    username:   profile.username || WebApp.initDataUnsafe?.user?.username,
-                    photoUrl:   profile.photo_url || profile.photoUrl || WebApp.initDataUnsafe?.user?.photo_url,
-                    isPremium:  profile.is_premium || profile.isPremium || false,
-                    activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
-                  });
-                }
-              }).catch(() => {});
+              refreshUserData();
             } else {
               // Sandbox bypass: Fallback to success even on cancel/fail
               console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
@@ -381,22 +389,9 @@ export default function TMA() {
           WebApp.openInvoice(data.invoice_url, (status) => {
             setIsPaying(false);
             if (status === "paid") {
-              setPersonalKey(data.payload || "https://t2love.online/s/dFrGSaCp4owLRLL-TEST-PAID");
               handleReset();
               triggerHaptic("success");
-              // Refresh user profile state
-              apiCall("/auth/profile").then((profile) => {
-                if (profile) {
-                  setUser({
-                    id:         profile.id || profile.user_id || WebApp.initDataUnsafe?.user?.id || 0,
-                    firstName:  profile.first_name || profile.firstName || WebApp.initDataUnsafe?.user?.first_name || "User",
-                    username:   profile.username || WebApp.initDataUnsafe?.user?.username,
-                    photoUrl:   profile.photo_url || profile.photoUrl || WebApp.initDataUnsafe?.user?.photo_url,
-                    isPremium:  profile.is_premium || profile.isPremium || false,
-                    activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
-                  });
-                }
-              }).catch(() => {});
+              refreshUserData();
             } else {
               // Sandbox bypass: Fallback to success even on cancel/fail
               console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
