@@ -19,6 +19,8 @@ interface GradientBlockProps {
   borderRadius?: string;
   solidGradient?: string; // custom solid background gradient (e.g. "linear-gradient(to bottom, #5B1C86, #76CFF1)")
   enableHoverScale?: boolean;
+  padding?: string;
+  absoluteChildren?: boolean;
 }
 
 export default function GradientBlock({
@@ -38,6 +40,8 @@ export default function GradientBlock({
   borderRadius = "20px",
   solidGradient,
   enableHoverScale = true,
+  padding,
+  absoluteChildren = false,
 }: GradientBlockProps) {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
@@ -72,7 +76,7 @@ export default function GradientBlock({
     justifyContent: children
       ? contentAlign === "bottom" ? "flex-end" : "center"
       : "flex-end",
-    padding: "24px",
+    padding: padding || "24px",
     cursor: "pointer",
     overflow: "hidden",
     transition: "transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease",
@@ -238,15 +242,33 @@ export default function GradientBlock({
 
       {/* Layer 7: Content — children override the default label */}
       {children ? (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 10,
-          }}
-        >
-          {children}
-        </div>
+        absoluteChildren ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+            }}
+          >
+            {children}
+          </div>
+        ) : (
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+              width: "100%",
+              height: "100%",
+              justifyContent: "center",
+              alignItems: contentAlign === "center" ? "center" : contentAlign === "bottom" ? "flex-end" : "flex-start",
+            }}
+          >
+            {children}
+          </div>
+        )
       ) : (
         label ? (
           <div

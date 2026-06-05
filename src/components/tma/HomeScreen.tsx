@@ -460,6 +460,7 @@ export default function HomeScreen({
                   borderGlow={true}
                   enableMouseTracking={false}
                   solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
+                  absoluteChildren={true}
                 >
                   {/* White Border Overlay when Selected */}
                   {isActive && (
@@ -765,6 +766,7 @@ export default function HomeScreen({
                         enableMouseTracking={false}
                         solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
                         enableHoverScale={false}
+                        absoluteChildren={true}
                       >
                         {/* White Border Overlay when Selected */}
                         {isActive && (
@@ -938,24 +940,26 @@ export default function HomeScreen({
               primaryColor={"#cfdfe5"}
               secondaryColor={"#686F70"}
               baseColor="#1D1C1B"
-              borderRadius="30px"
+              borderRadius="42px"
               height="85px"
               animate={false}
-              glowIntensity={0.5}
-              borderGlow={false}
+              glowIntensity={0.6}
+              borderGlow={true}
               enableMouseTracking={false}
               contentAlign={"start"}
+              padding="12px 28px"
             >
-              <span style={{ fontSize: "10px", color: "#8A94A6", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
                 {t.guide.personalKeyLabel}
               </span>
               <span
                 style={{
                   display: "block",
                   width: "100%",
-                  fontSize: "12px",
+                  fontSize: "16px",
                   color: "#fff",
-                  fontFamily: "var(--font-mono), monospace",
+                  fontFamily: "var(--font-onest), sans-serif",
+                  fontWeight: 400,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
