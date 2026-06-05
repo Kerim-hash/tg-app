@@ -951,10 +951,14 @@ export default function HomeScreen({
               </span>
               <span
                 style={{
+                  display: "block",
+                  width: "100%",
                   fontSize: "12px",
                   color: "#fff",
                   fontFamily: "var(--font-mono), monospace",
-                  wordBreak: "break-all",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                   lineHeight: 1.4,
                 }}
               >
