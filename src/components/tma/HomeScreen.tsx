@@ -460,73 +460,72 @@ export default function HomeScreen({
                   borderGlow={true}
                   enableMouseTracking={false}
                   solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
-                />
+                >
+                  {/* White Border Overlay when Selected */}
+                  {isActive && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        border: "2px solid #FFFFFF",
+                        borderRadius: "30px",
+                        pointerEvents: "none",
+                        zIndex: 30,
+                      }}
+                    />
+                  )}
 
-                {/* White Border Overlay when Selected */}
-                {isActive && (
+                  {/* Overlay Content */}
                   <div
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
-                      borderRadius: "30px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      padding: "16px 12px 20px",
                       pointerEvents: "none",
-                      zIndex: 30,
-                    }}
-                  />
-                )}
-
-                {/* Overlay Content */}
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    padding: "16px 12px 20px",
-                    zIndex: 20,
-                    pointerEvents: "none",
-                    boxSizing: "border-box",
-                    textAlign: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "inline-block",
-                      fontSize: "12px",
-                      padding: "6px 8px",
-                      borderRadius: "20px",
-                      background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
-                      color: "#fff",
-                      letterSpacing: "-6%",
-                      fontFamily: "JetBrains Mono, monospace",
-                      textTransform: "capitalize"
+                      boxSizing: "border-box",
+                      textAlign: "center",
+                      alignItems: "center",
                     }}
                   >
-                    {getPlanLabelText(plan.periodMonths, language)}
-                  </span>
-                  <div>
-                    <span style={{ 
-                      display: "block", 
-                      fontSize: language === "ru" ? "20px" : "24px", 
-                      color: "#fff", 
-                      lineHeight: 1.1, 
-                      letterSpacing: "-0.02em" 
-                    }}>
-                      {language === "ru" && plan.rubPerMonth 
-                        ? `${Math.round(plan.rubPerMonth)} ₽` 
-                        : `$ ${plan.usdPerMonth.toFixed(2)}`}
+                    <span
+                      style={{
+                        display: "inline-block",
+                        fontSize: "12px",
+                        padding: "6px 8px",
+                        borderRadius: "20px",
+                        background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
+                        color: "#fff",
+                        letterSpacing: "-6%",
+                        fontFamily: "JetBrains Mono, monospace",
+                        textTransform: "capitalize"
+                      }}
+                    >
+                      {getPlanLabelText(plan.periodMonths, language)}
                     </span>
-                    <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
-                      {t.home.perMonth}
+                    <div>
+                      <span style={{ 
+                        display: "block", 
+                        fontSize: language === "ru" ? "20px" : "24px", 
+                        color: "#fff", 
+                        lineHeight: 1.1, 
+                        letterSpacing: "-0.02em" 
+                      }}>
+                        {language === "ru" && plan.rubPerMonth 
+                          ? `${Math.round(plan.rubPerMonth)} ₽` 
+                          : `$ ${plan.usdPerMonth.toFixed(2)}`}
+                      </span>
+                      <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
+                        {t.home.perMonth}
+                      </span>
+                    </div>
+                    <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
+                      {getBilledFrequencyText(plan.periodMonths, language, t)}
                     </span>
                   </div>
-                  <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
-                    {getBilledFrequencyText(plan.periodMonths, language, t)}
-                  </span>
-                </div>
+                </GradientBlock>
               </button>
             );
           })}
@@ -703,7 +702,7 @@ export default function HomeScreen({
               transform: "translateX(-50%)",
               width: "100%",
               maxWidth: "480px",
-              height: "448px",
+              height: "610px",
               maxHeight: "90vh",
               overflowY: "auto",
               background: "#000", // Solid obsidian black
@@ -765,71 +764,71 @@ export default function HomeScreen({
                         borderGlow={true}
                         enableMouseTracking={false}
                         solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
-                      />
+                      >
+                        {/* White Border Overlay when Selected */}
+                        {isActive && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              inset: 0,
+                              border: "2px solid #FFFFFF",
+                              borderRadius: "36px",
+                              pointerEvents: "none",
+                              zIndex: 30,
+                            }}
+                          />
+                        )}
 
-                      {/* White Border Overlay when Selected */}
-                      {isActive && (
+                        {/* Overlay Content */}
                         <div
                           style={{
                             position: "absolute",
                             inset: 0,
-                            border: "2px solid #FFFFFF",
-                            borderRadius: "36px",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                            padding: "16px 12px 20px",
+                            zIndex: 20,
                             pointerEvents: "none",
-                            zIndex: 30,
-                          }}
-                        />
-                      )}
-
-                      {/* Overlay Content */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          padding: "16px 12px 20px",
-                          zIndex: 20,
-                          pointerEvents: "none",
-                          boxSizing: "border-box",
-                          textAlign: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "inline-block",
-                            fontSize: "11px",
-                            padding: "6px 14px",
-                            borderRadius: "20px",
-                            background: isYearly ? "rgba(0, 0, 0, 0.16)" : "rgba(255, 255, 255, 0.08)",
-                            color: "#fff",
-                            letterSpacing: "0.02em",
+                            boxSizing: "border-box",
+                            textAlign: "center",
+                            alignItems: "center",
                           }}
                         >
-                          {getPlanLabelText(plan.periodMonths, language)}
-                        </span>
-                        <div>
-                          <span style={{ 
-                            display: "block", 
-                            fontSize: language === "ru" ? "24px" : "28px", 
-                            color: "#fff", 
-                            lineHeight: 1.1, 
-                            letterSpacing: "-0.02em" 
-                          }}>
-                            {language === "ru" && plan.rubPerMonth 
-                              ? `${Math.round(plan.rubPerMonth)} ₽` 
-                              : `$ ${plan.usdPerMonth.toFixed(2)}`}
+                          <span
+                            style={{
+                              display: "inline-block",
+                              fontSize: "11px",
+                              padding: "6px 14px",
+                              borderRadius: "20px",
+                              background: isYearly ? "rgba(0, 0, 0, 0.16)" : "rgba(255, 255, 255, 0.08)",
+                              color: "#fff",
+                              letterSpacing: "0.02em",
+                            }}
+                          >
+                            {getPlanLabelText(plan.periodMonths, language)}
                           </span>
-                          <span style={{ display: "block", fontSize: "10px", color: isYearly ? "rgba(255,255,255,0.85)" : "#8A94A6", marginTop: "2px" }}>
-                            {t.home.perMonth}
+                          <div>
+                            <span style={{ 
+                              display: "block", 
+                              fontSize: language === "ru" ? "24px" : "28px", 
+                              color: "#fff", 
+                              lineHeight: 1.1, 
+                              letterSpacing: "-0.02em" 
+                            }}>
+                              {language === "ru" && plan.rubPerMonth 
+                                ? `${Math.round(plan.rubPerMonth)} ₽` 
+                                : `$ ${plan.usdPerMonth.toFixed(2)}`}
+                            </span>
+                            <span style={{ display: "block", fontSize: "10px", color: isYearly ? "rgba(255,255,255,0.85)" : "#8A94A6", marginTop: "2px" }}>
+                              {t.home.perMonth}
+                            </span>
+                          </div>
+                          <span style={{ display: "block", fontSize: "11px", color: isYearly ? "#E0F2FE" : "#8A94A6", opacity: isYearly ? 0.9 : 1 }}>
+                            {getBilledFrequencyText(plan.periodMonths, language, t)}
                           </span>
                         </div>
-                        <span style={{ display: "block", fontSize: "11px", color: isYearly ? "#E0F2FE" : "#8A94A6", opacity: isYearly ? 0.9 : 1 }}>
-                          {getBilledFrequencyText(plan.periodMonths, language, t)}
-                        </span>
-                      </div>
+                      </GradientBlock>
                     </button>
                   );
                 })}
