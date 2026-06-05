@@ -235,19 +235,29 @@ export default function GradientBlock({
       )}
 
       {/* Layer 7: Content — children override the default label */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 10,
-          display: "flex",
-          flexDirection: "column",
-          gap: "4px",
-          width: "100%",
-          alignItems: contentAlign === "center" ? "center" : contentAlign === "bottom" ? "flex-end" : "flex-start",
-        }}
-      >
-        {children ?? (
-          label ? (
+      {children ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 10,
+          }}
+        >
+          {children}
+        </div>
+      ) : (
+        label ? (
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+              width: "100%",
+              alignItems: contentAlign === "center" ? "center" : contentAlign === "bottom" ? "flex-end" : "flex-start",
+            }}
+          >
             <div 
               style={{
                 fontSize: "20px",
@@ -261,9 +271,9 @@ export default function GradientBlock({
             >
               {label}
             </div>
-          ) : null
-        )}
-      </div>
+          </div>
+        ) : null
+      )}
     </div>
   );
 }
