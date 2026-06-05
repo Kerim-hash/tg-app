@@ -308,7 +308,7 @@ export default function GuideScreen({
 
           <button
             className="hover-scale-btn"
-            onClick={() => handleOpenLink("https://apps.apple.com/app/iguard-vpn")}
+            onClick={() => handleOpenLink("https://apps.apple.com/us/app/happ-proxy-utility/id6504287215")}
             style={{
               alignSelf: "center",
               display: "flex",
