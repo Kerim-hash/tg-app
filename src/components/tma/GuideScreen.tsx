@@ -572,7 +572,7 @@ export default function GuideScreen({
               primaryColor={"#cfdfe5"}
               secondaryColor={"#686F70"}
               baseColor="#1D1C1B"
-              borderRadius="42px"
+              borderRadius="30px"
               height="85px"
               animate={false}
               glowIntensity={0.6}
