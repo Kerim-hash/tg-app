@@ -18,6 +18,7 @@ interface GradientBlockProps {
   contentAlign?: "center" | "bottom" | "start"; // default "bottom" for label, "center" for children
   borderRadius?: string;
   solidGradient?: string; // custom solid background gradient (e.g. "linear-gradient(to bottom, #5B1C86, #76CFF1)")
+  enableHoverScale?: boolean;
 }
 
 export default function GradientBlock({
@@ -36,6 +37,7 @@ export default function GradientBlock({
   contentAlign,
   borderRadius = "20px",
   solidGradient,
+  enableHoverScale = true,
 }: GradientBlockProps) {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
@@ -74,12 +76,12 @@ export default function GradientBlock({
     cursor: "pointer",
     overflow: "hidden",
     transition: "transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease",
-    boxShadow: isHovered 
+    boxShadow: (enableHoverScale && isHovered)
       ? `0 12px 40px rgba(11, 16, 32, 0.5), 0 0 30px rgba(${hexToRgb(secondaryColor)}, ${solidGradient ? 0.4 : 0.2})`
       : (solidGradient 
           ? `0 8px 24px rgba(11, 16, 32, 0.3), 0 0 15px rgba(${hexToRgb(secondaryColor)}, 0.15)`
           : "0 8px 24px rgba(11, 16, 32, 0.4)"),
-    transform: isHovered ? "scale(1.03) translateY(-4px)" : "scale(1)",
+    transform: (enableHoverScale && isHovered) ? "scale(1.03) translateY(-4px)" : "scale(1)",
     backgroundColor: baseColor,
     border: solidGradient
       ? "1px solid rgba(255, 255, 255, 0.12)"
@@ -208,7 +210,7 @@ export default function GradientBlock({
             opacity: 0.85,
             filter: "blur(12px)",
             boxShadow: "0 0 30px rgba(11, 16, 32, 0.95) inset",
-            transform: isHovered ? "scale(0.98)" : "scale(1)",
+            transform: (enableHoverScale && isHovered) ? "scale(0.98)" : "scale(1)",
             transition: "transform 0.4s ease",
           }}
         />

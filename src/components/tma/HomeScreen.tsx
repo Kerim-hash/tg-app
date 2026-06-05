@@ -764,6 +764,7 @@ export default function HomeScreen({
                         borderGlow={true}
                         enableMouseTracking={false}
                         solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
+                        enableHoverScale={false}
                       >
                         {/* White Border Overlay when Selected */}
                         {isActive && (
