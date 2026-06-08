@@ -515,9 +515,7 @@ export default function HomeScreen({
                         lineHeight: 1.1, 
                         letterSpacing: "-0.02em" 
                       }}>
-                        {language === "ru" && plan.rubPerMonth 
-                          ? `${Math.round(plan.rubPerMonth)} ₽` 
-                          : `$ ${plan.usdPerMonth.toFixed(2)}`}
+                        {`$ ${plan.usdPerMonth.toFixed(2)}`}
                       </span>
                       <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
                         {t.home.perMonth}
@@ -565,9 +563,7 @@ export default function HomeScreen({
         >
           {selectedPlan
             ? t.home.buyFor(
-                language === "ru" && selectedPlan.rubTotal
-                  ? `${selectedPlan.rubTotal} ₽`
-                  : `${Math.round(selectedPlan.usdTotal)}$`,
+                `${Math.round(selectedPlan.usdTotal)}$`,
                 selectedPlan.starsPrice
               )
             : "SELECT AND BUY"}
@@ -820,9 +816,7 @@ export default function HomeScreen({
                               lineHeight: 1.1, 
                               letterSpacing: "-0.02em" 
                             }}>
-                              {language === "ru" && plan.rubPerMonth 
-                                ? `${Math.round(plan.rubPerMonth)} ₽` 
-                                : `$ ${plan.usdPerMonth.toFixed(2)}`}
+                              {`$ ${plan.usdPerMonth.toFixed(2)}`}
                             </span>
                             <span style={{ display: "block", fontSize: "10px", color: isYearly ? "rgba(255,255,255,0.85)" : "#8A94A6", marginTop: "2px" }}>
                               {t.home.perMonth}
@@ -873,9 +867,7 @@ export default function HomeScreen({
               >
                 {selectedPlan
                   ? t.home.buyFor(
-                      language === "ru" && selectedPlan.rubTotal
-                        ? `${selectedPlan.rubTotal} ₽`
-                        : `${Math.round(selectedPlan.usdTotal)}$`,
+                      `${Math.round(selectedPlan.usdTotal)}$`,
                       selectedPlan.starsPrice
                     )
                   : "SELECT AND CONTI"}
@@ -1145,9 +1137,7 @@ export default function HomeScreen({
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
-                    {language === "ru" && selectedPlan.rubTotal
-                      ? `${selectedPlan.rubTotal} ₽`
-                      : `$ ${selectedPlan.usdTotal.toFixed(2)}`}
+                    {`$ ${selectedPlan.usdTotal.toFixed(2)}`}
                   </span>
                 </div>
               </button>

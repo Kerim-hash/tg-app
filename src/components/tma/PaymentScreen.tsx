@@ -38,11 +38,7 @@ export default function PaymentScreen({
   };
 
   const getPrice = (m: PaymentMethod) => {
-    if (m === "card") {
-      return language === "ru" && plan.rubTotal
-        ? `${plan.rubTotal} ₽`
-        : t.payment.cardDesc(`$${plan.usdTotal.toFixed(2)}`);
-    }
+    if (m === "card") return t.payment.cardDesc(`$${plan.usdTotal.toFixed(2)}`);
     if (m === "crypto") return t.payment.cryptoDesc(plan.usdTotal.toFixed(0));
     return t.payment.starsDesc(plan.starsPrice);
   };
