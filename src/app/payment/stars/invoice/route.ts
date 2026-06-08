@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BOT_TOKEN = "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
+const BOT_TOKEN = process.env.BOT_TOKEN || "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
 
 export async function POST(request: Request) {
   try {
@@ -19,18 +19,16 @@ export async function POST(request: Request) {
     if (!host.startsWith("localhost") && !host.startsWith("127.0.0.1")) {
       const webhookUrl = `https://${host}/api/bot-webhook`;
       try {
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
+        const webhookRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             url: webhookUrl,
             allowed_updates: ["message", "pre_checkout_query"]
           })
-        }).then(r => r.json()).then(data => {
-          console.log(`[Next.js API] setWebhook to ${webhookUrl} result:`, data);
-        }).catch(err => {
-          console.error("[Next.js API] setWebhook error:", err);
         });
+        const webhookData = await webhookRes.json();
+        console.log(`[Next.js API] setWebhook to ${webhookUrl} result:`, webhookData);
       } catch (e) {
         console.error("[Next.js API] Failed to trigger setWebhook:", e);
       }

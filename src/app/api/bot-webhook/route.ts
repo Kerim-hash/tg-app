@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const BOT_TOKEN = "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
+const BOT_TOKEN = process.env.BOT_TOKEN || "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
 
 export async function POST(request: Request) {
   try {
