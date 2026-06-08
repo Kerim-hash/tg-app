@@ -14,25 +14,7 @@ export async function POST(request: Request) {
       label = "1 Year";
     }
 
-    // Dynamically set webhook to ensure it points to the current active host
-    const host = request.headers.get("host") || "tg-app-ri5g.vercel.app";
-    if (!host.startsWith("localhost") && !host.startsWith("127.0.0.1")) {
-      const webhookUrl = `https://${host}/api/bot-webhook`;
-      try {
-        const webhookRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            url: webhookUrl,
-            allowed_updates: ["message", "pre_checkout_query"]
-          })
-        });
-        const webhookData = await webhookRes.json();
-        console.log(`[Next.js API] setWebhook to ${webhookUrl} result:`, webhookData);
-      } catch (e) {
-        console.error("[Next.js API] Failed to trigger setWebhook:", e);
-      }
-    }
+
     
     // Call official Telegram Bot API to create a stars invoice link
     const tgResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/createInvoiceLink`, {
