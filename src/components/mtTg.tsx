@@ -7,12 +7,12 @@ import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, Activ
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage } from "./tma/api";
 
-import NavBar        from "./tma/NavBar";
-import HomeScreen    from "./tma/HomeScreen";
+import NavBar from "./tma/NavBar";
+import HomeScreen from "./tma/HomeScreen";
 import PaymentScreen from "./tma/PaymentScreen";
-import ErrorScreen   from "./tma/ErrorScreen";
+import ErrorScreen from "./tma/ErrorScreen";
 import ProfileScreen from "./tma/ProfileScreen";
-import GuideScreen   from "./tma/GuideScreen";
+import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
@@ -84,7 +84,7 @@ async function signInitData(botToken: string, tgUser: any) {
     const dataCheckString = sortedKeys.map(key => `${key}=${params[key]}`).join('\n');
 
     const enc = new TextEncoder();
-    
+
     // Compute secretKey = HMAC-SHA256("WebAppData", botToken)
     const webappDataKey = await window.crypto.subtle.importKey(
       "raw",
@@ -131,16 +131,16 @@ function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
   if (isNaN(expDate.getTime()) || expDate <= now) {
     return undefined;
   }
-  
+
   const diffTime = expDate.getTime() - now.getTime();
   const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const day = String(expDate.getDate()).padStart(2, "0");
   const month = months[expDate.getMonth()];
   const year = expDate.getFullYear();
   const nextBilling = `${day} ${month}, ${year}`;
-  
+
   const name = daysLeft > 45 ? "1 Year" : "30 days";
 
   return { name, daysLeft, nextBilling };
@@ -149,8 +149,8 @@ function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function TMA() {
   // Core
-  const [language,      setLanguage]      = useState<Language>("en");
-  const [currentTab,    setCurrentTab]    = useState<Tab>("home");
+  const [language, setLanguage] = useState<Language>("en");
+  const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   // User
@@ -161,15 +161,15 @@ export default function TMA() {
   const [lastScrollTop, setLastScrollTop] = useState(0);
 
   // Plans
-  const [plans,        setPlans]        = useState<Plan[]>(DEFAULT_PLANS);
+  const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   // Payment flow
-  const [showPayment,    setShowPayment]    = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [paymentStatus,  setPaymentStatus]  = useState<"idle" | "success" | "error">("idle");
-  const [personalKey,    setPersonalKey]    = useState("");
-  const [isPaying,       setIsPaying]       = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "success" | "error">("idle");
+  const [personalKey, setPersonalKey] = useState("");
+  const [isPaying, setIsPaying] = useState(false);
 
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
@@ -180,17 +180,17 @@ export default function TMA() {
     let tgUser: any = null;
     try {
       tgUser = WebApp.initDataUnsafe?.user;
-    } catch {}
+    } catch { }
 
     try {
       const profile = await apiCall("/auth/profile", "GET");
       if (profile) {
         setUser({
-          id:         profile.id || profile.user_id || tgUser?.id || 0,
-          firstName:  profile.first_name || profile.firstName || tgUser?.first_name || "User",
-          username:   profile.username || tgUser?.username,
-          photoUrl:   profile.photo_url || profile.photoUrl || tgUser?.photo_url,
-          isPremium:  profile.is_premium || profile.isPremium || false,
+          id: profile.id || profile.user_id || tgUser?.id || 0,
+          firstName: profile.first_name || profile.firstName || tgUser?.first_name || "User",
+          username: profile.username || tgUser?.username,
+          photoUrl: profile.photo_url || profile.photoUrl || tgUser?.photo_url,
+          isPremium: profile.is_premium || profile.isPremium || false,
           activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
         });
       }
@@ -241,10 +241,10 @@ export default function TMA() {
     // Prefill user from Telegram SDK if available
     if (tgUser) {
       setUser({
-        id:        tgUser.id,
+        id: tgUser.id,
         firstName: tgUser.first_name,
-        username:  tgUser.username,
-        photoUrl:  tgUser.photo_url,
+        username: tgUser.username,
+        photoUrl: tgUser.photo_url,
         isPremium: tgUser.is_premium || false,
       });
     }
@@ -359,7 +359,7 @@ export default function TMA() {
           throw new Error("No invoice URL returned");
         }
       } else if (method === "card" || method === "crypto") {
-        const merchant = method === "card" ? "lava_top" : "cryptocloud";
+        const merchant = method === "card" ? "PAYPAL" : "cryptocloud";
         const data = await apiCall("/payment/link", "POST", {
           merchant: merchant,
           paymentMethodType: merchant,
@@ -421,7 +421,7 @@ export default function TMA() {
           throw new Error("No payment URL returned");
         }
       } else if (selectedMethod === "card" || selectedMethod === "crypto") {
-        const merchant = selectedMethod === "card" ? "lava_top" : "cryptocloud";
+        const merchant = selectedMethod === "card" ? "PAYPAL" : "cryptocloud";
         const data = await apiCall("/payment/link", "POST", {
           merchant: merchant,
           paymentMethodType: merchant,
