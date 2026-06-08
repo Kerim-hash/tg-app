@@ -77,12 +77,6 @@ async function handleUpdate(update) {
   // Handle successful payment notification
   if (update.message.successful_payment) {
     console.log(`[Bot] 💰 Successful payment from ${firstName} (${chatId})! Amount: ${update.message.successful_payment.total_amount} Stars`);
-    
-    await apiCall('sendMessage', {
-      chat_id: chatId,
-      text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка IGuard One успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
-      parse_mode: 'Markdown'
-    });
     return;
   }
 

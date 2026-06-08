@@ -31,16 +31,6 @@ export async function POST(request: Request) {
       const chatId = update.message.chat.id;
       const firstName = update.message.from?.first_name || "User";
       console.log(`[Bot Webhook] 💰 Successful payment from ${firstName} (${chatId})`);
-
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка IGuard One успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
-          parse_mode: "Markdown"
-        })
-      });
       return NextResponse.json({ ok: true });
     }
 
