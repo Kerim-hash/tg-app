@@ -191,7 +191,7 @@ export default function GuideScreen({
   return (
     <div
       style={{
-        padding: "16px 16px 40px",
+        padding: "50px 16px 40px",
         display: "flex",
         flexDirection: "column",
         gap: "24px",

@@ -141,7 +141,7 @@ export default function HomeScreen({
   return (
     <div
       style={{
-        padding: "16px 16px 24px",
+        padding: "50px 16px 24px",
         display: "flex",
         flexDirection: "column",
         gap: "20px",
