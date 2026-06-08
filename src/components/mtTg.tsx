@@ -628,6 +628,7 @@ export default function TMA() {
             <SupportScreen
               t={t}
               triggerHaptic={triggerHaptic}
+              language={language}
             />
           </div>
         )}
