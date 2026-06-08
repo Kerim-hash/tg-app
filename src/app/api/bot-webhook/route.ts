@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка FGuard VPN успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
+          text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка IGuard One успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
           parse_mode: "Markdown"
         })
       });

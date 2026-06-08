@@ -6,8 +6,8 @@ function generateValidInitData() {
   const authDate = Math.floor(Date.now() / 1000);
   const user = {
     id: 999102030,
-    first_name: "FGuard Tester",
-    username: "fguard_test",
+    first_name: "IGuard One Tester",
+    username: "iguard_one_test",
     language_code: "ru"
   };
 

@@ -69,8 +69,8 @@ async function signInitData(botToken: string, tgUser: any) {
     const authDate = Math.floor(Date.now() / 1000);
     const userObj = {
       id: tgUser?.id || 999102030,
-      first_name: tgUser?.first_name || "FGuard Tester",
-      username: tgUser?.username || "fguard_test",
+      first_name: tgUser?.first_name || "IGuard One Tester",
+      username: tgUser?.username || "iguard_one_test",
       language_code: tgUser?.language_code || "ru"
     };
 

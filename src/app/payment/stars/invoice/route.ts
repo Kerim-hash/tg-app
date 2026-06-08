@@ -39,8 +39,8 @@ export async function POST(request: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: `IGuard VPN - ${label}`,
-        description: `Premium access to FGuard VPN for ${label}`,
+        title: `IGuard One - ${label}`,
+        description: `Premium access to IGuard One for ${label}`,
         payload: `payload-key-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
         provider_token: "", // Must be empty for Telegram Stars
         currency: "XTR", // Currency code for Telegram Stars

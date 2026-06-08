@@ -80,14 +80,14 @@ async function handleUpdate(update) {
     
     await apiCall('sendMessage', {
       chat_id: chatId,
-      text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка FGuard VPN успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
+      text: `🎉 **Спасибо за покупку, ${firstName}!**\n\nВаша подписка IGuard One успешно оплачена и активирована. Вы можете вернуться в приложение, чтобы получить ваш ключ доступа.`,
       parse_mode: 'Markdown'
     });
     return;
   }
 
   if (text.startsWith('/start')) {
-    const messageText = `👋 Привет, ${firstName}!\n\nДобро пожаловать в **FGuard VPN**.\n\nНажмите на кнопку ниже, чтобы открыть приложение 👇`;
+    const messageText = `👋 Привет, ${firstName}!\n\nДобро пожаловать в **IGuard One**.\n\nНажмите на кнопку ниже, чтобы открыть приложение 👇`;
     
     await apiCall('sendMessage', {
       chat_id: chatId,
