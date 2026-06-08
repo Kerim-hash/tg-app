@@ -358,6 +358,23 @@ export default function TMA() {
         } else {
           throw new Error("No invoice URL returned");
         }
+      } else if (method === "card" || method === "crypto") {
+        const merchant = method === "card" ? "lava_top" : "cryptocloud";
+        const data = await apiCall("/payment/link", "POST", {
+          merchant: merchant,
+          paymentMethodType: merchant,
+          planId: Number(selectedPlan.id),
+          userId: String(user.id),
+        });
+
+        setIsPaying(false);
+        const link = data?.link || data?.invoice_url;
+        if (link) {
+          WebApp.openLink(link);
+          handleReset();
+        } else {
+          throw new Error("No payment link returned from server");
+        }
       } else {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -402,6 +419,23 @@ export default function TMA() {
           });
         } else {
           throw new Error("No payment URL returned");
+        }
+      } else if (selectedMethod === "card" || selectedMethod === "crypto") {
+        const merchant = selectedMethod === "card" ? "lava_top" : "cryptocloud";
+        const data = await apiCall("/payment/link", "POST", {
+          merchant: merchant,
+          paymentMethodType: merchant,
+          planId: Number(selectedPlan.id),
+          userId: String(user.id),
+        });
+
+        setIsPaying(false);
+        const link = data?.link || data?.invoice_url;
+        if (link) {
+          WebApp.openLink(link);
+          handleReset();
+        } else {
+          throw new Error("No payment link returned from server");
         }
       } else {
         // Other methods simulated
