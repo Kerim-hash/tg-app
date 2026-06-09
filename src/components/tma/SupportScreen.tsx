@@ -9,6 +9,8 @@ interface SupportScreenProps {
   t: Translations;
   triggerHaptic: (type: HapticType) => void;
   language: Language;
+  autoOpenForm?: boolean;
+  onFormClose?: () => void;
 }
 
 const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
@@ -118,9 +120,22 @@ const FORM_T = {
   }
 };
 
-export default function SupportScreen({ t, triggerHaptic, language }: SupportScreenProps) {
+export default function SupportScreen({ t, triggerHaptic, language, autoOpenForm, onFormClose }: SupportScreenProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (autoOpenForm) {
+      setIsFormOpen(true);
+    }
+  }, [autoOpenForm]);
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setIsSuccess(false);
+    setErrorMsg("");
+    onFormClose?.();
+  };
 
   // Form states
   const [email, setEmail] = useState("");
@@ -374,9 +389,7 @@ export default function SupportScreen({ t, triggerHaptic, language }: SupportScr
           <div
             onClick={() => {
               if (!isSubmitting) {
-                setIsFormOpen(false);
-                setIsSuccess(false);
-                setErrorMsg("");
+                closeForm();
               }
             }}
             className="animate-backdrop"
