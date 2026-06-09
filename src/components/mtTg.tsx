@@ -14,6 +14,7 @@ import ErrorScreen from "./tma/ErrorScreen";
 import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
+import SupportFormDrawer from "./tma/SupportFormDrawer";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [
@@ -152,6 +153,7 @@ export default function TMA() {
   const [language, setLanguage] = useState<Language>("en");
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
@@ -174,6 +176,7 @@ export default function TMA() {
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
+  const [isSupportFormOpen, setIsSupportFormOpen] = useState(false);
 
   const handleNotifsChange = async (updated: Notifications) => {
     setNotifs(updated);
@@ -260,7 +263,7 @@ export default function TMA() {
   }, [currentTab]);
 
   // ─── Init: auth + language ─────────────────────────────────────────────────
-  useEffect(() => {
+  const handleInitAuth = () => {
     if (typeof window === "undefined") return;
 
     let tgUser: any = null;
@@ -288,6 +291,8 @@ export default function TMA() {
     }
 
     const runAuth = async (initDataString: string) => {
+      setAuthError(null);
+      setIsLoadingAuth(true);
       apiCall("/auth/telegram/mini-app", "POST", {
         init_data: initDataString,
       })
@@ -295,10 +300,13 @@ export default function TMA() {
           if (data?.access_token) {
             safeStorage.setItem("iguard_jwt_token", data.access_token);
             await refreshUserData();
+          } else {
+            throw new Error("No access token returned");
           }
         })
         .catch((err) => {
           console.error("[IGuard] Auth error:", err);
+          setAuthError(err.message || "Auth failed");
         })
         .finally(() => setIsLoadingAuth(false));
     };
@@ -314,6 +322,10 @@ export default function TMA() {
         runAuth(signedData);
       });
     }
+  };
+
+  useEffect(() => {
+    handleInitAuth();
   }, []);
 
   // ─── Fetch live prices ─────────────────────────────────────────────────────
@@ -385,12 +397,11 @@ export default function TMA() {
               handleReset();
               triggerHaptic("success");
               refreshUserData();
+            } else if (status === "failed") {
+              triggerHaptic("warning");
+              setPaymentStatus("error");
             } else {
-              // Sandbox bypass: Fallback to success even on cancel/fail
-              console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
-              setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
               handleReset();
-              triggerHaptic("success");
             }
           });
         } else {
@@ -417,15 +428,13 @@ export default function TMA() {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
-        setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
         handleReset();
       }
     } catch (err) {
-      console.error("[IGuard] Payment error (falling back to success for test):", err);
+      console.error("[IGuard] Payment error:", err);
       setIsPaying(false);
-      setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-      handleReset();
-      triggerHaptic("success");
+      triggerHaptic("warning");
+      setPaymentStatus("error");
     }
   };
 
@@ -447,12 +456,11 @@ export default function TMA() {
               handleReset();
               triggerHaptic("success");
               refreshUserData();
+            } else if (status === "failed") {
+              triggerHaptic("warning");
+              setPaymentStatus("error");
             } else {
-              // Sandbox bypass: Fallback to success even on cancel/fail
-              console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
-              setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
               handleReset();
-              triggerHaptic("success");
             }
           });
         } else {
@@ -479,15 +487,13 @@ export default function TMA() {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
-        setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
         handleReset();
       }
     } catch (err) {
-      console.error("[IGuard] Payment error (falling back to success for test):", err);
+      console.error("[IGuard] Payment error:", err);
       setIsPaying(false);
-      setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-      handleReset();
-      triggerHaptic("success");
+      triggerHaptic("warning");
+      setPaymentStatus("error");
     }
   };
 
@@ -547,7 +553,20 @@ export default function TMA() {
     );
   }
 
-
+  if (authError) {
+    const authDesc = language === "ru"
+      ? "Произошла ошибка при авторизации. Попробуйте снова."
+      : language === "es"
+      ? "Error de autenticación. Inténtelo de nuevo."
+      : "Authentication failed. Please try again.";
+    return (
+      <ErrorScreen
+        t={t}
+        desc={authDesc}
+        onRetry={handleInitAuth}
+      />
+    );
+  }
 
   if (paymentStatus === "error") {
     return (
@@ -636,7 +655,7 @@ export default function TMA() {
             <GuideScreen
               t={t}
               personalKey={personalKey}
-              onTabChange={setCurrentTab}
+              onOpenSupportForm={() => setIsSupportFormOpen(true)}
               triggerHaptic={triggerHaptic}
               plans={plans}
               selectedPlan={selectedPlan}
@@ -668,6 +687,7 @@ export default function TMA() {
               t={t}
               triggerHaptic={triggerHaptic}
               language={language}
+              onOpenSupportForm={() => setIsSupportFormOpen(true)}
             />
           </div>
         )}
@@ -683,6 +703,14 @@ export default function TMA() {
           setCurrentTab(tab);
           setIsNavbarVisible(true);
         }}
+      />
+
+      <SupportFormDrawer
+        t={t}
+        language={language}
+        triggerHaptic={triggerHaptic}
+        isOpen={isSupportFormOpen}
+        onClose={() => setIsSupportFormOpen(false)}
       />
     </div>
   );

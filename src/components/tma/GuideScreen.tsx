@@ -76,7 +76,7 @@ const SERVERS_ROW3 = [
 interface GuideScreenProps {
   t: Translations;
   personalKey?: string;
-  onTabChange: (tab: Tab) => void;
+  onOpenSupportForm?: () => void;
   triggerHaptic: (type: HapticType) => void;
   plans: Plan[];
   selectedPlan: Plan | null;
@@ -139,6 +139,7 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
 export default function GuideScreen({
   t,
   personalKey,
+  onOpenSupportForm,
   triggerHaptic,
   plans,
   selectedPlan,
@@ -802,7 +803,10 @@ export default function GuideScreen({
           {t.guide.needHelp}
         </span>
         <button
-          onClick={() => handleOpenLink("https://fastguard.io/ru/support")}
+          onClick={() => {
+            triggerHaptic("light");
+            onOpenSupportForm?.();
+          }}
           style={{
             padding: "13px 15px",
             borderRadius: "14px",
