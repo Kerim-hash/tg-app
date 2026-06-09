@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Language, Translations, UserData, Notifications, HapticType } from "./types";
+import type { Language, Translations, UserData, Notifications, HapticType, ReferralInfo } from "./types";
 
 interface ProfileScreenProps {
   t: Translations;
@@ -10,6 +10,7 @@ interface ProfileScreenProps {
   onLanguageChange: (lang: Language) => void;
   notifs: Notifications;
   onNotifsChange: (notifs: Notifications) => void;
+  referralInfo: ReferralInfo | null;
   triggerHaptic: (type: HapticType) => void;
 }
 
@@ -62,9 +63,24 @@ export default function ProfileScreen({
   onLanguageChange,
   notifs,
   onNotifsChange,
+  referralInfo,
   triggerHaptic,
 }: ProfileScreenProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState<"web" | "bot" | null>(null);
+
+  const handleCopy = (link: string, type: "web" | "bot") => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        navigator.clipboard.writeText(link);
+        setCopiedLink(type);
+        triggerHaptic("success");
+        setTimeout(() => setCopiedLink(null), 2000);
+      }
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -301,6 +317,129 @@ export default function ProfileScreen({
           </div>
         )}
       </div>
+      {/* Referral Program */}
+      {referralInfo && (
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.03)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "30px",
+            padding: "20px 24px",
+            marginBottom: "32px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            opacity: dropdownOpen ? 0.3 : 1,
+            pointerEvents: dropdownOpen ? "none" : "auto",
+            transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", margin: 0 }}>
+              {t.profile.referralTitle}
+            </h3>
+            <div
+              style={{
+                background: "rgba(0, 209, 255, 0.1)",
+                border: "1px solid rgba(0, 209, 255, 0.25)",
+                borderRadius: "12px",
+                padding: "4px 10px",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#00D1FF",
+              }}
+            >
+              {t.profile.referralBalance}: {referralInfo.balance} USD
+            </div>
+          </div>
+
+          <p style={{ fontSize: "13px", color: "#8A94A6", lineHeight: "1.5", margin: "0 0 18px" }}>
+            {t.profile.referralDesc}
+          </p>
+
+          {/* Telegram referral link */}
+          {referralInfo.telegram_referral_link && (
+            <div style={{ marginBottom: "14px" }}>
+              <span style={{ display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
+                {t.profile.referralLinkBot}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "rgba(0, 0, 0, 0.2)",
+                  borderRadius: "16px",
+                  padding: "6px 6px 6px 14px",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "13px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginRight: "10px" }}>
+                  {referralInfo.telegram_referral_link}
+                </span>
+                <button
+                  onClick={() => handleCopy(referralInfo.telegram_referral_link, "bot")}
+                  className="hover-scale-btn"
+                  style={{
+                    background: copiedLink === "bot" ? "#00E676" : "#00D1FF",
+                    color: "#000",
+                    border: "none",
+                    borderRadius: "12px",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "background 0.2s ease",
+                    outline: "none",
+                  }}
+                >
+                  {copiedLink === "bot" ? t.profile.referralCopied : t.profile.referralCopy}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Web referral link */}
+          {referralInfo.link && (
+            <div>
+              <span style={{ display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
+                {t.profile.referralLinkWeb}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "rgba(0, 0, 0, 0.2)",
+                  borderRadius: "16px",
+                  padding: "6px 6px 6px 14px",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                }}
+              >
+                <span style={{ flex: 1, fontSize: "13px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginRight: "10px" }}>
+                  {referralInfo.link}
+                </span>
+                <button
+                  onClick={() => handleCopy(referralInfo.link, "web")}
+                  className="hover-scale-btn"
+                  style={{
+                    background: copiedLink === "web" ? "#00E676" : "#00D1FF",
+                    color: "#000",
+                    border: "none",
+                    borderRadius: "12px",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "background 0.2s ease",
+                    outline: "none",
+                  }}
+                >
+                  {copiedLink === "web" ? t.profile.referralCopied : t.profile.referralCopy}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Notifications */}
       <div

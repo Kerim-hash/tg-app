@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 
-import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan } from "./tma/types";
+import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage } from "./tma/api";
 
@@ -173,6 +173,21 @@ export default function TMA() {
 
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
+  const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
+
+  const handleNotifsChange = async (updated: Notifications) => {
+    setNotifs(updated);
+    try {
+      await apiCall("/users/notifications", "PATCH", {
+        all_enabled: updated.all,
+        news: updated.news,
+        billing: updated.billing,
+        tech: updated.tech,
+      });
+    } catch (err) {
+      console.error("[IGuard] Failed to save notification settings:", err);
+    }
+  };
 
   const t = translations[language];
 
@@ -208,6 +223,29 @@ export default function TMA() {
       }
     } catch (err) {
       console.error("[IGuard] Fetch config keys error:", err);
+    }
+
+    try {
+      const notifData = await apiCall("/users/notifications", "GET");
+      if (notifData) {
+        setNotifs({
+          all: notifData.all_enabled ?? true,
+          news: notifData.news ?? true,
+          billing: notifData.billing ?? true,
+          tech: notifData.tech ?? false,
+        });
+      }
+    } catch (err) {
+      console.error("[IGuard] Fetch notifications error:", err);
+    }
+
+    try {
+      const refData = await apiCall("/users/referral/info", "GET");
+      if (refData) {
+        setReferralInfo(refData);
+      }
+    } catch (err) {
+      console.error("[IGuard] Fetch referral info error:", err);
     }
   };
 
@@ -617,7 +655,8 @@ export default function TMA() {
               language={language}
               onLanguageChange={setLanguage}
               notifs={notifs}
-              onNotifsChange={setNotifs}
+              onNotifsChange={handleNotifsChange}
+              referralInfo={referralInfo}
               triggerHaptic={triggerHaptic}
             />
           </div>

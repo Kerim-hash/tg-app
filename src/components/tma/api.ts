@@ -38,7 +38,7 @@ export const safeStorage = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const apiCall = async (endpoint: string, method: "GET" | "POST" = "GET", body?: unknown): Promise<any> => {
+export const apiCall = async (endpoint: string, method: "GET" | "POST" | "PATCH" = "GET", body?: unknown): Promise<any> => {
   const token = safeStorage.getItem("iguard_jwt_token");
   const headers: HeadersInit = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
