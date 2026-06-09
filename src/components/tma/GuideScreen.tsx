@@ -139,6 +139,7 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
 export default function GuideScreen({
   t,
   personalKey,
+  onTabChange,
   triggerHaptic,
   plans,
   selectedPlan,
@@ -802,7 +803,10 @@ export default function GuideScreen({
           {t.guide.needHelp}
         </span>
         <button
-          onClick={() => handleOpenLink("https://fastguard.io/ru/support")}
+          onClick={() => {
+            triggerHaptic("light");
+            onTabChange("support");
+          }}
           style={{
             padding: "13px 15px",
             borderRadius: "14px",
