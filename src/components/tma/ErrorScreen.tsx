@@ -5,9 +5,10 @@ import type { Translations } from "./types";
 interface ErrorScreenProps {
   t: Translations;
   onRetry: () => void;
+  desc?: string;
 }
 
-export default function ErrorScreen({ t, onRetry }: ErrorScreenProps) {
+export default function ErrorScreen({ t, onRetry, desc }: ErrorScreenProps) {
   return (
     <div
       style={{
@@ -54,7 +55,7 @@ export default function ErrorScreen({ t, onRetry }: ErrorScreenProps) {
           {t.error.title}
         </h2>
         <p style={{ fontSize: "13px", color: "#8A94A6", margin: 0, maxWidth: "240px" }}>
-          {t.error.desc}
+          {desc || t.error.desc}
         </p>
       </div>
 
