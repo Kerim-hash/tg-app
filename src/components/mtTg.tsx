@@ -14,6 +14,7 @@ import ErrorScreen from "./tma/ErrorScreen";
 import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
+import SupportFormDrawer from "./tma/SupportFormDrawer";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [
@@ -174,14 +175,7 @@ export default function TMA() {
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
-  const [autoOpenSupportForm, setAutoOpenSupportForm] = useState(false);
-
-  const handleTabChange = (tab: Tab, autoOpenSupport?: boolean) => {
-    setCurrentTab(tab);
-    if (tab === "support") {
-      setAutoOpenSupportForm(!!autoOpenSupport);
-    }
-  };
+  const [isSupportFormOpen, setIsSupportFormOpen] = useState(false);
 
   const handleNotifsChange = async (updated: Notifications) => {
     setNotifs(updated);
@@ -631,7 +625,7 @@ export default function TMA() {
               selectedPlan={selectedPlan}
               onSelectPlan={setSelectedPlan}
               triggerHaptic={triggerHaptic}
-              onTabChange={handleTabChange}
+              onTabChange={setCurrentTab}
               personalKey={personalKey}
               onProceedPayment={handleProceedPayment}
               isPaying={isPaying}
@@ -644,7 +638,7 @@ export default function TMA() {
             <GuideScreen
               t={t}
               personalKey={personalKey}
-              onTabChange={handleTabChange}
+              onOpenSupportForm={() => setIsSupportFormOpen(true)}
               triggerHaptic={triggerHaptic}
               plans={plans}
               selectedPlan={selectedPlan}
@@ -676,8 +670,7 @@ export default function TMA() {
               t={t}
               triggerHaptic={triggerHaptic}
               language={language}
-              autoOpenForm={autoOpenSupportForm}
-              onFormClose={() => setAutoOpenSupportForm(false)}
+              onOpenSupportForm={() => setIsSupportFormOpen(true)}
             />
           </div>
         )}
@@ -690,9 +683,17 @@ export default function TMA() {
         isVisible={isNavbarVisible}
         onTabChange={(tab) => {
           triggerHaptic("light");
-          handleTabChange(tab, false);
+          setCurrentTab(tab);
           setIsNavbarVisible(true);
         }}
+      />
+
+      <SupportFormDrawer
+        t={t}
+        language={language}
+        triggerHaptic={triggerHaptic}
+        isOpen={isSupportFormOpen}
+        onClose={() => setIsSupportFormOpen(false)}
       />
     </div>
   );
