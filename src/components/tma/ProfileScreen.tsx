@@ -359,7 +359,7 @@ export default function ProfileScreen({
 
           {/* Telegram referral link */}
           {referralInfo.telegram_referral_link && (
-            <div style={{ marginBottom: "14px" }}>
+            <div style={{ marginBottom: 0 }}>
               <span style={{ display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
                 {t.profile.referralLinkBot}
               </span>
@@ -393,47 +393,6 @@ export default function ProfileScreen({
                   }}
                 >
                   {copiedLink === "bot" ? t.profile.referralCopied : t.profile.referralCopy}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Web referral link */}
-          {referralInfo.link && (
-            <div>
-              <span style={{ display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
-                {t.profile.referralLinkWeb}
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  background: "rgba(0, 0, 0, 0.2)",
-                  borderRadius: "16px",
-                  padding: "6px 6px 6px 14px",
-                  border: "1px solid rgba(255, 255, 255, 0.05)",
-                }}
-              >
-                <span style={{ flex: 1, fontSize: "13px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginRight: "10px" }}>
-                  {referralInfo.link}
-                </span>
-                <button
-                  onClick={() => handleCopy(referralInfo.link, "web")}
-                  className="hover-scale-btn"
-                  style={{
-                    background: copiedLink === "web" ? "#00E676" : "#00D1FF",
-                    color: "#000",
-                    border: "none",
-                    borderRadius: "12px",
-                    padding: "6px 12px",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    transition: "background 0.2s ease",
-                    outline: "none",
-                  }}
-                >
-                  {copiedLink === "web" ? t.profile.referralCopied : t.profile.referralCopy}
                 </button>
               </div>
             </div>
