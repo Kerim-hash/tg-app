@@ -46,6 +46,12 @@ export interface Notifications {
   tech: boolean;
 }
 
+export interface ReferralInfo {
+  link: string;
+  telegram_referral_link: string;
+  balance: number;
+}
+
 export interface Translations {
   nav: {
     home: string;
@@ -111,6 +117,13 @@ export interface Translations {
     notifTechDesc: string;
     simulateActivePlan: string;
     simulateActivePlanDesc: string;
+    referralTitle: string;
+    referralBalance: string;
+    referralLinkWeb: string;
+    referralLinkBot: string;
+    referralCopy: string;
+    referralCopied: string;
+    referralDesc: string;
   };
   guide: {
     title: string;
