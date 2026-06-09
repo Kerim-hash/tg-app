@@ -397,12 +397,11 @@ export default function TMA() {
               handleReset();
               triggerHaptic("success");
               refreshUserData();
+            } else if (status === "failed") {
+              triggerHaptic("warning");
+              setPaymentStatus("error");
             } else {
-              // Sandbox bypass: Fallback to success even on cancel/fail
-              console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
-              setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
               handleReset();
-              triggerHaptic("success");
             }
           });
         } else {
@@ -429,15 +428,13 @@ export default function TMA() {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
-        setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
         handleReset();
       }
     } catch (err) {
-      console.error("[IGuard] Payment error (falling back to success for test):", err);
+      console.error("[IGuard] Payment error:", err);
       setIsPaying(false);
-      setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-      handleReset();
-      triggerHaptic("success");
+      triggerHaptic("warning");
+      setPaymentStatus("error");
     }
   };
 
@@ -459,12 +456,11 @@ export default function TMA() {
               handleReset();
               triggerHaptic("success");
               refreshUserData();
+            } else if (status === "failed") {
+              triggerHaptic("warning");
+              setPaymentStatus("error");
             } else {
-              // Sandbox bypass: Fallback to success even on cancel/fail
-              console.log("[IGuard] openInvoice status not paid (falling back to success for test):", status);
-              setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
               handleReset();
-              triggerHaptic("success");
             }
           });
         } else {
@@ -491,15 +487,13 @@ export default function TMA() {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
-        setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
         handleReset();
       }
     } catch (err) {
-      console.error("[IGuard] Payment error (falling back to success for test):", err);
+      console.error("[IGuard] Payment error:", err);
       setIsPaying(false);
-      setPersonalKey("https://t2love.online/s/dFrGSaCp4owLRLL-TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-      handleReset();
-      triggerHaptic("success");
+      triggerHaptic("warning");
+      setPaymentStatus("error");
     }
   };
 
