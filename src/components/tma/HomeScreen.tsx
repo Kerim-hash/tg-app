@@ -136,7 +136,7 @@ export default function HomeScreen({
     };
   }, [isPlanSheetOpen, isKeySheetOpen, isPaymentSheetOpen]);
 
-  const activeKey = personalKey || "https://fglove.online/x/dFcGjeCq4zwjYfLL";
+  const activeKey = personalKey || "";
 
   const handleCopyAndClose = () => {
     navigator.clipboard.writeText(activeKey);

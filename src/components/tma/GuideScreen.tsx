@@ -207,7 +207,7 @@ export default function GuideScreen({
     };
   }, [isPaymentSheetOpen]);
 
-  const activeKey = personalKey || "https://fglove.online/x/dFcGjeCq4zwjYfLL";
+  const activeKey = personalKey || "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeKey);

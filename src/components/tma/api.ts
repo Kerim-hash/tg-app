@@ -1,4 +1,4 @@
-export const API_BASE = "https://fglove.online";
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://fglove.online";
 
 const memoryStore: Record<string, string> = {};
 
