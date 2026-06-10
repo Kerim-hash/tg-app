@@ -1,0 +1,89 @@
+variables:
+  WORKLOADS_REPO: https://${GITLAB_USER_DEV}:${GITLAB_USER_TOKEN_DEV}@gitlab.fastguard.site/fastguard/deployment.git
+  WORKLOADS_BRANCH: master
+
+stages:
+  - build
+  - deploy
+
+build-dev:
+  image: docker:latest
+  stage: build
+  services:
+    - name: docker:dind
+      alias: docker
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
+    - docker push "$CI_REGISTRY_IMAGE${tag}"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^(rc).*$/'
+
+build-prod:
+  image: docker:latest
+  stage: build
+  services:
+    - name: docker:dind
+      alias: docker
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
+    - docker push "$CI_REGISTRY_IMAGE${tag}"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^(v).*$/'
+
+deploy-dev:
+  stage: deploy
+  image:
+    name: alpine:latest
+  before_script:
+    - apk add git yq
+  script:
+    - echo "Cloning workloads repo..."
+    - git clone "$WORKLOADS_REPO"
+    - cd deployment/workloads/tg-app/dev/
+    - yq e ".image.tag = \"${CI_COMMIT_REF_SLUG}\"" -i values.yml
+    - git config user.name "${GITLAB_USER_DEV}"
+    - git config user.email "${GITLAB_USER_DEV}@fastguard.io"
+    - git commit -am "Update dev TG app image tag to $CI_COMMIT_TAG"
+    - git push origin "$WORKLOADS_BRANCH"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^(rc).*$/'
+      when: manual
+
+deploy-prod:
+  stage: deploy
+  image:
+    name: alpine:latest
+  before_script:
+    - apk add git yq
+  script:
+    - echo "Cloning workloads repo..."
+    - git clone "$WORKLOADS_REPO"
+    - cd deployment/workloads/tg-app/prod/
+    - yq e ".image.tag = \"${CI_COMMIT_REF_SLUG}\"" -i values.yml
+    - git config user.name "${GITLAB_USER_DEV}"
+    - git config user.email "${GITLAB_USER_DEV}@fastguard.io"
+    - git commit -am "Update prod TG app image tag to $CI_COMMIT_TAG"
+    - git push origin "$WORKLOADS_BRANCH"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^(v).*$/'
+      when: manual
