@@ -23,6 +23,8 @@ build-dev:
         tag=":$CI_COMMIT_REF_SLUG"
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
+    - printenv > .env
+    - printenv > .env.production
     - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
     - docker push "$CI_REGISTRY_IMAGE${tag}"
   rules:
@@ -45,6 +47,8 @@ build-prod:
         tag=":$CI_COMMIT_REF_SLUG"
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
+    - printenv > .env
+    - printenv > .env.production
     - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
     - docker push "$CI_REGISTRY_IMAGE${tag}"
   rules:
