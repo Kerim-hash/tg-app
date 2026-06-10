@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import type { Plan, PaymentMethod, Translations, HapticType, Tab } from "./types";
 import GradientBlock from "../GradientBlock";
+import { trackEvent } from "../../lib/mixpanel";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
   if (lang === "ru") {
@@ -98,7 +99,12 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
   return (
     <div style={{ borderBottom: "1px dashed rgba(255, 255, 255, 0.1)" }}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            trackEvent("faq_item_expanded", { section: "faq", question_id: question });
+          }
+          setIsOpen(!isOpen);
+        }}
         style={{
           width: "100%",
           padding: "16px 0",
@@ -153,8 +159,38 @@ export default function GuideScreen({
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  const step2Ref = useRef<HTMLDivElement>(null);
+  const step4Ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (entry.target === step2Ref.current) {
+              trackEvent("plan_selector_viewed", { source: "guide_step_2" });
+              observer.unobserve(entry.target);
+            }
+            if (entry.target === step4Ref.current) {
+              trackEvent("server_list_viewed", { step: 4, servers_count: 18 });
+              observer.unobserve(entry.target);
+            }
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (step2Ref.current) observer.observe(step2Ref.current);
+    if (step4Ref.current) observer.observe(step4Ref.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     setMounted(true);
+    trackEvent("screen_guide_viewed", { referrer: "tab" }); // Simplified referrer tracking
   }, []);
 
   useEffect(() => {
@@ -309,7 +345,10 @@ export default function GuideScreen({
 
           <button
             className="hover-scale-btn"
-            onClick={() => handleOpenLink("https://apps.apple.com/us/app/happ-proxy-utility/id6504287215")}
+            onClick={() => {
+              trackEvent("appstore_link_tapped", { step: 1 });
+              handleOpenLink("https://apps.apple.com/us/app/happ-proxy-utility/id6504287215");
+            }}
             style={{
               alignSelf: "center",
               display: "flex",
@@ -372,7 +411,7 @@ export default function GuideScreen({
             </span>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }} ref={step2Ref}>
             {/* Interactive plan selection */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", width: "100%" }}>
               {plans.map((plan) => {
@@ -488,10 +527,12 @@ export default function GuideScreen({
               onClick={() => {
                 triggerHaptic("medium");
                 if (selectedPlan) {
+                  trackEvent("guide_select_and_buy_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal });
                   setLocalSelectedMethod(null);
                   setIsPaymentSheetOpen(true);
                 } else {
                   const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
+                  trackEvent("guide_select_and_buy_tapped", { plan: yearlyPlan.periodMonths === 1 ? "30_days" : "1_year", price: yearlyPlan.starsPrice || yearlyPlan.usdTotal });
                   onSelectPlan(yearlyPlan);
                   setLocalSelectedMethod(null);
                   setTimeout(() => setIsPaymentSheetOpen(true), 100);
@@ -602,7 +643,10 @@ export default function GuideScreen({
 
             <button
               className="hover-scale-btn"
-              onClick={handleCopy}
+              onClick={() => {
+                trackEvent("access_key_copied", { step: 3, source: "guide" });
+                handleCopy();
+              }}
               style={{
                 padding: "13px 15px",
                 borderRadius: "14px",
@@ -674,6 +718,7 @@ export default function GuideScreen({
 
         {/* Full-width 3-Row continuous moving marquee ticker — Figma Out of Bounds Spec */}
         <div
+          ref={step4Ref}
           style={{
             display: "flex",
             flexDirection: "column",
@@ -804,8 +849,13 @@ export default function GuideScreen({
         </span>
         <button
           onClick={() => {
+            trackEvent("contact_support_tapped", { source: "guide_footer" });
             triggerHaptic("light");
-            onOpenSupportForm?.();
+            if (onOpenSupportForm) {
+              onOpenSupportForm();
+            } else {
+              window.location.href = "mailto:support@fastguard.site";
+            }
           }}
           style={{
             padding: "13px 15px",

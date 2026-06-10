@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
+import { trackEvent } from "../../lib/mixpanel";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
@@ -105,9 +106,20 @@ export default function HomeScreen({
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  const hasActivePlan = !!user.activePlan;
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    trackEvent("screen_home_viewed", {
+      plan_status: user.activePlan ? "active" : "none" // We don't have expiring state readily available here, simplifying for now or can calculate if needed
+    });
+  }, [user.activePlan]);
+
+  useEffect(() => {
+    if (isPlanSheetOpen) {
+      trackEvent("plan_selector_viewed", { trigger: hasActivePlan ? "extend" : "buy" });
+    }
+  }, [isPlanSheetOpen, hasActivePlan]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -124,11 +136,11 @@ export default function HomeScreen({
     };
   }, [isPlanSheetOpen, isKeySheetOpen, isPaymentSheetOpen]);
 
-  const hasActivePlan = !!user.activePlan;
   const activeKey = personalKey || "https://fglove.online/x/dFcGjeCq4zwjYfLL";
 
   const handleCopyAndClose = () => {
     navigator.clipboard.writeText(activeKey);
+    trackEvent("personal_key_copied", { source: "home_modal", trigger: "extend_flow" });
     triggerHaptic("success");
     setIsKeySheetOpen(false);
     try {
@@ -342,6 +354,7 @@ export default function HomeScreen({
           className="hover-scale-btn"
           onClick={() => {
             triggerHaptic("medium");
+            trackEvent("connect_device_tapped", { plan_status: hasActivePlan ? "active" : "none", source: "home" });
             setIsKeySheetOpen(true);
           }}
           style={{
@@ -372,6 +385,12 @@ export default function HomeScreen({
           className="hover-scale-btn"
           onClick={() => {
             triggerHaptic("medium");
+            if (user.activePlan) {
+              const daysLeft = user.activePlan.daysLeft || 0;
+              trackEvent("extend_plan_tapped", { days_left: daysLeft, current_plan: user.activePlan.name.includes("Year") || user.activePlan.name.includes("год") ? "1y" : "30d" });
+            } else {
+              trackEvent("buy_plan_tapped", { source: "home_cta" });
+            }
             setIsPlanSheetOpen(true);
           }}
           style={{
@@ -432,6 +451,7 @@ export default function HomeScreen({
                 key={plan.id}
                 onClick={() => {
                   triggerHaptic("light");
+                  trackEvent("plan_card_selected", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
                   onSelectPlan(plan);
                 }}
                 style={{
@@ -836,11 +856,13 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("medium");
                   if (selectedPlan) {
+                    trackEvent("select_and_continue_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
                     setIsPlanSheetOpen(false);
                     setLocalSelectedMethod(null);
                     setIsPaymentSheetOpen(true);
                   } else {
                     const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
+                    trackEvent("select_and_continue_tapped", { plan: yearlyPlan.periodMonths === 1 ? "30_days" : "1_year", price: yearlyPlan.starsPrice || yearlyPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
                     onSelectPlan(yearlyPlan);
                     setLocalSelectedMethod(null);
                     setTimeout(() => {
@@ -968,6 +990,7 @@ export default function HomeScreen({
             <div style={{ display: "flex", gap: "15px", margin: "12px auto 0" }}>
               <button
                 onClick={() => {
+                  trackEvent("read_guide_tapped", { source: "home_modal" });
                   triggerHaptic("light");
                   setIsKeySheetOpen(false);
                   onTabChange("guide");

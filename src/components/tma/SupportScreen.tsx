@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Translations, HapticType, Language } from "./types";
+import { trackEvent } from "../../lib/mixpanel";
 
 interface SupportScreenProps {
   t: Translations;
@@ -10,12 +11,19 @@ interface SupportScreenProps {
   onOpenSupportForm?: () => void;
 }
 
-const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
+const FAQItem = ({ question, answer, section = "support" }: { question: string; answer: string; section?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div style={{ borderBottom: "1px dashed rgba(255, 255, 255, 0.1)" }}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            trackEvent("faq_item_expanded", { section, question_id: question });
+          } else {
+            trackEvent("faq_item_collapsed", { question_id: question });
+          }
+          setIsOpen(!isOpen);
+        }}
         style={{
           width: "100%",
           padding: "16px 0",
@@ -55,6 +63,29 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
 };
 
 export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: SupportScreenProps) {
+  const policyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    trackEvent("screen_support_viewed", { referrer: "tab" });
+
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.target === policyRef.current) {
+            trackEvent("refund_policy_viewed", { section: "subscription" });
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    if (policyRef.current) observer.observe(policyRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
       style={{
@@ -100,21 +131,21 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
             {t.support.subscription}
           </h2>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <FAQItem question={t.support.subQ1} answer={t.support.subA1} />
-            <FAQItem question={t.support.subQ2} answer={t.support.subA2} />
-            <FAQItem question={t.support.subQ3} answer={t.support.subA3} />
+            <FAQItem section="subscription" question={t.support.subQ1} answer={t.support.subA1} />
+            <FAQItem section="subscription" question={t.support.subQ2} answer={t.support.subA2} />
+            <FAQItem section="subscription" question={t.support.subQ3} answer={t.support.subA3} />
           </div>
         </div>
 
         {/* Category 2: Policy */}
-        <div>
+        <div ref={policyRef}>
           <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
             {t.support.policy}
           </h2>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <FAQItem question={t.support.polQ1} answer={t.support.polA1} />
-            <FAQItem question={t.support.polQ2} answer={t.support.polA2} />
-            <FAQItem question={t.support.polQ3} answer={t.support.polA3} />
+            <FAQItem section="policy" question={t.support.polQ1} answer={t.support.polA1} />
+            <FAQItem section="policy" question={t.support.polQ2} answer={t.support.polA2} />
+            <FAQItem section="policy" question={t.support.polQ3} answer={t.support.polA3} />
           </div>
         </div>
 
@@ -124,9 +155,9 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
             {t.support.troubleshooting}
           </h2>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <FAQItem question={t.support.trQ1} answer={t.support.trA1} />
-            <FAQItem question={t.support.trQ2} answer={t.support.trA2} />
-            <FAQItem question={t.support.trQ3} answer={t.support.trA3} />
+            <FAQItem section="troubleshooting" question={t.support.trQ1} answer={t.support.trA1} />
+            <FAQItem section="troubleshooting" question={t.support.trQ2} answer={t.support.trA2} />
+            <FAQItem section="troubleshooting" question={t.support.trQ3} answer={t.support.trA3} />
           </div>
         </div>
 
@@ -148,6 +179,7 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
         </span>
         <button
           onClick={() => {
+            trackEvent("contact_support_tapped", { source: "support_footer" });
             triggerHaptic("light");
             onOpenSupportForm?.();
           }}
