@@ -6,7 +6,7 @@ const MyTWAComponent = dynamic(() => import('../components/mtTg'), { ssr: false 
 
 function Page() {
   return (
-    <div>
+    <div id="app-wrapper">
       <MyTWAComponent />
     </div>
   );
