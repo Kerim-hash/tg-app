@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: var(--font-onest), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
+
+/* Constrain layout on desktop */
+@media (min-width: 600px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #000;
+  }
+
+  #app-wrapper {
+    width: 400px;
+    height: 644px;
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    border: 1px solid #333;
+    border-radius: 12px;
+    background: var(--background);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+}
