@@ -6,6 +6,7 @@ import WebApp from "@twa-dev/sdk";
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage } from "./tma/api";
+import { trackEvent } from "../lib/mixpanel";
 
 import NavBar from "./tma/NavBar";
 import HomeScreen from "./tma/HomeScreen";
@@ -386,6 +387,7 @@ export default function TMA() {
 
     try {
       if (method === "stars") {
+        trackEvent("telegram_stars_flow_viewed", { amount_stars: selectedPlan.starsPrice || 0, plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year" });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
         });
@@ -394,10 +396,12 @@ export default function TMA() {
           WebApp.openInvoice(data.invoice_url, (status) => {
             setIsPaying(false);
             if (status === "paid") {
+              trackEvent("payment_success", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", amount: selectedPlan.starsPrice || 0, currency: "STARS" });
               handleReset();
               triggerHaptic("success");
               refreshUserData();
             } else if (status === "failed") {
+              trackEvent("payment_error", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", error_type: "telegram_failed" });
               triggerHaptic("warning");
               setPaymentStatus("error");
             } else {
@@ -419,6 +423,7 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
+          trackEvent("payment_external_opened", { method: merchant, amount: selectedPlan.usdTotal, opens_new_tab: true });
           WebApp.openLink(link);
           handleReset();
         } else {
@@ -432,6 +437,7 @@ export default function TMA() {
       }
     } catch (err) {
       console.error("[IGuard] Payment error:", err);
+      trackEvent("payment_error", { plan: selectedPlan?.periodMonths === 1 ? "30_days" : "1_year", method: method, error_type: "exception" });
       setIsPaying(false);
       triggerHaptic("warning");
       setPaymentStatus("error");
@@ -445,6 +451,7 @@ export default function TMA() {
 
     try {
       if (selectedMethod === "stars") {
+        trackEvent("telegram_stars_flow_viewed", { amount_stars: selectedPlan.starsPrice || 0, plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year" });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
         });
@@ -453,10 +460,12 @@ export default function TMA() {
           WebApp.openInvoice(data.invoice_url, (status) => {
             setIsPaying(false);
             if (status === "paid") {
+              trackEvent("payment_success", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", amount: selectedPlan.starsPrice || 0, currency: "STARS" });
               handleReset();
               triggerHaptic("success");
               refreshUserData();
             } else if (status === "failed") {
+              trackEvent("payment_error", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", error_type: "telegram_failed" });
               triggerHaptic("warning");
               setPaymentStatus("error");
             } else {
@@ -478,6 +487,7 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
+          trackEvent("payment_external_opened", { method: merchant, amount: selectedPlan.usdTotal, opens_new_tab: true });
           WebApp.openLink(link);
           handleReset();
         } else {
@@ -491,6 +501,7 @@ export default function TMA() {
       }
     } catch (err) {
       console.error("[IGuard] Payment error:", err);
+      trackEvent("payment_error", { plan: selectedPlan?.periodMonths === 1 ? "30_days" : "1_year", method: selectedMethod, error_type: "exception" });
       setIsPaying(false);
       triggerHaptic("warning");
       setPaymentStatus("error");

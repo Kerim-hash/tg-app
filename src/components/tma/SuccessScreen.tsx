@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Translations, HapticType } from "./types";
+import { trackEvent } from "../../lib/mixpanel";
 
 interface SuccessScreenProps {
   t: Translations;
@@ -17,6 +18,7 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
     if (!personalKey) return;
     triggerHaptic("light");
     navigator.clipboard.writeText(personalKey).catch(() => {});
+    trackEvent("personal_key_copied", { source: "payment_success" });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -103,7 +105,11 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
       {/* Action buttons */}
       <div style={{ width: "100%", display: "flex", gap: "10px" }}>
         <button
-          onClick={() => { triggerHaptic("light"); onClose(); }}
+          onClick={() => { 
+            triggerHaptic("light"); 
+            trackEvent("read_guide_tapped", { source: "payment_success" });
+            onClose(); 
+          }}
           style={{
             flex: 1,
             padding: "14px 8px",

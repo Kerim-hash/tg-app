@@ -1,6 +1,7 @@
 "use client";
 
 import type { Tab, Translations } from "./types";
+import { trackEvent } from "../../lib/mixpanel";
 
 interface NavBarProps {
   t: Translations;
@@ -99,7 +100,12 @@ export default function NavBar({ t, currentTab, onTabChange, isVisible = true }:
         return (
           <button
             key={id}
-            onClick={() => onTabChange(id)}
+            onClick={() => {
+              if (currentTab !== id) {
+                trackEvent("tab_switched", { from: currentTab, to: id });
+              }
+              onTabChange(id);
+            }}
             style={{
               width: "72px",
               height: "56px",

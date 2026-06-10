@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./types";
+import { trackEvent } from "../../lib/mixpanel";
 
 interface PaymentScreenProps {
   t: Translations;
@@ -44,6 +46,11 @@ export default function PaymentScreen({
   };
 
   const canProceed = !!selectedMethod && !isPaying;
+
+  useEffect(() => {
+    trackEvent("screen_payment_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
+    trackEvent("payment_methods_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", available_methods: METHOD_CONFIG.map(m => m.id) });
+  }, [plan]);
 
   return (
     <div
@@ -98,7 +105,11 @@ export default function PaymentScreen({
           return (
             <button
               key={id}
-              onClick={() => { triggerHaptic("light"); onSelectMethod(id); }}
+              onClick={() => { 
+                triggerHaptic("light"); 
+                trackEvent("payment_method_selected", { method: id, amount: plan.usdTotal, currency: "USD" });
+                onSelectMethod(id); 
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -134,7 +145,11 @@ export default function PaymentScreen({
       {/* Proceed button */}
       <button
         disabled={!canProceed}
-        onClick={() => { triggerHaptic("medium"); onProceed(); }}
+        onClick={() => { 
+          triggerHaptic("medium"); 
+          trackEvent("proceed_to_payment_tapped", { method: selectedMethod, amount: plan.usdTotal, plan: plan.periodMonths === 1 ? "30_days" : "1_year" });
+          onProceed(); 
+        }}
         style={{
           marginTop: "32px",
           width: "100%",

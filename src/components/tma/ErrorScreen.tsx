@@ -1,6 +1,7 @@
 "use client";
 
 import type { Translations } from "./types";
+import { trackEvent } from "../../lib/mixpanel";
 
 interface ErrorScreenProps {
   t: Translations;
@@ -60,7 +61,10 @@ export default function ErrorScreen({ t, onRetry, desc }: ErrorScreenProps) {
       </div>
 
       <button
-        onClick={onRetry}
+        onClick={() => {
+          trackEvent("try_again_tapped", { attempt_number: 1 });
+          onRetry();
+        }}
         style={{
           marginTop: "8px",
           padding: "14px 44px",
