@@ -720,7 +720,7 @@ export default function HomeScreen({
               transform: "translateX(-50%)",
               width: "100%",
               maxWidth: "480px",
-              height: "610px",
+              height: "auto",
               maxHeight: "90vh",
               overflowY: "auto",
               background: "#000", // Solid obsidian black
@@ -733,6 +733,7 @@ export default function HomeScreen({
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              gap: "24px",
               boxSizing: "border-box",
             }}
           >
