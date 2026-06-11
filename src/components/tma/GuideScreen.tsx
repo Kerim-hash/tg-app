@@ -557,7 +557,7 @@ export default function GuideScreen({
             >
               {selectedPlan
                 ? t.home.buyFor(
-                    `${Math.round(selectedPlan.usdTotal)}$`,
+                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
                     selectedPlan.starsPrice
                   )
                 : "SELECT AND BUY"}
@@ -1094,7 +1094,7 @@ export default function GuideScreen({
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
-                    {Math.round(selectedPlan.usdTotal)} USDT
+                    {selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)} USDT
                   </span>
                 </div>
               </button>
