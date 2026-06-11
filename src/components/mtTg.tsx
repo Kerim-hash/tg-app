@@ -65,66 +65,6 @@ const DEFAULT_PLANS: Plan[] = [
   },
 ];
 
-// Helper to dynamically sign test initData using the bot token on the client side
-async function signInitData(botToken: string, tgUser: any) {
-  try {
-    const authDate = Math.floor(Date.now() / 1000);
-    const userObj = {
-      id: tgUser?.id || 999102030,
-      first_name: tgUser?.first_name || "IGuard One Tester",
-      username: tgUser?.username || "iguard_one_test",
-      language_code: tgUser?.language_code || "ru"
-    };
-
-    const params: Record<string, string> = {
-      auth_date: String(authDate),
-      query_id: "AAExlKIlAAAAADI3hF8",
-      user: JSON.stringify(userObj)
-    };
-
-    const sortedKeys = Object.keys(params).sort();
-    const dataCheckString = sortedKeys.map(key => `${key}=${params[key]}`).join('\n');
-
-    const enc = new TextEncoder();
-
-    // Compute secretKey = HMAC-SHA256("WebAppData", botToken)
-    const webappDataKey = await window.crypto.subtle.importKey(
-      "raw",
-      enc.encode("WebAppData"),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-    const secretKeyBuffer = await window.crypto.subtle.sign(
-      "HMAC",
-      webappDataKey,
-      enc.encode(botToken)
-    );
-
-    // Compute hash = HMAC-SHA256(dataCheckString, secretKey)
-    const signKey = await window.crypto.subtle.importKey(
-      "raw",
-      secretKeyBuffer,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-    const hashBuffer = await window.crypto.subtle.sign(
-      "HMAC",
-      signKey,
-      enc.encode(dataCheckString)
-    );
-
-    // Convert hash to hex string
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-    return new URLSearchParams({ ...params, hash }).toString();
-  } catch (err) {
-    console.error("Failed to generate dynamic signature:", err);
-    return "string"; // fallback
-  }
-}
 
 function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
   if (!expirationStr) return undefined;
@@ -315,13 +255,9 @@ export default function TMA() {
     if (rawInitData && rawInitData !== "string") {
       runAuth(rawInitData);
     } else {
-      // If running outside Telegram or using a browser debugger that passes "string",
-      // dynamically sign a valid test payload using the bot token.
-      const BOT_TOKEN = "8963890590:AAGTT3Pvv-KMdM_i6gBk021_F_lx8Pxa_7I";
-      signInitData(BOT_TOKEN, tgUser).then((signedData) => {
-        console.log("[IGuard] Injected valid signed init_data:", signedData);
-        runAuth(signedData);
-      });
+      console.warn("[IGuard] App is running outside Telegram or initData is missing.");
+      setAuthError("Please open this app inside Telegram");
+      setIsLoadingAuth(false);
     }
   };
 
