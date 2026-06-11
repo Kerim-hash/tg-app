@@ -13,7 +13,7 @@ export default function ErrorScreen({ t, onRetry, desc }: ErrorScreenProps) {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100%",
         background: "#090B0E",
         display: "flex",
         flexDirection: "column",

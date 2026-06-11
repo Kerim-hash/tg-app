@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import WebApp from "@twa-dev/sdk";
 
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
@@ -161,7 +161,7 @@ export default function TMA() {
 
   // Navbar dynamic scroll visibility state
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
-  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const lastScrollTopRef = useRef(0);
 
   // Plans
   const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
@@ -519,7 +519,7 @@ export default function TMA() {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          height: "100%",
           background: "#090B0E",
           display: "flex",
           alignItems: "center",
@@ -609,7 +609,7 @@ export default function TMA() {
   return (
     <div
       style={{
-        height: "100vh",
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         background: "#000000",
@@ -635,12 +635,12 @@ export default function TMA() {
       <main
         onScroll={(e) => {
           const scrollTop = e.currentTarget.scrollTop;
-          if (scrollTop > lastScrollTop && scrollTop > 60) {
+          if (scrollTop > lastScrollTopRef.current && scrollTop > 60) {
             setIsNavbarVisible(false);
-          } else {
+          } else if (scrollTop < lastScrollTopRef.current) {
             setIsNavbarVisible(true);
           }
-          setLastScrollTop(scrollTop);
+          lastScrollTopRef.current = scrollTop;
         }}
         style={{ flex: 1, overflowY: "auto", position: "relative", paddingBottom: "110px" }}
       >

@@ -55,7 +55,7 @@ export default function PaymentScreen({
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100%",
         background: "#090B0E",
         display: "flex",
         flexDirection: "column",
