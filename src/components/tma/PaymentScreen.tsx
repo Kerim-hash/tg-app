@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./types";
 import { trackEvent } from "../../lib/mixpanel";
+import GradientBlock from "../GradientBlock";
 
 interface PaymentScreenProps {
   t: Translations;
@@ -17,9 +18,9 @@ interface PaymentScreenProps {
 }
 
 const METHOD_CONFIG: { id: PaymentMethod; icon: string }[] = [
-  { id: "card",   icon: "💳" },
-  { id: "crypto", icon: "₿"  },
-  { id: "stars",  icon: "⭐" },
+  { id: "card", icon: "💳" },
+  { id: "crypto", icon: "₿" },
+  { id: "stars", icon: "⭐" },
 ];
 
 export default function PaymentScreen({
@@ -34,7 +35,7 @@ export default function PaymentScreen({
   triggerHaptic,
 }: PaymentScreenProps) {
   const getLabel = (m: PaymentMethod) => {
-    if (m === "card")   return t.payment.card;
+    if (m === "card") return t.payment.card;
     if (m === "crypto") return t.payment.crypto;
     return t.payment.stars;
   };
@@ -55,7 +56,7 @@ export default function PaymentScreen({
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100%",
         background: "#090B0E",
         display: "flex",
         flexDirection: "column",
@@ -100,41 +101,91 @@ export default function PaymentScreen({
 
       {/* Method list */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {METHOD_CONFIG.map(({ id, icon }) => {
+        {METHOD_CONFIG.map(({ id }) => {
           const isSelected = selectedMethod === id;
           return (
             <button
               key={id}
-              onClick={() => { 
-                triggerHaptic("light"); 
+              onClick={() => {
+                triggerHaptic("light");
                 trackEvent("payment_method_selected", { method: id, amount: plan.usdTotal, currency: "USD" });
-                onSelectMethod(id); 
+                onSelectMethod(id);
               }}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 18px",
-                borderRadius: "16px",
+                width: "100%",
+                height: "80px",
+                borderRadius: "30px",
+                position: "relative",
                 cursor: "pointer",
+                border: "none",
+                outline: "none",
+                overflow: "hidden",
+                background: "transparent",
+                padding: 0,
                 transition: "all 0.2s ease",
-                border: isSelected
-                  ? "1.5px solid rgba(0,209,255,0.45)"
-                  : "1px solid rgba(255,255,255,0.08)",
-                background: isSelected
-                  ? "rgba(0,209,255,0.06)"
-                  : "rgba(255,255,255,0.04)",
+                marginBottom: "2px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "20px", lineHeight: 1 }}>{icon}</span>
-                <span style={{ fontSize: "14px", fontWeight: 500, color: isSelected ? "#fff" : "#D0D5E0" }}>
-                  {getLabel(id)}
-                </span>
-              </div>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: isSelected ? "#00D1FF" : "#8A94A6" }}>
-                {getPrice(id)}
-              </span>
+              <GradientBlock
+                label=""
+                primaryColor={"#FFFFFF"}
+                secondaryColor={"#9A9790"}
+                baseColor="#12141A"
+                borderRadius="30px"
+                height={80}
+                animate={isSelected}
+                glowIntensity={isSelected ? 1.2 : 0.6}
+                borderGlow={true}
+                enableMouseTracking={false}
+                enableHoverScale={false}
+                absoluteChildren={true}
+              >
+                {isSelected && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "2px solid #FFFFFF",
+                      borderRadius: "30px",
+                      pointerEvents: "none",
+                      zIndex: 30,
+                    }}
+                  />
+                )}
+
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "0 30px",
+                    zIndex: 20,
+                    pointerEvents: "none",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "15px",
+                     color: isSelected ? "#00D1FF" : "#FFFFFF",
+                      fontFamily: "var(--font-onest), sans-serif",
+                    }}
+                  >
+                    {getLabel(id)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: isSelected ? "rgba(255,255,255,0.85)" : "#8A94A6",
+                      fontFamily: "var(--font-onest), sans-serif",
+                    }}
+                  >
+                    {getPrice(id)}
+                  </span>
+                </div>
+              </GradientBlock>
             </button>
           );
         })}
@@ -145,10 +196,10 @@ export default function PaymentScreen({
       {/* Proceed button */}
       <button
         disabled={!canProceed}
-        onClick={() => { 
-          triggerHaptic("medium"); 
+        onClick={() => {
+          triggerHaptic("medium");
           trackEvent("proceed_to_payment_tapped", { method: selectedMethod, amount: plan.usdTotal, plan: plan.periodMonths === 1 ? "30_days" : "1_year" });
-          onProceed(); 
+          onProceed();
         }}
         style={{
           marginTop: "32px",

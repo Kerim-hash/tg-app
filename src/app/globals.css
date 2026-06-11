@@ -25,6 +25,11 @@ body {
   font-family: var(--font-onest), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
+#app-wrapper {
+  height: 100dvh;
+  width: 100%;
+}
+
 /* Constrain layout on desktop */
 @media (min-width: 600px) {
   body {
@@ -39,12 +44,22 @@ body {
     width: 400px;
     height: 644px;
     max-height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     position: relative;
     border: 1px solid #333;
     border-radius: 12px;
     background: var(--background);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera to prevent layout shift */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
