@@ -63,7 +63,7 @@ async function setupMenuButton() {
   const result = await apiCall('setChatMenuButton', {
     menu_button: {
       type: 'web_app',
-      text: '🛡️ IGuard VPN',
+      text: '🛡️ IGuard One',
       web_app: {
         url: WEBAPP_URL
       }
