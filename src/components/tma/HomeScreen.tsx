@@ -583,7 +583,7 @@ export default function HomeScreen({
         >
           {selectedPlan
             ? t.home.buyFor(
-              `${Math.round(selectedPlan.usdTotal)}$`,
+              `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
               selectedPlan.starsPrice
             )
             : "SELECT AND BUY"}
@@ -890,7 +890,7 @@ export default function HomeScreen({
               >
                 {selectedPlan
                   ? t.home.buyFor(
-                    `${Math.round(selectedPlan.usdTotal)}$`,
+                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
                     selectedPlan.starsPrice
                   )
                   : "SELECT AND CONTI"}
@@ -1242,7 +1242,7 @@ export default function HomeScreen({
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
-                    {Math.round(selectedPlan.usdTotal)} USDT
+                    {selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)} USDT
                   </span>
                 </div>
               </button>
