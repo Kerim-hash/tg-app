@@ -375,8 +375,8 @@ export default function HomeScreen({
             justifyContent: "center",
           }}
         ><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 10H15" stroke="white" stroke-linecap="square" stroke-linejoin="round" />
-            <path d="M10 15V5" stroke="white" stroke-linecap="square" stroke-linejoin="round" />
+            <path d="M5 10H15" stroke="white" strokeLinecap="square" stroke-linejoin="round" />
+            <path d="M10 15V5" stroke="white" strokeLinecap="square" stroke-linejoin="round" />
           </svg>
 
           {t.home.connectDevice.toUpperCase()}
@@ -528,12 +528,12 @@ export default function HomeScreen({
                       {getPlanLabelText(plan.periodMonths, language)}
                     </span>
                     <div>
-                      <span style={{ 
-                        display: "block", 
-                        fontSize: language === "ru" ? "20px" : "24px", 
-                        color: "#fff", 
-                        lineHeight: 1.1, 
-                        letterSpacing: "-0.02em" 
+                      <span style={{
+                        display: "block",
+                        fontSize: language === "ru" ? "20px" : "24px",
+                        color: "#fff",
+                        lineHeight: 1.1,
+                        letterSpacing: "-0.02em"
                       }}>
                         {`$ ${plan.usdPerMonth.toFixed(2)}`}
                       </span>
@@ -583,9 +583,9 @@ export default function HomeScreen({
         >
           {selectedPlan
             ? t.home.buyFor(
-                `${Math.round(selectedPlan.usdTotal)}$`,
-                selectedPlan.starsPrice
-              )
+              `${Math.round(selectedPlan.usdTotal)}$`,
+              selectedPlan.starsPrice
+            )
             : "SELECT AND BUY"}
         </button>
       </div>
@@ -830,12 +830,12 @@ export default function HomeScreen({
                             {getPlanLabelText(plan.periodMonths, language)}
                           </span>
                           <div>
-                            <span style={{ 
-                              display: "block", 
-                              fontSize: language === "ru" ? "24px" : "28px", 
-                              color: "#fff", 
-                              lineHeight: 1.1, 
-                              letterSpacing: "-0.02em" 
+                            <span style={{
+                              display: "block",
+                              fontSize: language === "ru" ? "24px" : "28px",
+                              color: "#fff",
+                              lineHeight: 1.1,
+                              letterSpacing: "-0.02em"
                             }}>
                               {`$ ${plan.usdPerMonth.toFixed(2)}`}
                             </span>
@@ -890,9 +890,9 @@ export default function HomeScreen({
               >
                 {selectedPlan
                   ? t.home.buyFor(
-                      `${Math.round(selectedPlan.usdTotal)}$`,
-                      selectedPlan.starsPrice
-                    )
+                    `${Math.round(selectedPlan.usdTotal)}$`,
+                    selectedPlan.starsPrice
+                  )
                   : "SELECT AND CONTI"}
               </button>
             </div>
