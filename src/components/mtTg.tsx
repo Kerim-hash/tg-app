@@ -278,9 +278,9 @@ export default function TMA() {
               periodMonths = (price.period || 30) / 30;
             }
 
-            const usdTotal = price.amount_usd || 0;
+            const usdTotal = (price.amount_usd || 0) / 100;
             const usdPerMonth = periodMonths > 0 ? usdTotal / periodMonths : usdTotal;
-            const rubTotal = price.amount_rub || 0;
+            const rubTotal = (price.amount_rub || 0) / 100;
             const rubPerMonth = periodMonths > 0 ? rubTotal / periodMonths : rubTotal;
 
             return {
