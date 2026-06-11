@@ -18,9 +18,9 @@ interface PaymentScreenProps {
 }
 
 const METHOD_CONFIG: { id: PaymentMethod; icon: string }[] = [
-  { id: "card",   icon: "💳" },
-  { id: "crypto", icon: "₿"  },
-  { id: "stars",  icon: "⭐" },
+  { id: "card", icon: "💳" },
+  { id: "crypto", icon: "₿" },
+  { id: "stars", icon: "⭐" },
 ];
 
 export default function PaymentScreen({
@@ -35,7 +35,7 @@ export default function PaymentScreen({
   triggerHaptic,
 }: PaymentScreenProps) {
   const getLabel = (m: PaymentMethod) => {
-    if (m === "card")   return t.payment.card;
+    if (m === "card") return t.payment.card;
     if (m === "crypto") return t.payment.crypto;
     return t.payment.stars;
   };
@@ -106,10 +106,10 @@ export default function PaymentScreen({
           return (
             <button
               key={id}
-              onClick={() => { 
-                triggerHaptic("light"); 
+              onClick={() => {
+                triggerHaptic("light");
                 trackEvent("payment_method_selected", { method: id, amount: plan.usdTotal, currency: "USD" });
-                onSelectMethod(id); 
+                onSelectMethod(id);
               }}
               style={{
                 width: "100%",
@@ -128,8 +128,8 @@ export default function PaymentScreen({
             >
               <GradientBlock
                 label=""
-                primaryColor={isSelected ? "#511A78" : "#FFFFFF"}
-                secondaryColor={isSelected ? "#4DA8D5" : "#9A9790"}
+                primaryColor={"#FFFFFF"}
+                secondaryColor={"#9A9790"}
                 baseColor="#12141A"
                 borderRadius="30px"
                 height={80}
@@ -137,7 +137,6 @@ export default function PaymentScreen({
                 glowIntensity={isSelected ? 1.2 : 0.6}
                 borderGlow={true}
                 enableMouseTracking={false}
-                solidGradient={isSelected ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
                 enableHoverScale={false}
                 absoluteChildren={true}
               >
@@ -170,7 +169,7 @@ export default function PaymentScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      color: "#FFFFFF",
+                     color: isSelected ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
@@ -197,10 +196,10 @@ export default function PaymentScreen({
       {/* Proceed button */}
       <button
         disabled={!canProceed}
-        onClick={() => { 
-          triggerHaptic("medium"); 
+        onClick={() => {
+          triggerHaptic("medium");
           trackEvent("proceed_to_payment_tapped", { method: selectedMethod, amount: plan.usdTotal, plan: plan.periodMonths === 1 ? "30_days" : "1_year" });
-          onProceed(); 
+          onProceed();
         }}
         style={{
           marginTop: "32px",
