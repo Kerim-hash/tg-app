@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./types";
 import { trackEvent } from "../../lib/mixpanel";
+import GradientBlock from "../GradientBlock";
 
 interface PaymentScreenProps {
   t: Translations;
@@ -100,7 +101,7 @@ export default function PaymentScreen({
 
       {/* Method list */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {METHOD_CONFIG.map(({ id, icon }) => {
+        {METHOD_CONFIG.map(({ id }) => {
           const isSelected = selectedMethod === id;
           return (
             <button
@@ -111,30 +112,81 @@ export default function PaymentScreen({
                 onSelectMethod(id); 
               }}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 18px",
-                borderRadius: "16px",
+                width: "100%",
+                height: "80px",
+                borderRadius: "30px",
+                position: "relative",
                 cursor: "pointer",
+                border: "none",
+                outline: "none",
+                overflow: "hidden",
+                background: "transparent",
+                padding: 0,
                 transition: "all 0.2s ease",
-                border: isSelected
-                  ? "1.5px solid rgba(0,209,255,0.45)"
-                  : "1px solid rgba(255,255,255,0.08)",
-                background: isSelected
-                  ? "rgba(0,209,255,0.06)"
-                  : "rgba(255,255,255,0.04)",
+                marginBottom: "2px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span style={{ fontSize: "20px", lineHeight: 1 }}>{icon}</span>
-                <span style={{ fontSize: "14px", fontWeight: 500, color: isSelected ? "#fff" : "#D0D5E0" }}>
-                  {getLabel(id)}
-                </span>
-              </div>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: isSelected ? "#00D1FF" : "#8A94A6" }}>
-                {getPrice(id)}
-              </span>
+              <GradientBlock
+                label=""
+                primaryColor={isSelected ? "#511A78" : "#FFFFFF"}
+                secondaryColor={isSelected ? "#4DA8D5" : "#9A9790"}
+                baseColor="#12141A"
+                borderRadius="30px"
+                height={80}
+                animate={isSelected}
+                glowIntensity={isSelected ? 1.2 : 0.6}
+                borderGlow={true}
+                enableMouseTracking={false}
+                solidGradient={isSelected ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
+                enableHoverScale={false}
+                absoluteChildren={true}
+              >
+                {isSelected && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      border: "2px solid #FFFFFF",
+                      borderRadius: "30px",
+                      pointerEvents: "none",
+                      zIndex: 30,
+                    }}
+                  />
+                )}
+
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "0 30px",
+                    zIndex: 20,
+                    pointerEvents: "none",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "15px",
+                      color: "#FFFFFF",
+                      fontFamily: "var(--font-onest), sans-serif",
+                    }}
+                  >
+                    {getLabel(id)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      color: isSelected ? "rgba(255,255,255,0.85)" : "#8A94A6",
+                      fontFamily: "var(--font-onest), sans-serif",
+                    }}
+                  >
+                    {getPrice(id)}
+                  </span>
+                </div>
+              </GradientBlock>
             </button>
           );
         })}
