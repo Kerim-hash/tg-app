@@ -1694,7 +1694,11 @@ export default function OnboardingScreen({
                 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: "16px", color: "#fff", fontWeight: 500, fontFamily: "var(--font-onest), sans-serif" }}>
-                    {billingRegion === "UAE" ? "UAE 🇦🇪" : billingRegion === "Russia" ? (language === "ru" ? "Россия 🇷🇺" : "Russia 🇷🇺") : (language === "ru" ? "Казахстан 🇰🇿" : "Kazakhstan 🇰🇿")}
+                    {billingRegion === "UAE"
+                      ? (language === "ru" ? "ОАЭ 🇦🇪" : "UAE 🇦🇪")
+                      : billingRegion === "Uzbekistan"
+                      ? (language === "ru" ? "РУз 🇺🇿" : "Uzbekistan 🇺🇿")
+                      : (language === "ru" ? "РБ 🇧🇾" : "Belarus 🇧🇾")}
                   </span>
                   {/* Chevron down */}
                   <svg
@@ -1733,9 +1737,9 @@ export default function OnboardingScreen({
                   }}
                 >
                   {[
-                    { value: "UAE", label: "UAE 🇦🇪" },
-                    { value: "Russia", label: language === "ru" ? "Россия 🇷🇺" : "Russia 🇷🇺" },
-                    { value: "Kazakhstan", label: language === "ru" ? "Казахстан 🇰🇿" : "Kazakhstan 🇰🇿" },
+                    { value: "UAE", label: language === "ru" ? "ОАЭ 🇦🇪" : "UAE 🇦🇪" },
+                    { value: "Uzbekistan", label: language === "ru" ? "РУз 🇺🇿" : "Uzbekistan 🇺🇿" },
+                    { value: "Belarus", label: language === "ru" ? "РБ 🇧🇾" : "Belarus 🇧🇾" },
                   ].map((opt) => (
                     <div
                       key={opt.value}
@@ -1753,7 +1757,7 @@ export default function OnboardingScreen({
                         transition: "background 0.2s ease",
                         textAlign: "left",
                         fontFamily: "var(--font-onest), sans-serif",
-                        borderBottom: opt.value !== "Kazakhstan" ? "1px solid rgba(255, 255, 255, 0.06)" : "none",
+                        borderBottom: opt.value !== "Belarus" ? "1px solid rgba(255, 255, 255, 0.06)" : "none",
                       }}
                     >
                       {opt.label}
