@@ -879,7 +879,7 @@ export default function OnboardingScreen({
                   }}
                 >
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: "16px", color: "#fff" }}>
+                    <span style={{ fontSize: "16px", color: "#fff", textWrap: "nowrap" }}>
                       {t.onboarding.privateBrowsing}
                     </span>
                     <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.4)" }}>

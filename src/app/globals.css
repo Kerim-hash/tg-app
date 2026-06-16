@@ -27,9 +27,9 @@ body {
 
 #app-wrapper {
   height: 100dvh;
-  width: 100%;
+  margin: 0 auto;
+  max-width: 390px;
 }
-
 /* Constrain layout on desktop */
 @media (min-width: 600px) {
   body {
