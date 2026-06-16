@@ -16,6 +16,7 @@ import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
 import SupportFormDrawer from "./tma/SupportFormDrawer";
+import OnboardingScreen from "./tma/OnboardingScreen";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [
@@ -95,6 +96,7 @@ export default function TMA() {
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
@@ -263,6 +265,10 @@ export default function TMA() {
 
   useEffect(() => {
     handleInitAuth();
+    const completed = safeStorage.getItem("iguard_onboarding_completed");
+    if (completed !== "true") {
+      setShowOnboarding(true);
+    }
   }, []);
 
   // ─── Fetch live prices ─────────────────────────────────────────────────────
@@ -524,6 +530,21 @@ export default function TMA() {
     );
   }
 
+  if (showOnboarding) {
+    return (
+      <OnboardingScreen
+        t={t}
+        language={language}
+        onComplete={() => {
+          safeStorage.setItem("iguard_onboarding_completed", "true");
+          setShowOnboarding(false);
+        }}
+        plans={plans}
+        triggerHaptic={triggerHaptic}
+      />
+    );
+  }
+
   // ─── Payment method selection ─────────────────────────────────────────────
   if (showPayment && selectedPlan) {
     return (
@@ -624,6 +645,10 @@ export default function TMA() {
               onNotifsChange={handleNotifsChange}
               referralInfo={referralInfo}
               triggerHaptic={triggerHaptic}
+              onResetOnboarding={() => {
+                safeStorage.removeItem("iguard_onboarding_completed");
+                setShowOnboarding(true);
+              }}
             />
           </div>
         )}
