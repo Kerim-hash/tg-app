@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import WebApp from "@twa-dev/sdk";
+import Intercom from "@intercom/messenger-js-sdk";
+
 
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
@@ -97,10 +99,39 @@ export default function TMA() {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [intercomFailed, setIntercomFailed] = useState(false);
 
   const completeOnboarding = () => {
     safeStorage.setItem("iguard_onboarding_completed", "true");
     setShowOnboarding(false);
+  };
+
+  const handleOpenSupport = () => {
+    const w = window as any;
+    if (typeof window !== "undefined" && w.Intercom && !intercomFailed) {
+      if (w.Intercom.q) {
+        // Intercom is queued but not loaded yet
+        w.Intercom('show');
+        
+        // Timeout check: if it doesn't load in 2.5 seconds, open the support drawer
+        setTimeout(() => {
+          if (w.Intercom && w.Intercom.q) {
+            console.warn("Intercom script load timed out. Falling back to support drawer.");
+            setIntercomFailed(true);
+            setIsSupportFormOpen(true);
+          }
+        }, 2500);
+        return;
+      } else {
+        try {
+          w.Intercom('show');
+          return;
+        } catch (err) {
+          console.error("Failed to open Intercom messenger:", err);
+        }
+      }
+    }
+    setIsSupportFormOpen(true);
   };
 
   // User
@@ -275,6 +306,40 @@ export default function TMA() {
       setShowOnboarding(true);
     }
   }, []);
+
+  // Load and boot Intercom on mount
+  useEffect(() => {
+    const intercomAppId = process.env.NEXT_PUBLIC_INTERCOM_APP_ID || "ljq492l3";
+    try {
+      Intercom({
+        app_id: intercomAppId,
+        hide_default_launcher: true,
+      });
+    } catch (err) {
+      console.error("Failed to initialize Intercom SDK:", err);
+      setIntercomFailed(true);
+    }
+
+    return () => {
+      if ((window as any).Intercom) {
+        (window as any).Intercom("shutdown");
+      }
+    };
+  }, []);
+
+  // Update Intercom user attributes when user state changes
+  useEffect(() => {
+    if ((window as any).Intercom) {
+      (window as any).Intercom("update", {
+        user_id: user?.id ? String(user.id) : undefined,
+        name: user?.firstName,
+        custom_data: {
+          username: user?.username || "",
+          isPremium: user?.isPremium || false,
+        }
+      });
+    }
+  }, [user]);
 
   // ─── Fetch live prices ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -533,8 +598,8 @@ export default function TMA() {
     const authDesc = language === "ru"
       ? "Произошла ошибка при авторизации. Попробуйте снова."
       : language === "es"
-      ? "Error de autenticación. Inténtelo de nuevo."
-      : "Authentication failed. Please try again.";
+        ? "Error de autenticación. Inténtelo de nuevo."
+        : "Authentication failed. Please try again.";
     return (
       <ErrorScreen
         t={t}
@@ -654,7 +719,7 @@ export default function TMA() {
             <GuideScreen
               t={t}
               personalKey={personalKey}
-              onOpenSupportForm={() => setIsSupportFormOpen(true)}
+              onOpenSupportForm={handleOpenSupport}
               triggerHaptic={triggerHaptic}
               plans={plans}
               selectedPlan={selectedPlan}
@@ -690,7 +755,7 @@ export default function TMA() {
               t={t}
               triggerHaptic={triggerHaptic}
               language={language}
-              onOpenSupportForm={() => setIsSupportFormOpen(true)}
+              onOpenSupportForm={handleOpenSupport}
             />
           </div>
         )}
