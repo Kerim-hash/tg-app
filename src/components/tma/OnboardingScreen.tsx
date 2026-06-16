@@ -12,6 +12,7 @@ interface OnboardingScreenProps {
   plans: Plan[];
   triggerHaptic: (type: HapticType) => void;
   personalKey?: string;
+  onSelectPlanForPayment?: (planId: string) => void;
 }
 
 const AppleIcon = () => (
@@ -258,6 +259,7 @@ export default function OnboardingScreen({
   plans,
   triggerHaptic,
   personalKey,
+  onSelectPlanForPayment,
 }: OnboardingScreenProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
@@ -265,10 +267,7 @@ export default function OnboardingScreen({
   const [wifiSecurity, setWifiSecurity] = useState<boolean>(true);
   const [copied, setCopied] = useState(false);
   const [tempSelectedPlanId, setTempSelectedPlanId] = useState<string>("");
-  const [isRegionModalOpen, setIsRegionModalOpen] = useState<boolean>(false);
-  const [billingRegion, setBillingRegion] = useState<string>("UAE");
   const [planPurchased, setPlanPurchased] = useState<boolean>(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const platform = typeof window !== "undefined" ? (window as any)?.Telegram?.WebApp?.platform || "" : "";
   const isAndroid = platform === "android";
@@ -296,17 +295,7 @@ export default function OnboardingScreen({
     return result;
   }, [plans, plan30Days, plan1Year]);
 
-  const [selectedPlanId, setSelectedPlanId] = useState<string>("");
-
-  useEffect(() => {
-    if (plans.length > 0 && !tempSelectedPlanId) {
-      const defaultPlan = plan1Year || onboardingPlans[1] || onboardingPlans[0];
-      if (defaultPlan) {
-        setTempSelectedPlanId(defaultPlan.id);
-        setSelectedPlanId(defaultPlan.id);
-      }
-    }
-  }, [plans, plan1Year, onboardingPlans, tempSelectedPlanId]);
+  // No default selection on initialization as user can skip step
 
   useEffect(() => {
     trackEvent("onboarding_screen_viewed", { step: currentStep });
@@ -879,7 +868,7 @@ export default function OnboardingScreen({
                   }}
                 >
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: "16px", color: "#fff" }}>
+                    <span style={{ fontSize: "16px", color: "#fff", textWrap: "nowrap" }}>
                       {t.onboarding.privateBrowsing}
                     </span>
                     <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.4)" }}>
@@ -1082,8 +1071,14 @@ export default function OnboardingScreen({
             <div style={{ display: "flex", justifyContent: "center", marginTop: "24px", width: "100%" }}>
               <button
                 onClick={() => {
+                  if (!tempSelectedPlanId) {
+                    triggerHaptic("warning");
+                    return;
+                  }
                   triggerHaptic("medium");
-                  setIsRegionModalOpen(true);
+                  if (onSelectPlanForPayment) {
+                    onSelectPlanForPayment(tempSelectedPlanId);
+                  }
                 }}
                 style={{
                   background: "rgba(255, 255, 255, 0.02)",
@@ -1293,8 +1288,14 @@ export default function OnboardingScreen({
                     <div style={{ display: "flex", justifyContent: "center", marginTop: "4px" }}>
                       <button
                         onClick={() => {
+                          if (!tempSelectedPlanId) {
+                            triggerHaptic("warning");
+                            return;
+                          }
                           triggerHaptic("medium");
-                          setIsRegionModalOpen(true);
+                          if (onSelectPlanForPayment) {
+                            onSelectPlanForPayment(tempSelectedPlanId);
+                          }
                         }}
                         style={{
                           background: "rgba(255, 255, 255, 0.02)",
@@ -1337,14 +1338,14 @@ export default function OnboardingScreen({
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: "14px",
-                      color: selectedPlanId ? "#fff" : "rgba(255,255,255,0.4)",
+                      color: "#fff",
                       flexShrink: 0,
                       fontFamily: "JetBrains Mono, monospace",
                     }}
                   >
                     2
                   </div>
-                  <span style={{ fontSize: "16px", color: selectedPlanId ? "#fff" : "rgba(255,255,255,0.4)", fontFamily: "var(--font-onest), sans-serif" }}>
+                  <span style={{ fontSize: "16px", color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
                     {t.onboarding.getAppStep}
                   </span>
                 </div>
@@ -1428,14 +1429,14 @@ export default function OnboardingScreen({
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: "14px",
-                      color: selectedPlanId ? "#fff" : "rgba(255,255,255,0.4)",
+                      color: "#fff",
                       flexShrink: 0,
                       fontFamily: "JetBrains Mono, monospace",
                     }}
                   >
                     3
                   </div>
-                  <span style={{ fontSize: "16px", color: selectedPlanId ? "#fff" : "rgba(255,255,255,0.4)", fontFamily: "var(--font-onest), sans-serif" }}>
+                  <span style={{ fontSize: "16px", color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
                     {t.onboarding.pasteKeyStep}
                   </span>
                 </div>
@@ -1620,184 +1621,7 @@ export default function OnboardingScreen({
         </div>
       )}
 
-      {/* Billing Region Drawer */}
-      {isRegionModalOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setIsRegionModalOpen(false)}
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "rgba(0, 0, 0, 0.6)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              zIndex: 100,
-              transition: "opacity 0.3s ease",
-            }}
-          />
-          {/* Drawer content */}
-          <div
-            className="animate-drawer-onboarding"
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              background: "#0E1013",
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "32px 32px 0 0",
-              padding: "24px 20px 40px",
-              zIndex: 110,
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-          >
-            {/* Drag handle */}
-            <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 4px" }} />
-
-            <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "6px" }}>
-              <h3 style={{
-                fontSize: "20px",
-                fontWeight: 600,
-                color: "#fff",
-                margin: 0,
-                fontFamily: "var(--font-onest), sans-serif",
-              }}>
-                {language === "ru" ? "Подтвердите регион оплаты" : language === "es" ? "Confirme la región de facturación" : "Confirm a billing region first"}
-              </h3>
-            </div>
-
-            {/* Select Box */}
-            <div style={{ position: "relative", width: "100%" }}>
-              <div
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                style={{
-                  width: "100%",
-                  background: "#16171A",
-                  border: "1px solid rgba(255, 255, 255, 0.12)",
-                  borderRadius: "20px",
-                  padding: "16px 20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "6px",
-                  textAlign: "left",
-                  boxSizing: "border-box",
-                  cursor: "pointer",
-                }}
-              >
-                <span style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", fontFamily: "var(--font-onest), sans-serif" }}>
-                  {language === "ru" ? "Регион оплаты" : language === "es" ? "Región de facturación" : "Billing region"}
-                </span>
-                
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "16px", color: "#fff", fontWeight: 500, fontFamily: "var(--font-onest), sans-serif" }}>
-                    {billingRegion === "UAE" ? "UAE 🇦🇪" : billingRegion === "Russia" ? (language === "ru" ? "Россия 🇷🇺" : "Russia 🇷🇺") : (language === "ru" ? "Казахстан 🇰🇿" : "Kazakhstan 🇰🇿")}
-                  </span>
-                  {/* Chevron down */}
-                  <svg
-                    width="12"
-                    height="8"
-                    viewBox="0 0 12 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{
-                      transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 0.2s ease",
-                      opacity: 0.6,
-                    }}
-                  >
-                    <path d="M1 1.5L6 6.5L11 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Custom Options List */}
-              {isDropdownOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "calc(100% + 8px)",
-                    left: 0,
-                    right: 0,
-                    background: "#16171A",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
-                    borderRadius: "20px",
-                    overflow: "hidden",
-                    zIndex: 120,
-                    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  {[
-                    { value: "UAE", label: "UAE 🇦🇪" },
-                    { value: "Russia", label: language === "ru" ? "Россия 🇷🇺" : "Russia 🇷🇺" },
-                    { value: "Kazakhstan", label: language === "ru" ? "Казахстан 🇰🇿" : "Kazakhstan 🇰🇿" },
-                  ].map((opt) => (
-                    <div
-                      key={opt.value}
-                      onClick={() => {
-                        triggerHaptic("light");
-                        setBillingRegion(opt.value);
-                        setIsDropdownOpen(false);
-                      }}
-                      style={{
-                        padding: "14px 20px",
-                        fontSize: "15px",
-                        color: "#fff",
-                        cursor: "pointer",
-                        background: billingRegion === opt.value ? "rgba(255, 255, 255, 0.08)" : "transparent",
-                        transition: "background 0.2s ease",
-                        textAlign: "left",
-                        fontFamily: "var(--font-onest), sans-serif",
-                        borderBottom: opt.value !== "Kazakhstan" ? "1px solid rgba(255, 255, 255, 0.06)" : "none",
-                      }}
-                    >
-                      {opt.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => {
-                triggerHaptic("success");
-                setPlanPurchased(true);
-                if (tempSelectedPlanId) {
-                  setSelectedPlanId(tempSelectedPlanId);
-                }
-                setIsRegionModalOpen(false);
-                // If they were on Step 2 (Choose Plan), automatically advance to Step 3 (Connect)
-                if (currentStep === 2) {
-                  setDirection("next");
-                  setCurrentStep(3);
-                }
-              }}
-              style={{
-                background: "#FFFFFF",
-                border: "none",
-                color: "#000000",
-                fontFamily: "JetBrains Mono, monospace",
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                padding: "14px",
-                borderRadius: "14px",
-                cursor: "pointer",
-                boxShadow: "0 4px 16px rgba(255, 255, 255, 0.15)",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              {language === "ru" ? "ПОДТВЕРДИТЬ" : language === "es" ? "CONFIRMAR" : "CONFIRM"}
-            </button>
-          </div>
-        </>
-      )}
+      {/* Regions confirmation drawer removed as payment methods are shown directly */}
     </div>
   );
 }
