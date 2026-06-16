@@ -134,6 +134,11 @@ export default function TMA() {
     setIsSupportFormOpen(true);
   };
 
+  const completeOnboarding = () => {
+    safeStorage.setItem("iguard_onboarding_completed", "true");
+    setShowOnboarding(false);
+  };
+
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
 
