@@ -706,7 +706,7 @@ export default function OnboardingScreen({
               {t.onboarding.useCasesDesc}
             </p>
 
-            <div style={{ display: "flex", gap: "10px", width: "100%", flex: 1, paddingBottom: "70px" }}>
+            <div style={{ display: "flex", gap: "10px", width: "100%", flex: 1, maxHeight: "350px" }}>
               {/* Left Column */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
 
