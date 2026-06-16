@@ -12,6 +12,7 @@ interface ProfileScreenProps {
   onNotifsChange: (notifs: Notifications) => void;
   referralInfo: ReferralInfo | null;
   triggerHaptic: (type: HapticType) => void;
+  onResetOnboarding?: () => void;
 }
 
 const LANG_OPTIONS: { value: Language; label: string }[] = [
@@ -65,6 +66,7 @@ export default function ProfileScreen({
   onNotifsChange,
   referralInfo,
   triggerHaptic,
+  onResetOnboarding,
 }: ProfileScreenProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState<"web" | "bot" | null>(null);
@@ -437,6 +439,46 @@ export default function ProfileScreen({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Reset Onboarding Option */}
+      <div
+        style={{
+          marginTop: "40px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "12px",
+          opacity: dropdownOpen ? 0.3 : 1,
+          pointerEvents: dropdownOpen ? "none" : "auto",
+          transition: "opacity 0.25s ease",
+        }}
+      >
+        <button
+          onClick={() => {
+            triggerHaptic("medium");
+            if (onResetOnboarding) {
+              onResetOnboarding();
+            }
+          }}
+          className="hover-scale-btn"
+          style={{
+            padding: "12px 24px",
+            borderRadius: "16px",
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            color: "#FF4455",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+            outline: "none",
+            width: "100%",
+            fontFamily: "var(--font-onest), sans-serif",
+            textAlign: "center",
+          }}
+        >
+          {language === "ru" ? "Сбросить онбординг" : language === "es" ? "Restablecer Inducción" : "Reset Onboarding"}
+        </button>
       </div>
     </div>
   );
