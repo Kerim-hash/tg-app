@@ -16,6 +16,7 @@ import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
 import SupportFormDrawer from "./tma/SupportFormDrawer";
+import OnboardingScreen from "./tma/OnboardingScreen";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [
@@ -95,6 +96,12 @@ export default function TMA() {
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const completeOnboarding = () => {
+    safeStorage.setItem("iguard_onboarding_completed", "true");
+    setShowOnboarding(false);
+  };
 
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
@@ -263,6 +270,10 @@ export default function TMA() {
 
   useEffect(() => {
     handleInitAuth();
+    const completed = safeStorage.getItem("iguard_onboarding_completed");
+    if (completed !== "true") {
+      setShowOnboarding(true);
+    }
   }, []);
 
   // ─── Fetch live prices ─────────────────────────────────────────────────────
@@ -333,6 +344,9 @@ export default function TMA() {
             setIsPaying(false);
             if (status === "paid") {
               trackEvent("payment_success", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", amount: selectedPlan.starsPrice || 0, currency: "STARS" });
+              if (showOnboarding) {
+                completeOnboarding();
+              }
               handleReset();
               triggerHaptic("success");
               refreshUserData();
@@ -361,6 +375,9 @@ export default function TMA() {
         if (link) {
           trackEvent("payment_external_opened", { method: merchant, amount: selectedPlan.usdTotal, opens_new_tab: true });
           WebApp.openLink(link);
+          if (showOnboarding) {
+            completeOnboarding();
+          }
           handleReset();
         } else {
           throw new Error("No payment link returned from server");
@@ -369,6 +386,9 @@ export default function TMA() {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
+        if (showOnboarding) {
+          completeOnboarding();
+        }
         handleReset();
       }
     } catch (err) {
@@ -397,6 +417,9 @@ export default function TMA() {
             setIsPaying(false);
             if (status === "paid") {
               trackEvent("payment_success", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", amount: selectedPlan.starsPrice || 0, currency: "STARS" });
+              if (showOnboarding) {
+                completeOnboarding();
+              }
               handleReset();
               triggerHaptic("success");
               refreshUserData();
@@ -425,6 +448,9 @@ export default function TMA() {
         if (link) {
           trackEvent("payment_external_opened", { method: merchant, amount: selectedPlan.usdTotal, opens_new_tab: true });
           WebApp.openLink(link);
+          if (showOnboarding) {
+            completeOnboarding();
+          }
           handleReset();
         } else {
           throw new Error("No payment link returned from server");
@@ -433,6 +459,9 @@ export default function TMA() {
         // Other methods simulated
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsPaying(false);
+        if (showOnboarding) {
+          completeOnboarding();
+        }
         handleReset();
       }
     } catch (err) {
@@ -523,21 +552,44 @@ export default function TMA() {
       />
     );
   }
-
-  // ─── Payment method selection ─────────────────────────────────────────────
-  if (showPayment && selectedPlan) {
+  if (showOnboarding) {
     return (
-      <PaymentScreen
-        t={t}
-        language={language}
-        plan={selectedPlan}
-        selectedMethod={selectedMethod}
-        onSelectMethod={setSelectedMethod}
-        onProceed={handlePayment}
-        onBack={() => setShowPayment(false)}
-        isPaying={isPaying}
-        triggerHaptic={triggerHaptic}
-      />
+      <>
+        <OnboardingScreen
+          t={t}
+          language={language}
+          onComplete={() => {
+            safeStorage.setItem("iguard_onboarding_completed", "true");
+            setShowOnboarding(false);
+          }}
+          plans={plans}
+          triggerHaptic={triggerHaptic}
+          onSelectPlanForPayment={(planId) => {
+            const targetPlan = plans.find((p) => p.id === planId);
+            if (targetPlan) {
+              setSelectedPlan(targetPlan);
+              setShowPayment(true);
+            }
+          }}
+        />
+        {showPayment && selectedPlan && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#000", display: "flex", justifyContent: "center" }}>
+            <div style={{ width: "100%", maxWidth: "480px", height: "100%", position: "relative" }}>
+              <PaymentScreen
+                t={t}
+                language={language}
+                plan={selectedPlan}
+                selectedMethod={selectedMethod}
+                onSelectMethod={setSelectedMethod}
+                onProceed={handlePayment}
+                onBack={() => setShowPayment(false)}
+                isPaying={isPaying}
+                triggerHaptic={triggerHaptic}
+              />
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -624,6 +676,10 @@ export default function TMA() {
               onNotifsChange={handleNotifsChange}
               referralInfo={referralInfo}
               triggerHaptic={triggerHaptic}
+              onResetOnboarding={() => {
+                safeStorage.removeItem("iguard_onboarding_completed");
+                setShowOnboarding(true);
+              }}
             />
           </div>
         )}
@@ -659,6 +715,23 @@ export default function TMA() {
         isOpen={isSupportFormOpen}
         onClose={() => setIsSupportFormOpen(false)}
       />
+
+      {/* Payment screen overlay */}
+      {showPayment && selectedPlan && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 1000, background: "#000" }}>
+          <PaymentScreen
+            t={t}
+            language={language}
+            plan={selectedPlan}
+            selectedMethod={selectedMethod}
+            onSelectMethod={setSelectedMethod}
+            onProceed={handlePayment}
+            onBack={() => setShowPayment(false)}
+            isPaying={isPaying}
+            triggerHaptic={triggerHaptic}
+          />
+        </div>
+      )}
     </div>
   );
 }

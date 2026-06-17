@@ -12,6 +12,7 @@ interface ProfileScreenProps {
   onNotifsChange: (notifs: Notifications) => void;
   referralInfo: ReferralInfo | null;
   triggerHaptic: (type: HapticType) => void;
+  onResetOnboarding?: () => void;
 }
 
 const LANG_OPTIONS: { value: Language; label: string }[] = [
@@ -65,6 +66,7 @@ export default function ProfileScreen({
   onNotifsChange,
   referralInfo,
   triggerHaptic,
+  onResetOnboarding,
 }: ProfileScreenProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState<"web" | "bot" | null>(null);
