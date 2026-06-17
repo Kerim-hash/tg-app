@@ -272,7 +272,7 @@ export default function OnboardingScreen({
   const platform = typeof window !== "undefined" ? (window as any)?.Telegram?.WebApp?.platform || "" : "";
   const isAndroid = platform === "android";
 
-  const activeKey = personalKey || "https://fglove.online/x/dFCGjeCq4zw3d0f";
+  const activeKey = personalKey || "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeKey);
