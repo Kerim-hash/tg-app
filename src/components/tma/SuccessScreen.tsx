@@ -121,6 +121,7 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
             fontWeight: 600,
             cursor: "pointer",
             transition: "all 0.2s ease",
+            textWrap: "nowrap"
           }}
         >
           {t.success.readGuide}

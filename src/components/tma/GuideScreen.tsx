@@ -48,32 +48,31 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
 }
 
 const SERVERS_ROW1 = [
-  { name: "Germany", flag: "🇩🇪" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Russia", flag: "🇷🇺" },
   { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Austria", flag: "🇦🇹" },
   { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Kazahstan", flag: "🇰🇿" },
+  { name: "Albania", flag: "🇦🇱" },
 ];
 
 const SERVERS_ROW2 = [
   { name: "Georgia", flag: "🇬🇪" },
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
+  { name: "Netherlands", flag: "🇳🇱" },
+  { name: "Singapore", flag: "🇸🇬" },
+  { name: "Armenia", flag: "🇦🇲" },
+  { name: "France", flag: "🇫🇷" },
+  { name: "Germany", flag: "🇩🇪" },
 ];
 
 const SERVERS_ROW3 = [
   { name: "Armenia", flag: "🇦🇲" },
-  { name: "Albania", flag: "🇦🇱" },
+  { name: "USA", flag: "🇺🇸" },
   { name: "Germany", flag: "🇩🇪" },
-  { name: "Armenia", flag: "🇦🇲" },
+  { name: "Turkey", flag: "🇹🇷" },
   { name: "Albania", flag: "🇦🇱" },
   { name: "Germany", flag: "🇩🇪" },
 ];
-
 interface GuideScreenProps {
   t: Translations;
   personalKey?: string;
@@ -118,6 +117,7 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
           cursor: "pointer",
           textAlign: "left",
           outline: "none",
+          fontWeight: 400,
         }}
       >
         <span>{question}</span>
@@ -377,7 +377,7 @@ export default function GuideScreen({
           className="animate-fade-in-up"
           style={{
             height: "1px",
-            backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+            backgroundImage: "repeating-linear-gradient(to right, #999999 0px, #999999 1px, transparent 1px, transparent 8px)",
             margin: "4px 0 16px",
             animationDelay: "250ms",
           }}
@@ -429,7 +429,7 @@ export default function GuideScreen({
                     style={{
                       width: "100%",
                       height: "170px",
-                      borderRadius: "30px",
+                      borderRadius: "45px",
                       position: "relative",
                       cursor: "pointer",
                       border: "none",
@@ -441,10 +441,10 @@ export default function GuideScreen({
                   >
                     <GradientBlock
                       label=""
-                      primaryColor={isYearly ? "#511A78" : "#cfdfe5"}
+                      primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
                       secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                      baseColor="#08090a"
-                      borderRadius="30px"
+                      baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                      borderRadius="45px"
                       height="100%"
                       animate={isYearly}
                       glowIntensity={isYearly ? .3 : 0.5}
@@ -460,8 +460,8 @@ export default function GuideScreen({
                           style={{
                             position: "absolute",
                             inset: 0,
-                            border: "2px solid #FFFFFF",
-                            borderRadius: "30px",
+                            border: "1px solid #FFFFFF",
+                            borderRadius: "45px",
                             pointerEvents: "none",
                             zIndex: 30,
                           }}
@@ -476,7 +476,7 @@ export default function GuideScreen({
                           display: "flex",
                           flexDirection: "column",
                           justifyContent: "space-between",
-                          padding: "16px 12px 20px",
+                          padding: "15px 12px 22px",
                           pointerEvents: "none",
                           boxSizing: "border-box",
                           textAlign: "center",
@@ -499,12 +499,12 @@ export default function GuideScreen({
                           {getPlanLabelText(plan.periodMonths, language)}
                         </span>
                         <div>
-                          <span style={{ 
-                            display: "block", 
-                            fontSize: language === "ru" ? "20px" : "24px", 
-                            color: "#fff", 
-                            lineHeight: 1.1, 
-                            letterSpacing: "-0.02em" 
+                          <span style={{
+                            display: "block",
+                            fontSize: language === "ru" ? "20px" : "24px",
+                            color: "#fff",
+                            lineHeight: 1.1,
+                            letterSpacing: "-0.02em"
                           }}>
                             {`$ ${plan.usdPerMonth.toFixed(2)}`}
                           </span>
@@ -546,7 +546,6 @@ export default function GuideScreen({
                 border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
                 color: selectedPlan ? "#000000" : "#FFFFFF",
                 fontSize: "12px",
-                fontWeight: 800,
                 letterSpacing: "0.05em",
                 alignSelf: "center",
                 cursor: "pointer",
@@ -557,9 +556,9 @@ export default function GuideScreen({
             >
               {selectedPlan
                 ? t.home.buyFor(
-                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                    selectedPlan.starsPrice
-                  )
+                  `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                  selectedPlan.starsPrice
+                )
                 : "SELECT AND BUY"}
             </button>
           </div>
@@ -570,7 +569,7 @@ export default function GuideScreen({
           className="animate-fade-in-up"
           style={{
             height: "1px",
-            backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+            backgroundImage: "repeating-linear-gradient(to right, #999999 0px, #999999 1px, transparent 1px, transparent 8px)",
             margin: "4px 0 16px",
             animationDelay: "350ms",
           }}
@@ -681,7 +680,7 @@ export default function GuideScreen({
           className="animate-fade-in-up"
           style={{
             height: "1px",
-            backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+            backgroundImage: "repeating-linear-gradient(to right, #999999 0px, #999999 1px, transparent 1px, transparent 8px)",
             margin: "4px 0 16px",
             animationDelay: "450ms",
           }}
@@ -755,7 +754,6 @@ export default function GuideScreen({
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "13px",
-                    fontWeight: 500,
                     color: "#fff",
                     background: "#1A1A1A",
                     padding: "6.5px 12px 6.5px 8px",
@@ -780,7 +778,6 @@ export default function GuideScreen({
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "13px",
-                    fontWeight: 500,
                     color: "#fff",
                     background: "#1A1A1A",
                     padding: "6.5px 12px 6.5px 8px",
@@ -805,7 +802,6 @@ export default function GuideScreen({
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "13px",
-                    fontWeight: 500,
                     color: "#fff",
                     background: "#1A1A1A",
                     padding: "6.5px 12px 6.5px 8px",
@@ -926,7 +922,7 @@ export default function GuideScreen({
             <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 4px" }} />
 
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#fff", margin: 0, textAlign: "left" }}>
+              <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left" }}>
                 Select a payment method
               </h2>
             </div>
@@ -972,7 +968,7 @@ export default function GuideScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
@@ -996,7 +992,6 @@ export default function GuideScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      fontWeight: 600,
                       color: localSelectedMethod === "card" ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1006,7 +1001,6 @@ export default function GuideScreen({
                   <span
                     style={{
                       fontSize: "14px",
-                      fontWeight: 500,
                       color: "#8A94A6",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1055,7 +1049,7 @@ export default function GuideScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
@@ -1079,7 +1073,6 @@ export default function GuideScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      fontWeight: 600,
                       color: localSelectedMethod === "crypto" ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1089,7 +1082,6 @@ export default function GuideScreen({
                   <span
                     style={{
                       fontSize: "14px",
-                      fontWeight: 500,
                       color: "#8A94A6",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1138,7 +1130,7 @@ export default function GuideScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
@@ -1162,7 +1154,6 @@ export default function GuideScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                      fontWeight: 600,
                       color: localSelectedMethod === "stars" ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1172,7 +1163,6 @@ export default function GuideScreen({
                   <span
                     style={{
                       fontSize: "14px",
-                      fontWeight: 500,
                       color: "#8A94A6",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
@@ -1204,7 +1194,6 @@ export default function GuideScreen({
                 border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
                 color: localSelectedMethod ? "#000000" : "#FFFFFF",
                 fontSize: "12px",
-                fontWeight: 800,
                 letterSpacing: "0.05em",
                 alignSelf: "center",
                 cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",
@@ -1224,7 +1213,7 @@ export default function GuideScreen({
                     style={{
                       width: "14px",
                       height: "14px",
-                      border: "2px solid rgba(0,0,0,0.1)",
+                      border: "1px solid rgba(0,0,0,0.1)",
                       borderTop: "2px solid #000",
                       borderRadius: "50%",
                       animation: "tma-spin 0.8s linear infinite",

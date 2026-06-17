@@ -34,7 +34,6 @@ const FAQItem = ({ question, answer, section = "support" }: { question: string; 
           border: "none",
           color: isOpen ? "#40D1FD" : "#fff",
           fontSize: "16px",
-          fontWeight: 600,
           cursor: "pointer",
           textAlign: "left",
           outline: "none",
@@ -139,7 +138,7 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
 
         {/* Category 2: Policy */}
         <div ref={policyRef}>
-          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
+          <h2 style={{ fontSize: "16px",  color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
             {t.support.policy}
           </h2>
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -151,7 +150,7 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
 
         {/* Category 3: Troubleshooting */}
         <div>
-          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
+          <h2 style={{ fontSize: "16px", color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
             {t.support.troubleshooting}
           </h2>
           <div style={{ display: "flex", flexDirection: "column" }}>

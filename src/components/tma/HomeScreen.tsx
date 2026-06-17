@@ -48,28 +48,28 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
 }
 
 const SERVERS_ROW1 = [
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Russia", flag: "🇷🇺" },
   { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Austria", flag: "🇦🇹" },
   { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Armenia", flag: "🇦🇲" },
+  { name: "Kazahstan", flag: "🇰🇿" },
   { name: "Albania", flag: "🇦🇱" },
 ];
 
 const SERVERS_ROW2 = [
   { name: "Georgia", flag: "🇬🇪" },
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
+  { name: "Netherlands", flag: "🇳🇱" },
+  { name: "Singapore", flag: "🇸🇬" },
   { name: "Armenia", flag: "🇦🇲" },
-  { name: "Albania", flag: "🇦🇱" },
+  { name: "France", flag: "🇫🇷" },
   { name: "Germany", flag: "🇩🇪" },
 ];
 
 const SERVERS_ROW3 = [
   { name: "Armenia", flag: "🇦🇲" },
-  { name: "Albania", flag: "🇦🇱" },
+  { name: "USA", flag: "🇺🇸" },
   { name: "Germany", flag: "🇩🇪" },
-  { name: "Armenia", flag: "🇦🇲" },
+  { name: "Turkey", flag: "🇹🇷" },
   { name: "Albania", flag: "🇦🇱" },
   { name: "Germany", flag: "🇩🇪" },
 ];
@@ -281,7 +281,6 @@ export default function HomeScreen({
           <span
             style={{
               fontSize: "12px",
-              letterSpacing: "0.14em",
               color: "#fff",
               background: "#1A1A1A",
               padding: "6px 8px",
@@ -327,7 +326,6 @@ export default function HomeScreen({
                 style={{
                   fontSize: "24px",
                   color: "#666666",
-                  letterSpacing: "-0.02em",
                   transform: "translateY(-12px)",
                 }}
               >
@@ -348,6 +346,7 @@ export default function HomeScreen({
           margin: "auto",
           width: "100%",
           animationDelay: "300ms",
+          padding: language === "en" ? "0 30px" : 0,
         }}
       >
         <button
@@ -359,13 +358,12 @@ export default function HomeScreen({
           }}
           style={{
             flex: 1.25,
-            padding: "14px 8px",
+            padding: "9px 14px",
             borderRadius: "14px",
             background: "transparent",
             border: "1px solid rgba(255, 255, 255, 0.25)",
             color: "#fff",
             fontSize: "14px",
-            letterSpacing: "0.03em",
             cursor: "pointer",
             whiteSpace: "nowrap",
             fontFamily: "var(--font-mono), monospace",
@@ -395,13 +393,12 @@ export default function HomeScreen({
           }}
           style={{
             flex: 0.75,
-            padding: "14px 8px",
+            padding: "9px 14px",
             borderRadius: "14px",
             background: "#fff",
             border: "none",
             color: "#000",
             fontSize: "14px",
-            letterSpacing: "0.03em",
             cursor: "pointer",
             whiteSpace: "nowrap",
             fontFamily: "var(--font-mono), monospace",
@@ -415,7 +412,7 @@ export default function HomeScreen({
         className="animate-fade-in-up"
         style={{
           height: "1px",
-          backgroundImage: "repeating-linear-gradient(to right, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 2px, transparent 2px, transparent 8px)",
+          backgroundImage: "repeating-linear-gradient(to right, #999999 0px, #999999 1px, transparent 1px, transparent 8px)",
           margin: "16px 0",
           animationDelay: "350ms",
         }}
@@ -457,7 +454,7 @@ export default function HomeScreen({
                 style={{
                   width: "100%",
                   height: "170px",
-                  borderRadius: "30px",
+                  borderRadius: "45px",
                   position: "relative",
                   cursor: "pointer",
                   border: "none",
@@ -470,10 +467,10 @@ export default function HomeScreen({
 
                 <GradientBlock
                   label=""
-                  primaryColor={isYearly ? "#511A78" : "#cfdfe5"}
+                  primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
                   secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                  baseColor="#08090a"
-                  borderRadius="30px"
+                  baseColor={isYearly ?  "#5B1B85" : "#08090a"}
+                  borderRadius="45px"
                   height="100%"
                   animate={isYearly}
                   glowIntensity={isYearly ? .3 : 0.5}
@@ -489,8 +486,8 @@ export default function HomeScreen({
                       style={{
                         position: "absolute",
                         inset: 0,
-                        border: "2px solid #FFFFFF",
-                        borderRadius: "30px",
+                        border: "1px solid #FFFFFF",
+                        borderRadius: "45px",
                         pointerEvents: "none",
                         zIndex: 30,
                       }}
@@ -505,7 +502,7 @@ export default function HomeScreen({
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
-                      padding: "16px 12px 20px",
+                      padding: "15px 12px 22px",
                       pointerEvents: "none",
                       boxSizing: "border-box",
                       textAlign: "center",
@@ -520,7 +517,6 @@ export default function HomeScreen({
                         borderRadius: "20px",
                         background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
                         color: "#fff",
-                        letterSpacing: "-6%",
                         fontFamily: "JetBrains Mono, monospace",
                         textTransform: "capitalize"
                       }}
@@ -533,7 +529,6 @@ export default function HomeScreen({
                         fontSize: language === "ru" ? "20px" : "24px",
                         color: "#fff",
                         lineHeight: 1.1,
-                        letterSpacing: "-0.02em"
                       }}>
                         {`$ ${plan.usdPerMonth.toFixed(2)}`}
                       </span>
@@ -572,7 +567,6 @@ export default function HomeScreen({
             border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
             color: selectedPlan ? "#000000" : "#FFFFFF",
             fontSize: "14px",
-            letterSpacing: "0.05em",
             alignSelf: "center",
             cursor: "pointer",
             outline: "none",
@@ -748,7 +742,7 @@ export default function HomeScreen({
             </div>
 
             {/* Plan cards selector inside Bottom Sheet — GradientBlock Figma Spec */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "30px", width: "100%" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "45px", width: "100%" }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", width: "100%" }}>
                 {plans.map((plan) => {
                   const isYearly = plan.periodMonths === 12;
@@ -773,9 +767,9 @@ export default function HomeScreen({
                     >
                       <GradientBlock
                         label=""
-                        primaryColor={isYearly ? "#511A78" : "#FFFFFF"}
-                        secondaryColor={isYearly ? "#4DA8D5" : "#8A94A6"}
-                        baseColor="#12141A"
+                        primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
+                  secondaryColor={isYearly ? "#7F96D0" : "#606768"}
+                  baseColor={isYearly ?  "#5B1B85" : "#08090a"}
                         borderRadius="36px"
                         height="100%"
                         animate={isYearly}
@@ -792,7 +786,7 @@ export default function HomeScreen({
                             style={{
                               position: "absolute",
                               inset: 0,
-                              border: "2px solid #FFFFFF",
+                              border: "1px solid #FFFFFF",
                               borderRadius: "36px",
                               pointerEvents: "none",
                               zIndex: 30,
@@ -824,7 +818,6 @@ export default function HomeScreen({
                               borderRadius: "20px",
                               background: isYearly ? "rgba(0, 0, 0, 0.16)" : "rgba(255, 255, 255, 0.08)",
                               color: "#fff",
-                              letterSpacing: "0.02em",
                             }}
                           >
                             {getPlanLabelText(plan.periodMonths, language)}
@@ -835,7 +828,6 @@ export default function HomeScreen({
                               fontSize: language === "ru" ? "24px" : "28px",
                               color: "#fff",
                               lineHeight: 1.1,
-                              letterSpacing: "-0.02em"
                             }}>
                               {`$ ${plan.usdPerMonth.toFixed(2)}`}
                             </span>
@@ -880,7 +872,6 @@ export default function HomeScreen({
                   border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
                   color: selectedPlan ? "#000000" : "#FFFFFF",
                   fontSize: "12px",
-                  letterSpacing: "0.05em",
                   alignSelf: "center",
                   cursor: "pointer",
                   outline: "none",
@@ -1005,7 +996,7 @@ export default function HomeScreen({
                   fontSize: "14px",
                   cursor: "pointer",
                   fontFamily: "JetBrains Mono, monospace",
-
+                  textWrap: "nowrap"
                 }}
               >
                 {t.success.readGuide.toUpperCase()}
@@ -1124,7 +1115,7 @@ export default function HomeScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
@@ -1205,7 +1196,7 @@ export default function HomeScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
@@ -1286,7 +1277,7 @@ export default function HomeScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
@@ -1350,7 +1341,6 @@ export default function HomeScreen({
                 border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
                 color: localSelectedMethod ? "#000000" : "#FFFFFF",
                 fontSize: "12px",
-                letterSpacing: "0.05em",
                 alignSelf: "center",
                 cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",
                 outline: "none",
@@ -1369,7 +1359,7 @@ export default function HomeScreen({
                     style={{
                       width: "14px",
                       height: "14px",
-                      border: "2px solid rgba(0,0,0,0.1)",
+                      border: "1px solid rgba(0,0,0,0.1)",
                       borderTop: "2px solid #000",
                       borderRadius: "50%",
                       animation: "tma-spin 0.8s linear infinite",

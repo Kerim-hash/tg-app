@@ -310,6 +310,8 @@ export default function OnboardingScreen({
     return result;
   }, [plans, plan30Days, plan1Year]);
 
+  const selectedPlan = onboardingPlans.find((p) => p.id === tempSelectedPlanId);
+
   // No default selection on initialization as user can skip step
 
   useEffect(() => {
@@ -319,7 +321,7 @@ export default function OnboardingScreen({
   useEffect(() => {
     const screens = ["welcome", "use_cases", "plans", "connect", "ready"];
     const screenName = screens[currentStep] || "unknown";
-    
+
     // Map currentStep to the step parameter expected by the user (accounting for skipped billing_region = step 3)
     // 0 -> 0, 1 -> 1, 2 -> 2, 3 -> 4, 4 -> 5
     let stepParam = currentStep;
@@ -393,15 +395,15 @@ export default function OnboardingScreen({
 
   const handleSkip = () => {
     triggerHaptic("medium");
-    
+
     const screens = ["welcome", "use_cases", "plans", "connect", "ready"];
     const lastScreen = screens[currentStep] || "unknown";
     trackEvent("onboarding_dropped", { last_screen: lastScreen });
-    
+
     if (currentStep === 0) {
       trackEvent("onboarding_welcome_skipped", {});
     }
-    
+
     onComplete();
   };
 
@@ -1001,7 +1003,7 @@ export default function OnboardingScreen({
                     style={{
                       width: "100%",
                       height: "170px",
-                      borderRadius: "36px",
+                      borderRadius: "45px",
                       position: "relative",
                       cursor: "pointer",
                       overflow: "hidden",
@@ -1010,10 +1012,10 @@ export default function OnboardingScreen({
                   >
                     <GradientBlock
                       label=""
-                      primaryColor={isYearly ? "#511A78" : "#FFFFFF"}
-                      secondaryColor={isYearly ? "#4DA8D5" : "#8A94A6"}
-                      baseColor="#12141A"
-                      borderRadius="36px"
+                      primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
+                      secondaryColor={isYearly ? "#7F96D0" : "#606768"}
+                      baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                      borderRadius="45px"
                       height="100%"
                       animate={isYearly}
                       glowIntensity={isYearly ? 1.2 : 0.25}
@@ -1030,7 +1032,7 @@ export default function OnboardingScreen({
                             position: "absolute",
                             inset: 0,
                             border: "2px solid #FFFFFF",
-                            borderRadius: "36px",
+                            borderRadius: "45px",
                             pointerEvents: "none",
                             zIndex: 30,
                           }}
@@ -1141,19 +1143,24 @@ export default function OnboardingScreen({
                   }
                 }}
                 style={{
-                  background: "rgba(255, 255, 255, 0.02)",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  color: "#fff",
+                  background: selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.02)",
+                  border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.2)",
+                  color: selectedPlan ? "#000000" : "#FFFFFF",
                   fontFamily: "JetBrains Mono, monospace",
                   fontSize: "14px",
                   letterSpacing: "0.08em",
                   padding: "10px 24px",
                   borderRadius: "14px",
                   cursor: "pointer",
-                  transition: "all 0.2s ease",
+                  transition: "all 0.25s ease",
                 }}
               >
-                {t.onboarding.selectAndBuy}
+                {selectedPlan
+                  ? t.home.buyFor(
+                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                      selectedPlan.starsPrice
+                    ).toUpperCase()
+                  : t.onboarding.selectAndBuy.toUpperCase()}
               </button>
             </div>
           </div>
@@ -1250,7 +1257,7 @@ export default function OnboardingScreen({
                             style={{
                               width: "100%",
                               height: "170px",
-                              borderRadius: "36px",
+                              borderRadius: "45px",
                               position: "relative",
                               cursor: "pointer",
                               overflow: "hidden",
@@ -1259,10 +1266,10 @@ export default function OnboardingScreen({
                           >
                             <GradientBlock
                               label=""
-                              primaryColor={isYearly ? "#511A78" : "#FFFFFF"}
-                              secondaryColor={isYearly ? "#4DA8D5" : "#8A94A6"}
-                              baseColor="#12141A"
-                              borderRadius="36px"
+                              primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
+                              secondaryColor={isYearly ? "#7F96D0" : "#606768"}
+                              baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                              borderRadius="45px"
                               height="100%"
                               animate={isYearly}
                               glowIntensity={isYearly ? 1.2 : 0.25}
@@ -1279,7 +1286,7 @@ export default function OnboardingScreen({
                                     position: "absolute",
                                     inset: 0,
                                     border: "2px solid #FFFFFF",
-                                    borderRadius: "36px",
+                                    borderRadius: "45px",
                                     pointerEvents: "none",
                                     zIndex: 30,
                                   }}
@@ -1362,19 +1369,24 @@ export default function OnboardingScreen({
                           }
                         }}
                         style={{
-                          background: "rgba(255, 255, 255, 0.02)",
-                          border: "1px solid rgba(255, 255, 255, 0.2)",
-                          color: "#fff",
+                          background: selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.02)",
+                          border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.2)",
+                          color: selectedPlan ? "#000000" : "#FFFFFF",
                           fontFamily: "JetBrains Mono, monospace",
                           fontSize: "12px",
                           letterSpacing: "0.08em",
                           padding: "10px 24px",
                           borderRadius: "14px",
                           cursor: "pointer",
-                          transition: "all 0.2s ease",
+                          transition: "all 0.25s ease",
                         }}
                       >
-                        {t.onboarding.selectAndBuy}
+                        {selectedPlan
+                          ? t.home.buyFor(
+                              `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                              selectedPlan.starsPrice
+                            ).toUpperCase()
+                          : t.onboarding.selectAndBuy.toUpperCase()}
                       </button>
                     </div>
                   </div>

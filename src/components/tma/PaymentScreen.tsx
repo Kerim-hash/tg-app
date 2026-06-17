@@ -145,7 +145,7 @@ export default function PaymentScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
