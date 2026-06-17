@@ -128,7 +128,6 @@ export default function NavBar({ t, currentTab, onTabChange, isVisible = true }:
             <span
               style={{
                 fontSize: "9px",
-                fontWeight: 600,
                 letterSpacing: "0.02em",
                 color: active ? "#fff" : "rgba(255,255,255,0.4)",
                 transition: "color 0.2s ease",

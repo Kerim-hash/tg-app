@@ -21,52 +21,7 @@ import SupportFormDrawer from "./tma/SupportFormDrawer";
 import OnboardingScreen from "./tma/OnboardingScreen";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
-const DEFAULT_PLANS: Plan[] = [
-  {
-    id: "1",
-    label: "30 days",
-    starsPrice: 1,
-    usdTotal: 10.00,
-    usdPerMonth: 10.00,
-    rubTotal: 299,
-    rubPerMonth: 299,
-    periodMonths: 1,
-    badge: "Best Monthly",
-  },
-  {
-    id: "2",
-    label: "3 months",
-    starsPrice: 1,
-    usdTotal: 30.00,
-    usdPerMonth: 10.00,
-    rubTotal: 799,
-    rubPerMonth: 266.33,
-    periodMonths: 3,
-    badge: "Popular",
-  },
-  {
-    id: "3",
-    label: "6 months",
-    starsPrice: 1,
-    usdTotal: 60.00,
-    usdPerMonth: 10.00,
-    rubTotal: 1399,
-    rubPerMonth: 233.17,
-    periodMonths: 6,
-    badge: "Great Value",
-  },
-  {
-    id: "4",
-    label: "1 Year",
-    starsPrice: 1,
-    usdTotal: 96.00,
-    usdPerMonth: 8.00,
-    rubTotal: 2149,
-    rubPerMonth: 179.08,
-    periodMonths: 12,
-    badge: "Best Value",
-  },
-];
+const DEFAULT_PLANS: Plan[] = [];
 
 
 function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
