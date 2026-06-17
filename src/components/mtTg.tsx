@@ -488,8 +488,8 @@ export default function TMA() {
     const authDesc = language === "ru"
       ? "Произошла ошибка при авторизации. Попробуйте снова."
       : language === "es"
-      ? "Error de autenticación. Inténtelo de nuevo."
-      : "Authentication failed. Please try again.";
+        ? "Error de autenticación. Inténtelo de nuevo."
+        : "Authentication failed. Please try again.";
     return (
       <ErrorScreen
         t={t}
@@ -519,6 +519,7 @@ export default function TMA() {
           }}
           plans={plans}
           triggerHaptic={triggerHaptic}
+          personalKey={personalKey}
           onSelectPlanForPayment={(planId) => {
             const targetPlan = plans.find((p) => p.id === planId);
             if (targetPlan) {

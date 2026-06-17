@@ -77,7 +77,7 @@ export default function GradientBlock({
       ? contentAlign === "bottom" ? "flex-end" : "center"
       : "flex-end",
     padding: padding || "24px",
-    cursor: "pointer",
+    // cursor: "pointer",
     overflow: "hidden",
     transition: "transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease",
     boxShadow: (enableHoverScale && isHovered)
