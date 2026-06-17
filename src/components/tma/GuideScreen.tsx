@@ -354,7 +354,7 @@ export default function GuideScreen({
               display: "flex",
               alignItems: "center",
               gap: "5px",
-              padding: "13px 15px",
+              padding: "10px 15px",
               borderRadius: "12px",
               background: "#fff",
               color: "#000",
@@ -540,7 +540,7 @@ export default function GuideScreen({
               }}
               style={{
                 width: "280px",
-                padding: "14px 16px",
+                padding: "10px 14px",
                 borderRadius: "14px",
                 background: selectedPlan ? "#FFFFFF" : "transparent",
                 border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -559,7 +559,7 @@ export default function GuideScreen({
                   `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
                   selectedPlan.starsPrice
                 )
-                : "SELECT AND BUY"}
+                : t.onboarding.selectAndBuy.toUpperCase()}
             </button>
           </div>
         </div>
@@ -647,7 +647,7 @@ export default function GuideScreen({
                 handleCopy();
               }}
               style={{
-                padding: "13px 15px",
+                padding: "10px 15px",
                 borderRadius: "14px",
                 fontSize: "14px",
                 letterSpacing: "0.05em",
@@ -854,7 +854,7 @@ export default function GuideScreen({
             }
           }}
           style={{
-            padding: "13px 15px",
+            padding: "10px 15px",
             borderRadius: "14px",
             background: "#FFFFFF",
             border: "none",
@@ -1188,7 +1188,7 @@ export default function GuideScreen({
               }}
               style={{
                 width: "280px",
-                padding: "14px 16px",
+                padding: "10px 15px",
                 borderRadius: "14px",
                 background: localSelectedMethod ? "#FFFFFF" : "transparent",
                 border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -1222,9 +1222,9 @@ export default function GuideScreen({
                   PROCESSING...
                 </>
               ) : localSelectedMethod ? (
-                "PROCEED TO PAYMENT"
+                t.payment.proceedToPayment.toUpperCase()
               ) : (
-                "SELECT AND PAY"
+                t.payment.selectAndPay.toUpperCase()
               )}
             </button>
           </div>

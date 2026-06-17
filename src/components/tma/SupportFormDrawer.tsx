@@ -171,7 +171,7 @@ export default function SupportFormDrawer({
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    padding: "14px 16px",
+    padding: "10px 15px",
     borderRadius: "14px",
     background: "rgba(255, 255, 255, 0.04)",
     border: "1px solid rgba(255, 255, 255, 0.08)",

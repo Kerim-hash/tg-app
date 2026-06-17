@@ -138,7 +138,7 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
 
         {/* Category 2: Policy */}
         <div ref={policyRef}>
-          <h2 style={{ fontSize: "16px",  color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
+          <h2 style={{ fontSize: "16px", color: "#fff", margin: "0 0 8px", textAlign: "center" }}>
             {t.support.policy}
           </h2>
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -183,7 +183,7 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
             onOpenSupportForm?.();
           }}
           style={{
-            padding: "13px 15px",
+            padding: "10px 15px",
             borderRadius: "14px",
             background: "#FFFFFF",
             border: "none",

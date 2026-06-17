@@ -17,7 +17,7 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
   const handleCopy = () => {
     if (!personalKey) return;
     triggerHaptic("light");
-    navigator.clipboard.writeText(personalKey).catch(() => {});
+    navigator.clipboard.writeText(personalKey).catch(() => { });
     trackEvent("personal_key_copied", { source: "payment_success" });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -74,7 +74,7 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "14px",
-              padding: "14px 16px",
+              padding: "10px 15px",
               display: "flex",
               alignItems: "center",
               gap: "10px",
@@ -105,10 +105,10 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
       {/* Action buttons */}
       <div style={{ width: "100%", display: "flex", gap: "10px" }}>
         <button
-          onClick={() => { 
-            triggerHaptic("light"); 
+          onClick={() => {
+            triggerHaptic("light");
             trackEvent("read_guide_tapped", { source: "payment_success" });
-            onClose(); 
+            onClose();
           }}
           style={{
             flex: 1,
@@ -136,8 +136,8 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
             background: !personalKey
               ? "rgba(255,255,255,0.06)"
               : copied
-              ? "rgba(0,184,148,0.85)"
-              : "#00D1FF",
+                ? "rgba(0,184,148,0.85)"
+                : "#00D1FF",
             border: "none",
             color: !personalKey ? "#8A94A6" : "#000",
             fontSize: "13px",
