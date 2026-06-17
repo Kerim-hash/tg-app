@@ -120,7 +120,7 @@ export default function TMA() {
     }
 
     try {
-      const keys = await apiCall("/users/config-keys/uk", "GET");
+      const keys = await apiCall("/users/config-keys", "GET");
       if (Array.isArray(keys)) {
         const happKeys = keys.filter((k: any) => k.app === "happ");
         if (happKeys.length > 0) {
