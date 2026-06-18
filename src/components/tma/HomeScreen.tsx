@@ -256,7 +256,7 @@ export default function HomeScreen({
           baseColor="#000000ff"
           borderRadius="70px"
           height={240}
-          animate={true}
+          animate={false}
           animationSpeed={10}
           glowIntensity={hasActivePlan ? 1.2 : 1.7}
           borderGlow={true}
