@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./types";
 import { trackEvent } from "../../lib/mixpanel";
+import { apiCall } from "./api";
 import GradientBlock from "../GradientBlock";
 
 interface PaymentScreenProps {
@@ -109,6 +110,9 @@ export default function PaymentScreen({
               onClick={() => {
                 triggerHaptic("light");
                 trackEvent("payment_method_selected", { method: id, amount: plan.usdTotal, currency: "USD" });
+                apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                  console.error("Failed to track payment_method_selected event on backend:", err);
+                });
                 onSelectMethod(id);
               }}
               style={{
@@ -145,7 +149,7 @@ export default function PaymentScreen({
                     style={{
                       position: "absolute",
                       inset: 0,
-                      border: "2px solid #FFFFFF",
+                      border: "1px solid #FFFFFF",
                       borderRadius: "30px",
                       pointerEvents: "none",
                       zIndex: 30,
