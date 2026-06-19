@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import WebApp from "@twa-dev/sdk";
-import Intercom from "@intercom/messenger-js-sdk";
+import IntercomSDK, { boot, shutdown, update, show } from "@intercom/messenger-js-sdk";
+
+const Intercom = typeof IntercomSDK === "function" ? IntercomSDK : (IntercomSDK as any).Intercom;
 
 
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
@@ -17,8 +19,8 @@ import ErrorScreen from "./tma/ErrorScreen";
 import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
-import SupportFormDrawer from "./tma/SupportFormDrawer";
 import OnboardingScreen from "./tma/OnboardingScreen";
+import IntercomWidget from "@/lib/intercom";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [
@@ -99,8 +101,6 @@ export default function TMA() {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [intercomFailed, setIntercomFailed] = useState(false);
-
   const completeOnboarding = () => {
     safeStorage.setItem("iguard_onboarding_completed", "true");
     setShowOnboarding(false);
@@ -108,30 +108,16 @@ export default function TMA() {
 
   const handleOpenSupport = () => {
     const w = window as any;
-    if (typeof window !== "undefined" && w.Intercom && !intercomFailed) {
-      if (w.Intercom.q) {
-        // Intercom is queued but not loaded yet
-        w.Intercom('show');
-        
-        // Timeout check: if it doesn't load in 2.5 seconds, open the support drawer
-        setTimeout(() => {
-          if (w.Intercom && w.Intercom.q) {
-            console.warn("Intercom script load timed out. Falling back to support drawer.");
-            setIntercomFailed(true);
-            setIsSupportFormOpen(true);
-          }
-        }, 2500);
+    if (typeof window !== "undefined" && w.Intercom) {
+      try {
+        show();
         return;
-      } else {
-        try {
-          w.Intercom('show');
-          return;
-        } catch (err) {
-          console.error("Failed to open Intercom messenger:", err);
-        }
+      } catch (err) {
+        console.error("Failed to open Intercom messenger:", err);
       }
     }
-    setIsSupportFormOpen(true);
+    // Fallback if Intercom is blocked or not loaded yet
+    window.location.href = "mailto:support@fastguard.site";
   };
 
   // User
@@ -155,7 +141,6 @@ export default function TMA() {
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
-  const [isSupportFormOpen, setIsSupportFormOpen] = useState(false);
 
   const handleNotifsChange = async (updated: Notifications) => {
     setNotifs(updated);
@@ -306,40 +291,6 @@ export default function TMA() {
       setShowOnboarding(true);
     }
   }, []);
-
-  // Load and boot Intercom on mount
-  useEffect(() => {
-    const intercomAppId = process.env.NEXT_PUBLIC_INTERCOM_APP_ID || "ljq492l3";
-    try {
-      Intercom({
-        app_id: intercomAppId,
-        hide_default_launcher: true,
-      });
-    } catch (err) {
-      console.error("Failed to initialize Intercom SDK:", err);
-      setIntercomFailed(true);
-    }
-
-    return () => {
-      if ((window as any).Intercom) {
-        (window as any).Intercom("shutdown");
-      }
-    };
-  }, []);
-
-  // Update Intercom user attributes when user state changes
-  useEffect(() => {
-    if ((window as any).Intercom) {
-      (window as any).Intercom("update", {
-        user_id: user?.id ? String(user.id) : undefined,
-        name: user?.firstName,
-        custom_data: {
-          username: user?.username || "",
-          isPremium: user?.isPremium || false,
-        }
-      });
-    }
-  }, [user]);
 
   // ─── Fetch live prices ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -674,6 +625,7 @@ export default function TMA() {
         position: "relative",
       }}
     >
+      <IntercomWidget appId="ljq492l3" />
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes screenFade {
@@ -773,13 +725,6 @@ export default function TMA() {
         }}
       />
 
-      <SupportFormDrawer
-        t={t}
-        language={language}
-        triggerHaptic={triggerHaptic}
-        isOpen={isSupportFormOpen}
-        onClose={() => setIsSupportFormOpen(false)}
-      />
 
       {/* Payment screen overlay */}
       {showPayment && selectedPlan && (
