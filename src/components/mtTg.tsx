@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import WebApp from "@twa-dev/sdk";
+import IntercomSDK, { boot, shutdown, update, show } from "@intercom/messenger-js-sdk";
+
+const Intercom = typeof IntercomSDK === "function" ? IntercomSDK : (IntercomSDK as any).Intercom;
 
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
@@ -15,8 +18,8 @@ import ErrorScreen from "./tma/ErrorScreen";
 import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
-import SupportFormDrawer from "./tma/SupportFormDrawer";
 import OnboardingScreen from "./tma/OnboardingScreen";
+import IntercomWidget from "@/lib/intercom";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [];
@@ -58,6 +61,20 @@ export default function TMA() {
     setShowOnboarding(false);
   };
 
+  const handleOpenSupport = () => {
+    const w = window as any;
+    if (typeof window !== "undefined" && w.Intercom) {
+      try {
+        show();
+        return;
+      } catch (err) {
+        console.error("Failed to open Intercom messenger:", err);
+      }
+    }
+    // Fallback if Intercom is blocked or not loaded yet
+    window.location.href = "mailto:support@fastguard.site";
+  };
+
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
 
@@ -79,7 +96,6 @@ export default function TMA() {
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
-  const [isSupportFormOpen, setIsSupportFormOpen] = useState(false);
 
   const handleNotifsChange = async (updated: Notifications) => {
     setNotifs(updated);
@@ -565,6 +581,7 @@ export default function TMA() {
         position: "relative",
       }}
     >
+      <IntercomWidget appId="ljq492l3" />
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes screenFade {
@@ -610,7 +627,7 @@ export default function TMA() {
             <GuideScreen
               t={t}
               personalKey={personalKey}
-              onOpenSupportForm={() => setIsSupportFormOpen(true)}
+              onOpenSupportForm={handleOpenSupport}
               triggerHaptic={triggerHaptic}
               plans={plans}
               selectedPlan={selectedPlan}
@@ -646,7 +663,7 @@ export default function TMA() {
               t={t}
               triggerHaptic={triggerHaptic}
               language={language}
-              onOpenSupportForm={() => setIsSupportFormOpen(true)}
+              onOpenSupportForm={handleOpenSupport}
             />
           </div>
         )}
@@ -664,13 +681,6 @@ export default function TMA() {
         }}
       />
 
-      <SupportFormDrawer
-        t={t}
-        language={language}
-        triggerHaptic={triggerHaptic}
-        isOpen={isSupportFormOpen}
-        onClose={() => setIsSupportFormOpen(false)}
-      />
 
       {/* Payment screen overlay */}
       {showPayment && selectedPlan && (
