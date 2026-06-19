@@ -6,6 +6,7 @@ import WebApp from "@twa-dev/sdk";
 import type { Plan, PaymentMethod, Translations, HapticType, Tab } from "./types";
 import GradientBlock from "../GradientBlock";
 import { trackEvent } from "../../lib/mixpanel";
+import { apiCall } from "./api";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
   if (lang === "ru") {
@@ -935,6 +936,9 @@ export default function GuideScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("card");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1016,6 +1020,9 @@ export default function GuideScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("crypto");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1097,6 +1104,9 @@ export default function GuideScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("stars");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
