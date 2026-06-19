@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
 import { trackEvent } from "../../lib/mixpanel";
+import { apiCall } from "./api";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
@@ -390,6 +391,9 @@ export default function HomeScreen({
             } else {
               trackEvent("buy_plan_tapped", { source: "home_cta" });
             }
+            apiCall("/api/track-event", "POST", { event: "buy_plan_tapped" }).catch((err) => {
+              console.error("Failed to track buy_plan_tapped event on backend:", err);
+            });
             setIsPlanSheetOpen(true);
           }}
           style={{
@@ -1083,6 +1087,9 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("card");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1164,6 +1171,9 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("crypto");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1245,6 +1255,9 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("stars");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
