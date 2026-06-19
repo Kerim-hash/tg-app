@@ -243,11 +243,18 @@ export default function HomeScreen({
       {/* Active plan card — GradientBlock with overlay content */}
       <div
         className="animate-fade-in-up"
+        onClick={() => {
+          if (!hasActivePlan) {
+            triggerHaptic("light");
+            document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
+          }
+        }}
         style={{
           position: "relative",
           borderRadius: "70px",
           overflow: "hidden",
           animationDelay: "200ms",
+          cursor: !hasActivePlan ? "pointer" : "default",
         }}
       >
         <GradientBlock
@@ -425,6 +432,7 @@ export default function HomeScreen({
 
       {/* Choose a plan (HomeScreen embedded preview) */}
       <div
+        id="plans-section"
         className="animate-fade-in-up"
         style={{
           display: "flex",
