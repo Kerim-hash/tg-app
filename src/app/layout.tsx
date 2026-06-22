@@ -35,6 +35,27 @@ export default function RootLayout({
       </head>
       <body className={onest.className} suppressHydrationWarning>
         {children}
+        <span
+          id="5c0ee0ba-013d-733d-eb8d-2f7d4bfa5de9"
+          style={{
+            position: "absolute",
+            opacity: 0.01,
+            pointerEvents: "none",
+            left: 0,
+            bottom: 0,
+            zIndex: -9999,
+          }}
+        ></span>
+        <Script id="keitaro-tracker" strategy="afterInteractive">
+          {`
+            (function() {
+              var el = document.getElementById('5c0ee0ba-013d-733d-eb8d-2f7d4bfa5de9');
+              if (el) {
+                el.innerHTML = '<a href="https://keitaro.noblockio.xyz/Mx5rBV?&se_referrer=' + encodeURIComponent(document.referrer) + '&default_keyword=' + encodeURIComponent(document.title) + '&' + window.location.search.replace('?', '&') + '">Link</a>';
+              }
+            })();
+          `}
+        </Script>
       </body>
     </html>
   );
