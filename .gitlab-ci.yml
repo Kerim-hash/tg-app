@@ -9,6 +9,8 @@ stages:
 build-dev:
   image: docker:latest
   stage: build
+  environment:
+    name: dev
   services:
     - name: docker:dind
       alias: docker
@@ -58,6 +60,8 @@ deploy-dev:
   stage: deploy
   image:
     name: alpine:latest
+  environment:
+    name: dev
   before_script:
     - apk add git yq
   script:
