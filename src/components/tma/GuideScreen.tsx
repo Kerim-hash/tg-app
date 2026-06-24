@@ -6,6 +6,7 @@ import WebApp from "@twa-dev/sdk";
 import type { Plan, PaymentMethod, Translations, HapticType, Tab } from "./types";
 import GradientBlock from "../GradientBlock";
 import { trackEvent } from "../../lib/mixpanel";
+import { apiCall } from "./api";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
   if (lang === "ru") {
@@ -354,7 +355,7 @@ export default function GuideScreen({
               display: "flex",
               alignItems: "center",
               gap: "5px",
-              padding: "13px 15px",
+              padding: "10px 15px",
               borderRadius: "12px",
               background: "#fff",
               color: "#000",
@@ -540,7 +541,7 @@ export default function GuideScreen({
               }}
               style={{
                 width: "280px",
-                padding: "14px 16px",
+                padding: "10px 14px",
                 borderRadius: "14px",
                 background: selectedPlan ? "#FFFFFF" : "transparent",
                 border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -559,7 +560,7 @@ export default function GuideScreen({
                   `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
                   selectedPlan.starsPrice
                 )
-                : "SELECT AND BUY"}
+                : t.onboarding.selectAndBuy.toUpperCase()}
             </button>
           </div>
         </div>
@@ -647,7 +648,7 @@ export default function GuideScreen({
                 handleCopy();
               }}
               style={{
-                padding: "13px 15px",
+                padding: "10px 15px",
                 borderRadius: "14px",
                 fontSize: "14px",
                 letterSpacing: "0.05em",
@@ -854,7 +855,7 @@ export default function GuideScreen({
             }
           }}
           style={{
-            padding: "13px 15px",
+            padding: "10px 15px",
             borderRadius: "14px",
             background: "#FFFFFF",
             border: "none",
@@ -935,6 +936,9 @@ export default function GuideScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("card");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1016,6 +1020,9 @@ export default function GuideScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("crypto");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1097,6 +1104,9 @@ export default function GuideScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("stars");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1188,7 +1198,7 @@ export default function GuideScreen({
               }}
               style={{
                 width: "280px",
-                padding: "14px 16px",
+                padding: "10px 15px",
                 borderRadius: "14px",
                 background: localSelectedMethod ? "#FFFFFF" : "transparent",
                 border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -1222,9 +1232,9 @@ export default function GuideScreen({
                   PROCESSING...
                 </>
               ) : localSelectedMethod ? (
-                "PROCEED TO PAYMENT"
+                t.payment.proceedToPayment.toUpperCase()
               ) : (
-                "SELECT AND PAY"
+                t.payment.selectAndPay.toUpperCase()
               )}
             </button>
           </div>

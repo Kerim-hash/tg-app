@@ -31,6 +31,7 @@ const en: Translations = {
     stars: "Telegram Stars",
     starsDesc: (n) => `${n} Stars`,
     proceedToPayment: "Proceed to payment",
+    selectAndPay: "SELECT AND PAY",
   },
   success: {
     title: "Succes!",
@@ -203,6 +204,7 @@ const ru: Translations = {
     stars: "Telegram Stars",
     starsDesc: (n) => `${n} Stars`,
     proceedToPayment: "Перейти к оплате",
+    selectAndPay: "ВЫБРАТЬ И ОПЛАТИТЬ",
   },
   success: {
     title: "Готово!",
@@ -375,6 +377,7 @@ const es: Translations = {
     stars: "Telegram Stars",
     starsDesc: (n) => `${n} Estrellas`,
     proceedToPayment: "Proceder al pago",
+    selectAndPay: "SELECCIONAR Y PAGAR",
   },
   success: {
     title: "¡Éxito!",

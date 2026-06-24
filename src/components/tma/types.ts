@@ -88,6 +88,7 @@ export interface Translations {
     stars: string;
     starsDesc: (n: number) => string;
     proceedToPayment: string;
+    selectAndPay: string;
   };
   success: {
     title: string;

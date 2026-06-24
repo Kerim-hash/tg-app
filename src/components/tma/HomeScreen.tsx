@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
 import { trackEvent } from "../../lib/mixpanel";
+import { apiCall } from "./api";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
@@ -242,11 +243,18 @@ export default function HomeScreen({
       {/* Active plan card — GradientBlock with overlay content */}
       <div
         className="animate-fade-in-up"
+        onClick={() => {
+          if (!hasActivePlan) {
+            triggerHaptic("light");
+            document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
+          }
+        }}
         style={{
           position: "relative",
           borderRadius: "70px",
           overflow: "hidden",
           animationDelay: "200ms",
+          cursor: !hasActivePlan ? "pointer" : "default",
         }}
       >
         <GradientBlock
@@ -256,7 +264,7 @@ export default function HomeScreen({
           baseColor="#000000ff"
           borderRadius="70px"
           height={240}
-          animate={true}
+          animate={false}
           animationSpeed={10}
           glowIntensity={hasActivePlan ? 1.2 : 1.7}
           borderGlow={true}
@@ -345,8 +353,9 @@ export default function HomeScreen({
           gap: "10px",
           margin: "auto",
           width: "100%",
+          flexDirection: "column",
           animationDelay: "300ms",
-          padding: language === "en" ? "0 30px" : 0,
+          padding: "0 30px"
         }}
       >
         <button
@@ -358,7 +367,7 @@ export default function HomeScreen({
           }}
           style={{
             flex: 1.25,
-            padding: "9px 14px",
+            padding: "10px 15px",
             borderRadius: "14px",
             background: "transparent",
             border: "1px solid rgba(255, 255, 255, 0.25)",
@@ -389,11 +398,14 @@ export default function HomeScreen({
             } else {
               trackEvent("buy_plan_tapped", { source: "home_cta" });
             }
+            apiCall("/api/track-event", "POST", { event: "buy_plan_tapped" }).catch((err) => {
+              console.error("Failed to track buy_plan_tapped event on backend:", err);
+            });
             setIsPlanSheetOpen(true);
           }}
           style={{
             flex: 0.75,
-            padding: "9px 14px",
+            padding: "10px 15px",
             borderRadius: "14px",
             background: "#fff",
             border: "none",
@@ -420,6 +432,7 @@ export default function HomeScreen({
 
       {/* Choose a plan (HomeScreen embedded preview) */}
       <div
+        id="plans-section"
         className="animate-fade-in-up"
         style={{
           display: "flex",
@@ -469,7 +482,7 @@ export default function HomeScreen({
                   label=""
                   primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
                   secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                  baseColor={isYearly ?  "#5B1B85" : "#08090a"}
+                  baseColor={isYearly ? "#5B1B85" : "#08090a"}
                   borderRadius="45px"
                   height="100%"
                   animate={isYearly}
@@ -561,7 +574,7 @@ export default function HomeScreen({
             }
           }}
           style={{
-            padding: "13px 15px",
+            padding: "10px 15px",
             borderRadius: "14px",
             background: selectedPlan ? "#FFFFFF" : "transparent",
             border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -580,7 +593,7 @@ export default function HomeScreen({
               `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
               selectedPlan.starsPrice
             )
-            : "SELECT AND BUY"}
+            : t.onboarding.selectAndBuy.toUpperCase()}
         </button>
       </div>
 
@@ -768,8 +781,8 @@ export default function HomeScreen({
                       <GradientBlock
                         label=""
                         primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
-                  secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                  baseColor={isYearly ?  "#5B1B85" : "#08090a"}
+                        secondaryColor={isYearly ? "#7F96D0" : "#606768"}
+                        baseColor={isYearly ? "#5B1B85" : "#08090a"}
                         borderRadius="36px"
                         height="100%"
                         animate={isYearly}
@@ -866,7 +879,7 @@ export default function HomeScreen({
                 }}
                 style={{
                   width: "280px",
-                  padding: "14px 16px",
+                  padding: "10px 15px",
                   borderRadius: "14px",
                   background: selectedPlan ? "#FFFFFF" : "transparent",
                   border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -884,7 +897,7 @@ export default function HomeScreen({
                     `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
                     selectedPlan.starsPrice
                   )
-                  : "SELECT AND CONTI"}
+                  : t.onboarding.selectAndBuy.toUpperCase()}
               </button>
             </div>
           </div>
@@ -989,7 +1002,7 @@ export default function HomeScreen({
                 }}
                 style={{
                   flex: 1,
-                  padding: "14px",
+                  padding: "10px 15px",
                   borderRadius: "14px",
                   background: "#333333",
                   color: "#fff",
@@ -1005,7 +1018,7 @@ export default function HomeScreen({
                 onClick={handleCopyAndClose}
                 style={{
                   flex: 1.5,
-                  padding: "14px",
+                  padding: "10px 15px",
                   borderRadius: "14px",
                   background: "#fff",
                   border: "none",
@@ -1082,6 +1095,9 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("card");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1163,6 +1179,9 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("crypto");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1244,6 +1263,9 @@ export default function HomeScreen({
                 onClick={() => {
                   triggerHaptic("light");
                   setLocalSelectedMethod("stars");
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
                 }}
                 style={{
                   width: "310px",
@@ -1335,7 +1357,7 @@ export default function HomeScreen({
               }}
               style={{
                 width: "280px",
-                padding: "14px 16px",
+                padding: "10px 15px",
                 borderRadius: "14px",
                 background: localSelectedMethod ? "#FFFFFF" : "transparent",
                 border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
@@ -1368,9 +1390,9 @@ export default function HomeScreen({
                   PROCESSING...
                 </>
               ) : localSelectedMethod ? (
-                "PROCEED TO PAYMENT"
+                t.payment.proceedToPayment.toUpperCase()
               ) : (
-                "SELECT AND PAY"
+                t.payment.selectAndPay.toUpperCase()
               )}
             </button>
           </div>

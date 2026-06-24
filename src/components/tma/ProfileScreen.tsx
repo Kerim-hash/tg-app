@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Language, Translations, UserData, Notifications, HapticType, ReferralInfo } from "./types";
+import GradientBlock from "../GradientBlock";
 
 interface ProfileScreenProps {
   t: Translations;
@@ -201,34 +202,51 @@ export default function ProfileScreen({
             className="hover-scale-btn"
             style={{
               width: "100%",
-              height: "72px",
-              padding: "12px 24px",
-              borderRadius: "30px",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              background: "transparent",
+              border: "none",
+              padding: 0,
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
               outline: "none",
             }}
           >
-            <div>
-              <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px" }}>
-                {t.profile.language}
-              </span>
-              <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff" }}>
-                {currentLangLabel}
-              </span>
-            </div>
-            {/* Chevron Down icon */}
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#8A94A6" }}>
-              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <GradientBlock
+              label=""
+              primaryColor={"#cfdfe5"}
+              secondaryColor={"#686F70"}
+              baseColor="#1D1C1B"
+              borderRadius="30px"
+              height="72px"
+              animate={false}
+              glowIntensity={0.6}
+              borderGlow={true}
+              enableMouseTracking={false}
+              enableHoverScale={false}
+              contentAlign={"start"}
+              padding="12px 28px"
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
+              >
+                <div>
+                  <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.profile.language}
+                  </span>
+                  <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {currentLangLabel}
+                  </span>
+                </div>
+                {/* Chevron Down icon */}
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#8A94A6" }}>
+                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </GradientBlock>
           </button>
         ) : (
           <div
@@ -238,84 +256,92 @@ export default function ProfileScreen({
               left: 0,
               right: 0,
               top: 0,
-              background: "linear-gradient(135deg, #181B26 0%, #0A0B10 100%)",
-              backdropFilter: "blur(40px) saturate(200%)",
-              WebkitBackdropFilter: "blur(40px) saturate(200%)",
-              border: "1px solid rgba(255, 255, 255, 0.22)",
-              borderRadius: "28px",
               zIndex: 1000,
-              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.4)",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
             }}
           >
-            {/* Expanded Header Button (clicking toggles dropdown closed) */}
-            <button
-              onClick={() => { triggerHaptic("light"); setDropdownOpen(false); }}
-              style={{
-                width: "100%",
-                height: "72px",
-                padding: "12px 24px",
-                background: "transparent",
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                cursor: "pointer",
-                textAlign: "left",
-                outline: "none",
-              }}
+            <GradientBlock
+              label=""
+              primaryColor={"#cfdfe5"}
+              secondaryColor={"#686F70"}
+              baseColor="#1D1C1B"
+              borderRadius="30px"
+              height="auto"
+              animate={false}
+              glowIntensity={0.6}
+              borderGlow={true}
+              enableMouseTracking={false}
+              enableHoverScale={false}
+              contentAlign={"start"}
+              padding="0"
             >
-              <div>
-                <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px" }}>
-                  {t.profile.language}
-                </span>
-                <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff" }}>
-                  {currentLangLabel}
-                </span>
+              {/* Expanded Header Button (clicking toggles dropdown closed) */}
+              <button
+                onClick={() => { triggerHaptic("light"); setDropdownOpen(false); }}
+                style={{
+                  width: "100%",
+                  height: "72px",
+                  padding: "12px 28px",
+                  background: "transparent",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  outline: "none",
+                }}
+              >
+                <div>
+                  <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.profile.language}
+                  </span>
+                  <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {currentLangLabel}
+                  </span>
+                </div>
+                {/* Chevron Up icon */}
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#fff" }}>
+                  <path d="M11 6.5L6 1.5L1 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {/* Separator line */}
+              <div style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)", margin: "0 28px", width: "calc(100% - 56px)" }} />
+
+              {/* Options list */}
+              <div style={{ padding: "8px 0 16px", width: "100%" }}>
+                {LANG_OPTIONS.map((opt) => {
+                  const isActive = language === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        triggerHaptic("light");
+                        onLanguageChange(opt.value);
+                        setDropdownOpen(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "48px",
+                        padding: "0 28px",
+                        textAlign: "left",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        cursor: "pointer",
+                        fontSize: "15px",
+                        fontWeight: isActive ? 700 : 500,
+                        color: isActive ? "#40D1FD" : "#fff",
+                        transition: "color 0.2s ease",
+                        fontFamily: "var(--font-onest), sans-serif",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
-              {/* Chevron Up icon */}
-              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#fff" }}>
-                <path d="M11 6.5L6 1.5L1 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            {/* Separator line */}
-            <div style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)", margin: "0 24px" }} />
-
-            {/* Options list */}
-            <div style={{ padding: "8px 0 16px" }}>
-              {LANG_OPTIONS.map((opt) => {
-                const isActive = language === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      triggerHaptic("light");
-                      onLanguageChange(opt.value);
-                      setDropdownOpen(false);
-                    }}
-                    style={{
-                      width: "100%",
-                      height: "48px",
-                      padding: "0 24px",
-                      textAlign: "left",
-                      background: "transparent",
-                      border: "none",
-                      outline: "none",
-                      cursor: "pointer",
-                      fontSize: "15px",
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? "#40D1FD" : "#fff",
-                      transition: "color 0.2s ease",
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
+            </GradientBlock>
           </div>
         )}
       </div>
