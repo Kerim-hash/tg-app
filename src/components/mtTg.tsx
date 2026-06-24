@@ -5,7 +5,7 @@ import WebApp from "@twa-dev/sdk";
 import Intercom from "@intercom/messenger-js-sdk";
 
 
-import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo } from "./tma/types";
+import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo, Campaign } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage } from "./tma/api";
 import { trackEvent } from "../lib/mixpanel";
@@ -46,14 +46,148 @@ function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
   return { name, daysLeft, nextBilling };
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+interface ParsedStartParam {
+  campaign: string;
+  referral: string | null;
+  clickId: string | null;
+}
+
+function getRawStartParam(): string | null {
+  if (typeof window === "undefined") return null;
+
+  // 1. Try Telegram WebApp SDK
+  const tgStartParam = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.start_param;
+  if (tgStartParam) return tgStartParam;
+
+  // 2. Try URL Search Params
+  const searchParams = new URLSearchParams(window.location.search);
+  const startParam = searchParams.get("tgWebAppStartParam") || searchParams.get("startapp") || searchParams.get("campaign");
+  if (startParam) return startParam;
+
+  // 3. Try hash parameters
+  try {
+    const hash = window.location.hash;
+    if (hash) {
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const tgWebAppData = hashParams.get("tgWebAppData");
+      if (tgWebAppData) {
+        const decodedData = new URLSearchParams(decodeURIComponent(tgWebAppData));
+        const startParamFromData = decodedData.get("start_param");
+        if (startParamFromData) return startParamFromData;
+      }
+    }
+  } catch (e) {
+    console.error("Error parsing hash params for start_param:", e);
+  }
+
+  return null;
+}
+
+function parseStartParam(startParam: string | null | undefined): ParsedStartParam {
+  if (!startParam) {
+    return { campaign: "default", referral: null, clickId: null };
+  }
+
+  if (startParam.startsWith("c-")) {
+    const firstUnderscore = startParam.indexOf("_");
+    if (firstUnderscore === -1) {
+      return {
+        campaign: startParam.substring(2),
+        referral: null,
+        clickId: null,
+      };
+    }
+
+    const campaign = startParam.substring(2, firstUnderscore);
+    const rest = startParam.substring(firstUnderscore + 1);
+
+    if (rest.startsWith("_")) {
+      return {
+        campaign,
+        referral: null,
+        clickId: rest.substring(1) || null,
+      };
+    }
+
+    const nextUnderscore = rest.indexOf("_");
+    if (nextUnderscore === -1) {
+      return {
+        campaign,
+        referral: rest || null,
+        clickId: null,
+      };
+    }
+
+    return {
+      campaign,
+      referral: rest.substring(0, nextUnderscore) || null,
+      clickId: rest.substring(nextUnderscore + 1) || null,
+    };
+  }
+
+  // Does not start with "c-"
+  const underscore = startParam.indexOf("_");
+  if (underscore === -1) {
+    return {
+      campaign: "default",
+      referral: startParam || null,
+      clickId: null,
+    };
+  }
+
+  return {
+    campaign: "default",
+    referral: startParam.substring(0, underscore) || null,
+    clickId: startParam.substring(underscore + 1) || null,
+  };
+}
+
+function detectCampaign(): Campaign {
+  if (typeof window === "undefined") return "default";
+
+  const raw = getRawStartParam();
+  const parsed = parseStartParam(raw);
+
+  const val = parsed.campaign;
+  if (val === "gaming" || val === "adults") {
+    return val as Campaign;
+  }
+  return "default";
+}
+
+function formatReferralLink(originalLink: string, currentCampaign: string): string {
+  if (!originalLink || !currentCampaign || currentCampaign === "default") {
+    return originalLink;
+  }
+  try {
+    if (originalLink.includes("startapp=")) {
+      const url = new URL(originalLink);
+      const startapp = url.searchParams.get("startapp");
+      if (startapp && !startapp.startsWith("c-")) {
+        url.searchParams.set("startapp", `c-${currentCampaign}_${startapp}`);
+        return url.toString();
+      }
+    }
+  } catch (e) {
+    // String replacement fallback
+    if (originalLink.includes("startapp=")) {
+      const parts = originalLink.split("startapp=");
+      const paramVal = parts[1];
+      if (paramVal && !paramVal.startsWith("c-")) {
+        return `${parts[0]}startapp=c-${currentCampaign}_${paramVal}`;
+      }
+    }
+  }
+  return originalLink;
+}
+
 export default function TMA() {
-  // Core
   const [language, setLanguage] = useState<Language>("en");
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [campaign, setCampaign] = useState<Campaign>("default");
   const [intercomFailed, setIntercomFailed] = useState(false);
 
   const completeOnboarding = () => {
@@ -165,7 +299,12 @@ export default function TMA() {
     try {
       const refData = await apiCall("/users/referral/info", "GET");
       if (refData) {
-        setReferralInfo(refData);
+        const formatted = {
+          ...refData,
+          link: formatReferralLink(refData.link, campaign),
+          telegram_referral_link: formatReferralLink(refData.telegram_referral_link, campaign),
+        };
+        setReferralInfo(formatted);
       }
     } catch (err) {
       console.error("[IGuard] Fetch referral info error:", err);
@@ -213,8 +352,14 @@ export default function TMA() {
     const runAuth = async (initDataString: string) => {
       setAuthError(null);
       setIsLoadingAuth(true);
+      const rawStartParam = getRawStartParam();
+      let finalInitData = initDataString;
+      if (rawStartParam && !initDataString.includes("start_param=")) {
+        const separator = initDataString.includes("&") || initDataString.includes("=") ? "&" : "";
+        finalInitData = `${initDataString}${separator}start_param=${encodeURIComponent(rawStartParam)}`;
+      }
       apiCall("/auth/telegram/mini-app", "POST", {
-        init_data: initDataString,
+        init_data: finalInitData,
       })
         .then(async (data) => {
           if (data?.access_token) {
@@ -235,13 +380,25 @@ export default function TMA() {
       runAuth(rawInitData);
     } else {
       console.warn("[IGuard] App is running outside Telegram or initData is missing.");
-      setAuthError("Please open this app inside Telegram");
+      // setAuthError("Please open this app inside Telegram");
+        setUser({
+        id: 0,
+        firstName: "test",
+        username: "test",
+        photoUrl: "test",
+        isPremium: false,
+      });
       setIsLoadingAuth(false);
     }
   };
 
   useEffect(() => {
     handleInitAuth();
+    
+    // Detect campaign from referral link or start param
+    const detected = detectCampaign();
+    setCampaign(detected);
+    
     const completed = safeStorage.getItem("iguard_onboarding_completed");
     if (completed !== "true") {
       setShowOnboarding(true);
@@ -571,6 +728,7 @@ export default function TMA() {
           plans={plans}
           triggerHaptic={triggerHaptic}
           personalKey={personalKey}
+          campaign={campaign}
           onSelectPlanForPayment={(planId) => {
             const targetPlan = plans.find((p) => p.id === planId);
             if (targetPlan) {
