@@ -10,6 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-onest);
   --font-mono: var(--font-mono);
+
+  --color-brand-cyan: #00D1FF;
+  --color-brand-gray: #9A9790;
+  --color-brand-dark-gray: #1A1A1A;
+  --color-brand-obsidian: #12141A;
 }
 
 @media (prefers-color-scheme: dark) {

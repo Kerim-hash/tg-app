@@ -1,4 +1,4 @@
-export type Campaign = "default" | "gaming" | "uae";
+export type Campaign = "default" | "gaming" | "adults" | "uae";
 export type Language = "en" | "ru" | "es";
 export type Tab = "home" | "guide" | "profile" | "support";
 export type PaymentMethod = "card" | "crypto" | "stars";
