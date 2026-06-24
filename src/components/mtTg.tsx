@@ -63,42 +63,9 @@ export default function TMA() {
 
   const handleOpenSupport = () => {
     const w = window as any;
-    if (typeof window !== "undefined" && w.Intercom && !intercomFailed) {
-      if (w.Intercom.q) {
-        // Intercom is queued but not loaded yet
-        w.Intercom('show');
-        
-        // Timeout check: if it doesn't load in 2.5 seconds, open the support drawer
-        setTimeout(() => {
-          if (w.Intercom && w.Intercom.q) {
-            console.warn("Intercom script load timed out. Falling back to support drawer.");
-            setIntercomFailed(true);
-            setIsSupportFormOpen(true);
-          }
-        }, 2500);
-        return;
-      } else {
-        try {
-          w.Intercom('show');
-          return;
-        } catch (err) {
-          console.error("Failed to open Intercom messenger:", err);
-        }
-      }
-    }
-    setIsSupportFormOpen(true);
-  };
-
-  const completeOnboarding = () => {
-    safeStorage.setItem("iguard_onboarding_completed", "true");
-    setShowOnboarding(false);
-  };
-
-  const handleOpenSupport = () => {
-    const w = window as any;
     if (typeof window !== "undefined" && w.Intercom) {
       try {
-        show();
+        w.Intercom('show');
         return;
       } catch (err) {
         console.error("Failed to open Intercom messenger:", err);
@@ -107,6 +74,7 @@ export default function TMA() {
     // Fallback if Intercom is blocked or not loaded yet
     window.location.href = "mailto:support@fastguard.site";
   };
+
 
   // User
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
