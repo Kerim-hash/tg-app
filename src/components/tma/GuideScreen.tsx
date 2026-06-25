@@ -84,7 +84,16 @@ interface GuideScreenProps {
   onSelectPlan: (plan: Plan | null) => void;
   onProceedPayment: (method: PaymentMethod) => Promise<void>;
   isPaying: boolean;
+  billingRegion: string;
+  onBillingRegionChange: (region: string) => void;
+  paymentMethods?: any[];
 }
+
+const REGION_OPTIONS = [
+  { value: "UAE" },
+  { value: "UZB" },
+  { value: "BY" },
+];
 
 const AppleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -153,12 +162,31 @@ export default function GuideScreen({
   onSelectPlan,
   onProceedPayment,
   isPaying,
+  billingRegion,
+  onBillingRegionChange,
+  paymentMethods = [],
 }: GuideScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Inicio" ? "es" : "en";
   const [copied, setCopied] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
+  const [tempRegion, setTempRegion] = useState("UAE");
+
+  const getRegionLabel = (val: string) => {
+    if (val === "UZB") return t.payment.regionUZB;
+    if (val === "BY") return t.payment.regionBY;
+    return t.payment.regionUAE;
+  };
+
+  useEffect(() => {
+    if (billingRegion) {
+      setTempRegion(billingRegion);
+    } else {
+      setTempRegion("UAE");
+    }
+  }, [billingRegion]);
 
   const step2Ref = useRef<HTMLDivElement>(null);
   const step4Ref = useRef<HTMLDivElement>(null);
@@ -922,321 +950,386 @@ export default function GuideScreen({
             {/* Drag handle */}
             <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 4px" }} />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left" }}>
-                Select a payment method
-              </h2>
-            </div>
+            {!billingRegion ? (
+              <>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", fontWeight: 700 }}>
+                    {t.payment.confirmBillingFirst}
+                  </h2>
+                </div>
 
-            {/* Methods list */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "100%" }}>
-              {/* Method 1: Credit card */}
-              <button
-                disabled={isPaying}
-                onClick={() => {
-                  triggerHaptic("light");
-                  setLocalSelectedMethod("card");
-                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
-                    console.error("Failed to track payment_method_selected event on backend:", err);
-                  });
-                }}
-                style={{
-                  width: "310px",
-                  height: "80px",
-                  borderRadius: "30px",
-                  position: "relative",
-                  cursor: isPaying ? "not-allowed" : "pointer",
-                  border: "none",
-                  outline: "none",
-                  overflow: "hidden",
-                  background: "transparent",
-                  padding: 0,
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <GradientBlock
-                  label=""
-                  primaryColor="#FFFFFF"
-                  secondaryColor="#9A9790"
-                  baseColor="#12141A"
-                  borderRadius="30px"
-                  height={80}
-                  animate={false}
-                  glowIntensity={0.6}
-                  borderGlow={true}
-                  enableMouseTracking={false}
-                />
+                {/* Dropdown Card */}
+                <div style={{ position: "relative", width: "100%", zIndex: 10 }}>
+                  {!sheetRegionDropdownOpen ? (
+                    <button
+                      onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(true); }}
+                      className="hover-scale-btn"
+                      style={{
+                        width: "100%",
+                        background: "transparent",
+                        border: "none",
+                        padding: 0,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        outline: "none",
+                      }}
+                    >
+                      <GradientBlock
+                        label=""
+                        primaryColor={"#cfdfe5"}
+                        secondaryColor={"#686F70"}
+                        baseColor="#1D1C1B"
+                        borderRadius="30px"
+                        height="72px"
+                        animate={false}
+                        glowIntensity={0.6}
+                        borderGlow={true}
+                        enableMouseTracking={false}
+                        enableHoverScale={false}
+                        contentAlign={"start"}
+                        padding="12px 28px"
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
+                          <div>
+                            <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
+                              {t.payment.billingRegion}
+                            </span>
+                            <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                              {getRegionLabel(tempRegion)}
+                            </span>
+                          </div>
+                          {/* Chevron Down icon */}
+                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#8A94A6" }}>
+                            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      </GradientBlock>
+                    </button>
+                  ) : (
+                    <div
+                      className="animate-dropdown"
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        zIndex: 1000,
+                      }}
+                    >
+                      <GradientBlock
+                        label=""
+                        primaryColor={"#cfdfe5"}
+                        secondaryColor={"#686F70"}
+                        baseColor="#1D1C1B"
+                        borderRadius="30px"
+                        height="auto"
+                        animate={false}
+                        glowIntensity={0.6}
+                        borderGlow={true}
+                        enableMouseTracking={false}
+                        enableHoverScale={false}
+                        contentAlign={"start"}
+                        padding="0"
+                      >
+                        {/* Expanded Header Button */}
+                        <button
+                          onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(false); }}
+                          style={{
+                            width: "100%",
+                            height: "72px",
+                            padding: "12px 28px",
+                            background: "transparent",
+                            border: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            cursor: "pointer",
+                            textAlign: "left",
+                            outline: "none",
+                          }}
+                        >
+                          <div>
+                            <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
+                              {t.payment.billingRegion}
+                            </span>
+                            <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                              {getRegionLabel(tempRegion)}
+                            </span>
+                          </div>
+                          {/* Chevron Up icon */}
+                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#fff" }}>
+                            <path d="M11 6.5L6 1.5L1 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
 
-                {localSelectedMethod === "card" && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      border: "1px solid #FFFFFF",
-                      borderRadius: "30px",
-                      pointerEvents: "none",
-                      zIndex: 30,
-                    }}
-                  />
-                )}
+                        {/* Separator line */}
+                        <div style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)", margin: "0 28px", width: "calc(100% - 56px)" }} />
 
-                <div
+                        {/* Options list */}
+                        <div style={{ padding: "8px 0 16px", width: "100%" }}>
+                          {REGION_OPTIONS.map((opt) => {
+                            const isActive = tempRegion === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                onClick={() => {
+                                  triggerHaptic("light");
+                                  setTempRegion(opt.value);
+                                  setSheetRegionDropdownOpen(false);
+                                }}
+                                style={{
+                                  width: "100%",
+                                  height: "48px",
+                                  padding: "0 28px",
+                                  textAlign: "left",
+                                  background: "transparent",
+                                  border: "none",
+                                  outline: "none",
+                                  cursor: "pointer",
+                                  fontSize: "15px",
+                                  fontWeight: isActive ? 700 : 500,
+                                  color: isActive ? "#40D1FD" : "#fff",
+                                  transition: "color 0.2s ease",
+                                  fontFamily: "var(--font-onest), sans-serif",
+                                }}
+                              >
+                                {getRegionLabel(opt.value)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </GradientBlock>
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirm button */}
+                <button
+                  onClick={() => {
+                    triggerHaptic("medium");
+                    onBillingRegionChange(tempRegion);
+                  }}
                   style={{
-                    position: "absolute",
-                    inset: 0,
+                    width: "280px",
+                    padding: "10px 15px",
+                    borderRadius: "14px",
+                    background: "#FFFFFF",
+                    border: "none",
+                    color: "#000000",
+                    fontSize: "12px",
+                    alignSelf: "center",
+                    cursor: "pointer",
+                    outline: "none",
+                    fontFamily: "var(--font-mono), monospace",
+                    fontWeight: 700,
+                    marginTop: "10px",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 30px",
-                    zIndex: 20,
-                    pointerEvents: "none",
-                    boxSizing: "border-box",
+                    justifyContent: "center",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "15px",
-                      color: localSelectedMethod === "card" ? "#00D1FF" : "#FFFFFF",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    Credit or debit card
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: "#8A94A6",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    {`$ ${selectedPlan.usdTotal.toFixed(2)}`}
-                  </span>
+                  {t.payment.confirm.toUpperCase()}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", fontWeight: 700 }}>
+                    {t.payment.selectMethod}
+                  </h2>
                 </div>
-              </button>
 
-              {/* Method 2: Crypto */}
-              <button
-                disabled={isPaying}
-                onClick={() => {
-                  triggerHaptic("light");
-                  setLocalSelectedMethod("crypto");
-                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
-                    console.error("Failed to track payment_method_selected event on backend:", err);
-                  });
-                }}
-                style={{
-                  width: "310px",
-                  height: "80px",
-                  borderRadius: "30px",
-                  position: "relative",
-                  cursor: isPaying ? "not-allowed" : "pointer",
-                  border: "none",
-                  outline: "none",
-                  overflow: "hidden",
-                  background: "transparent",
-                  padding: 0,
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <GradientBlock
-                  label=""
-                  primaryColor="#FFFFFF"
-                  secondaryColor="#9A9790"
-                  baseColor="#12141A"
-                  borderRadius="30px"
-                  height={80}
-                  animate={false}
-                  glowIntensity={0.6}
-                  borderGlow={true}
-                  enableMouseTracking={false}
-                />
+                {/* Methods list */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "100%" }}>
+                  {(() => {
+                    const combinedMethods = [
+                      ...paymentMethods.map(m => ({
+                        id: m.method_type,
+                        name: m.name,
+                        merchant_method_type: m.merchant_method_type,
+                      })),
+                      {
+                        id: "stars",
+                        name: t.payment.stars,
+                        merchant_method_type: "stars",
+                      }
+                    ];
+                    const fallbackMethods = [
+                      { id: "card", name: t.payment.card, merchant_method_type: "card" },
+                      { id: "crypto", name: t.payment.crypto, merchant_method_type: "crypto" },
+                      { id: "stars", name: t.payment.stars, merchant_method_type: "stars" }
+                    ];
+                    const methodsToRender = paymentMethods.length > 0 ? combinedMethods : fallbackMethods;
 
-                {localSelectedMethod === "crypto" && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      border: "1px solid #FFFFFF",
-                      borderRadius: "30px",
-                      pointerEvents: "none",
-                      zIndex: 30,
-                    }}
-                  />
-                )}
+                    return methodsToRender.map((method) => {
+                      const isSelected = localSelectedMethod === method.id;
+                      
+                      // Calculate pricing text
+                      let priceText = "";
+                      if (method.id === "stars") {
+                        priceText = t.payment.starsDesc(selectedPlan.starsPrice);
+                      } else if (method.merchant_method_type === "cryptocloud") {
+                        priceText = `${selectedPlan.usdTotal.toFixed(0)} USDT`;
+                      } else if (
+                        method.merchant_method_type.endsWith("_rub") ||
+                        method.id === "sberbank" ||
+                        method.id === "tinkoff_bank" ||
+                        method.id === "yoo_money"
+                      ) {
+                        priceText = selectedPlan.rubTotal ? `${selectedPlan.rubTotal.toFixed(0)} ₽` : `$ ${selectedPlan.usdTotal.toFixed(2)}`;
+                      } else {
+                        priceText = `$ ${selectedPlan.usdTotal.toFixed(2)}`;
+                      }
 
-                <div
+                      return (
+                        <button
+                          key={method.id}
+                          disabled={isPaying}
+                          onClick={() => {
+                            triggerHaptic("light");
+                            setLocalSelectedMethod(method.id);
+                            apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                              console.error("Failed to track payment_method_selected event on backend:", err);
+                            });
+                          }}
+                          style={{
+                            width: "310px",
+                            height: "80px",
+                            borderRadius: "30px",
+                            position: "relative",
+                            cursor: isPaying ? "not-allowed" : "pointer",
+                            border: "none",
+                            outline: "none",
+                            overflow: "hidden",
+                            background: "transparent",
+                            padding: 0,
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          <GradientBlock
+                            label=""
+                            primaryColor="#FFFFFF"
+                            secondaryColor="#9A9790"
+                            baseColor="#12141A"
+                            borderRadius="30px"
+                            height={80}
+                            animate={false}
+                            glowIntensity={0.6}
+                            borderGlow={true}
+                            enableMouseTracking={false}
+                          />
+
+                          {isSelected && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                border: "1.5px solid #00D1FF",
+                                borderRadius: "30px",
+                                pointerEvents: "none",
+                                zIndex: 30,
+                              }}
+                            />
+                          )}
+
+                          <div
+                            style={{
+                              position: "absolute",
+                              inset: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              padding: "0 30px",
+                              zIndex: 20,
+                              pointerEvents: "none",
+                              boxSizing: "border-box",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "15px",
+                                color: isSelected ? "#00D1FF" : "#FFFFFF",
+                                fontFamily: "var(--font-onest), sans-serif",
+                              }}
+                            >
+                              {method.name}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "14px",
+                                color: isSelected ? "#00D1FF" : "#8A94A6",
+                                fontFamily: "var(--font-onest), sans-serif",
+                              }}
+                            >
+                              {priceText}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+
+                {/* Action button */}
+                <button
+                  disabled={isPaying}
+                  onClick={async () => {
+                    if (!localSelectedMethod) return;
+                    triggerHaptic("medium");
+                    try {
+                      await onProceedPayment(localSelectedMethod);
+                      setIsPaymentSheetOpen(false);
+                    } catch {
+                      // error handled by screen
+                    }
+                  }}
                   style={{
-                    position: "absolute",
-                    inset: 0,
+                    width: "280px",
+                    padding: "10px 15px",
+                    borderRadius: "14px",
+                    background: localSelectedMethod ? "#FFFFFF" : "transparent",
+                    border: localSelectedMethod ? "none" : "1.5px solid #FFFFFF",
+                    color: localSelectedMethod ? "#000000" : "#FFFFFF",
+                    fontSize: "12px",
+                    alignSelf: "center",
+                    cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",
+                    outline: "none",
+                    fontFamily: "var(--font-mono), monospace",
+                    transition: "all 0.2s ease",
+                    marginTop: "10px",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 30px",
-                    zIndex: 20,
-                    pointerEvents: "none",
-                    boxSizing: "border-box",
+                    justifyContent: "center",
+                    gap: "8px",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "15px",
-                      color: localSelectedMethod === "crypto" ? "#00D1FF" : "#FFFFFF",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    Crypto
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: "#8A94A6",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    {selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)} USDT
-                  </span>
-                </div>
-              </button>
-
-              {/* Method 3: Telegram Stars */}
-              <button
-                disabled={isPaying}
-                onClick={() => {
-                  triggerHaptic("light");
-                  setLocalSelectedMethod("stars");
-                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
-                    console.error("Failed to track payment_method_selected event on backend:", err);
-                  });
-                }}
-                style={{
-                  width: "310px",
-                  height: "80px",
-                  borderRadius: "30px",
-                  position: "relative",
-                  cursor: isPaying ? "not-allowed" : "pointer",
-                  border: "none",
-                  outline: "none",
-                  overflow: "hidden",
-                  background: "transparent",
-                  padding: 0,
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <GradientBlock
-                  label=""
-                  primaryColor="#FFFFFF"
-                  secondaryColor="#9A9790"
-                  baseColor="#12141A"
-                  borderRadius="30px"
-                  height={80}
-                  animate={false}
-                  glowIntensity={0.6}
-                  borderGlow={true}
-                  enableMouseTracking={false}
-                />
-
-                {localSelectedMethod === "stars" && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      border: "1px solid #FFFFFF",
-                      borderRadius: "30px",
-                      pointerEvents: "none",
-                      zIndex: 30,
-                    }}
-                  />
-                )}
-
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 30px",
-                    zIndex: 20,
-                    pointerEvents: "none",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "15px",
-                      color: localSelectedMethod === "stars" ? "#00D1FF" : "#FFFFFF",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    Telegram Stars
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: "#8A94A6",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    {selectedPlan.starsPrice} Stars
-                  </span>
-                </div>
-              </button>
-            </div>
-
-            {/* Action button */}
-            <button
-              disabled={isPaying}
-              onClick={async () => {
-                if (!localSelectedMethod) return;
-                triggerHaptic("medium");
-                try {
-                  await onProceedPayment(localSelectedMethod);
-                  setIsPaymentSheetOpen(false);
-                } catch {
-                  // error handled by screen
-                }
-              }}
-              style={{
-                width: "280px",
-                padding: "10px 15px",
-                borderRadius: "14px",
-                background: localSelectedMethod ? "#FFFFFF" : "transparent",
-                border: localSelectedMethod ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
-                color: localSelectedMethod ? "#000000" : "#FFFFFF",
-                fontSize: "12px",
-                letterSpacing: "0.05em",
-                alignSelf: "center",
-                cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",
-                outline: "none",
-                fontFamily: "var(--font-mono), monospace",
-                transition: "all 0.2s ease",
-                marginTop: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              {isPaying ? (
-                <>
-                  <div
-                    style={{
-                      width: "14px",
-                      height: "14px",
-                      border: "1px solid rgba(0,0,0,0.1)",
-                      borderTop: "2px solid #000",
-                      borderRadius: "50%",
-                      animation: "tma-spin 0.8s linear infinite",
-                    }}
-                  />
-                  PROCESSING...
-                </>
-              ) : localSelectedMethod ? (
-                t.payment.proceedToPayment.toUpperCase()
-              ) : (
-                t.payment.selectAndPay.toUpperCase()
-              )}
-            </button>
+                  {isPaying ? (
+                    <>
+                      <div
+                        style={{
+                          width: "14px",
+                          height: "14px",
+                          border: "1px solid rgba(0,0,0,0.1)",
+                          borderTop: "2px solid #000",
+                          borderRadius: "50%",
+                          animation: "tma-spin 0.8s linear infinite",
+                        }}
+                      />
+                      PROCESSING...
+                    </>
+                  ) : localSelectedMethod ? (
+                    t.payment.proceedToPayment.toUpperCase()
+                  ) : (
+                    t.payment.selectAndPay.toUpperCase()
+                  )}
+                </button>
+              </>
+            )}
           </div>
         </>,
         document.body

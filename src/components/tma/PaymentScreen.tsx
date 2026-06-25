@@ -16,6 +16,7 @@ interface PaymentScreenProps {
   onBack: () => void;
   isPaying: boolean;
   triggerHaptic: (type: HapticType) => void;
+  paymentMethods?: any[];
 }
 
 const METHOD_CONFIG: { id: PaymentMethod; icon: string }[] = [
@@ -34,25 +35,51 @@ export default function PaymentScreen({
   onBack,
   isPaying,
   triggerHaptic,
+  paymentMethods = [],
 }: PaymentScreenProps) {
-  const getLabel = (m: PaymentMethod) => {
-    if (m === "card") return t.payment.card;
-    if (m === "crypto") return t.payment.crypto;
-    return t.payment.stars;
-  };
+  const combinedMethods = [
+    ...(paymentMethods || []).map((m: any) => ({
+      id: m.method_type,
+      name: m.name,
+      merchant_method_type: m.merchant_method_type,
+    })),
+    {
+      id: "stars",
+      name: t.payment.stars,
+      merchant_method_type: "stars",
+    },
+  ];
+  const fallbackMethods = [
+    { id: "card", name: t.payment.card, merchant_method_type: "card" },
+    { id: "crypto", name: t.payment.crypto, merchant_method_type: "crypto" },
+    { id: "stars", name: t.payment.stars, merchant_method_type: "stars" }
+  ];
+  const methodsToRender = paymentMethods && paymentMethods.length > 0 ? combinedMethods : fallbackMethods;
 
-  const getPrice = (m: PaymentMethod) => {
-    if (m === "card") return t.payment.cardDesc(`$${plan.usdTotal.toFixed(2)}`);
-    if (m === "crypto") return t.payment.cryptoDesc(plan.usdTotal.toFixed(0));
-    return t.payment.starsDesc(plan.starsPrice);
+  const getMethodPrice = (m: { id: string; merchant_method_type: string }) => {
+    if (m.id === "stars") {
+      return t.payment.starsDesc(plan.starsPrice);
+    }
+    if (m.merchant_method_type === "cryptocloud") {
+      return `${plan.usdTotal.toFixed(0)} USDT`;
+    }
+    if (
+      m.merchant_method_type.endsWith("_rub") ||
+      m.id === "sberbank" ||
+      m.id === "tinkoff_bank" ||
+      m.id === "yoo_money"
+    ) {
+      return plan.rubTotal ? `${plan.rubTotal.toFixed(0)} ₽` : `$ ${plan.usdTotal.toFixed(2)}`;
+    }
+    return `$ ${plan.usdTotal.toFixed(2)}`;
   };
 
   const canProceed = !!selectedMethod && !isPaying;
 
   useEffect(() => {
     trackEvent("screen_payment_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
-    trackEvent("payment_methods_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", available_methods: METHOD_CONFIG.map(m => m.id) });
-  }, [plan]);
+    trackEvent("payment_methods_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", available_methods: methodsToRender.map(m => m.id) });
+  }, [plan, methodsToRender]);
 
   return (
     <div
@@ -102,18 +129,18 @@ export default function PaymentScreen({
 
       {/* Method list */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {METHOD_CONFIG.map(({ id }) => {
-          const isSelected = selectedMethod === id;
+        {methodsToRender.map((method) => {
+          const isSelected = selectedMethod === method.id;
           return (
             <button
-              key={id}
+              key={method.id}
               onClick={() => {
                 triggerHaptic("light");
-                trackEvent("payment_method_selected", { method: id, amount: plan.usdTotal, currency: "USD" });
+                trackEvent("payment_method_selected", { method: method.id, amount: plan.usdTotal, currency: "USD" });
                 apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
                   console.error("Failed to track payment_method_selected event on backend:", err);
                 });
-                onSelectMethod(id);
+                onSelectMethod(method.id);
               }}
               style={{
                 width: "100%",
@@ -173,11 +200,11 @@ export default function PaymentScreen({
                   <span
                     style={{
                       fontSize: "15px",
-                     color: isSelected ? "#00D1FF" : "#FFFFFF",
+                      color: isSelected ? "#00D1FF" : "#FFFFFF",
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
-                    {getLabel(id)}
+                    {method.name}
                   </span>
                   <span
                     style={{
@@ -186,7 +213,7 @@ export default function PaymentScreen({
                       fontFamily: "var(--font-onest), sans-serif",
                     }}
                   >
-                    {getPrice(id)}
+                    {getMethodPrice(method)}
                   </span>
                 </div>
               </GradientBlock>
