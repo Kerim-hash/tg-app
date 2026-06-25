@@ -1,7 +1,7 @@
 export type Campaign = "default" | "gaming" | "adults" | "uae";
 export type Language = "en" | "ru" | "es";
 export type Tab = "home" | "guide" | "profile" | "support";
-export type PaymentMethod = "card" | "crypto" | "stars";
+export type PaymentMethod = string;
 export type HapticType = "light" | "medium" | "heavy" | "success" | "warning";
 
 export interface Server {
@@ -89,6 +89,12 @@ export interface Translations {
     starsDesc: (n: number) => string;
     proceedToPayment: string;
     selectAndPay: string;
+    confirmBillingFirst: string;
+    confirm: string;
+    billingRegion: string;
+    regionUAE: string;
+    regionUZB: string;
+    regionBY: string;
   };
   success: {
     title: string;
@@ -107,6 +113,7 @@ export interface Translations {
     title: string;
     manage: string;
     language: string;
+    billingRegion: string;
     notifications: string;
     notifAll: string;
     notifAllDesc: string;

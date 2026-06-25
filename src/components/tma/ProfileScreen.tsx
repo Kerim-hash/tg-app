@@ -14,12 +14,20 @@ interface ProfileScreenProps {
   referralInfo: ReferralInfo | null;
   triggerHaptic: (type: HapticType) => void;
   onResetOnboarding?: () => void;
+  billingRegion: string;
+  onBillingRegionChange: (region: string) => void;
 }
 
 const LANG_OPTIONS: { value: Language; label: string }[] = [
   { value: "en", label: "English" },
   { value: "ru", label: "Russian" },
   { value: "es", label: "Español" },
+];
+
+const REGION_OPTIONS = [
+  { value: "UAE" },
+  { value: "UZB" },
+  { value: "BY" },
 ];
 
 function Toggle({ value, onChange }: { value: boolean; onChange: () => void }) {
@@ -68,9 +76,18 @@ export default function ProfileScreen({
   referralInfo,
   triggerHaptic,
   onResetOnboarding,
+  billingRegion,
+  onBillingRegionChange,
 }: ProfileScreenProps) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState<"web" | "bot" | null>(null);
+
+  const getRegionLabel = (val: string) => {
+    if (val === "UZB") return t.payment.regionUZB;
+    if (val === "BY") return t.payment.regionBY;
+    return t.payment.regionUAE;
+  };
 
   const handleCopy = (link: string, type: "web" | "bot") => {
     try {
@@ -85,11 +102,13 @@ export default function ProfileScreen({
     }
   };
 
+  const isAnyDropdownOpen = langDropdownOpen || regionDropdownOpen;
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mainEl = document.querySelector("main");
     if (!mainEl) return;
-    if (dropdownOpen) {
+    if (isAnyDropdownOpen) {
       mainEl.style.overflowY = "hidden";
     } else {
       mainEl.style.overflowY = "auto";
@@ -97,7 +116,7 @@ export default function ProfileScreen({
     return () => {
       mainEl.style.overflowY = "auto";
     };
-  }, [dropdownOpen]);
+  }, [isAnyDropdownOpen]);
 
   const initials = user.firstName
     .split(" ")
@@ -194,11 +213,19 @@ export default function ProfileScreen({
 
       {/* Language dropdown */}
       <div
-        style={{ position: "relative", marginBottom: "32px", height: "72px", zIndex: 9 }}
+        style={{
+          position: "relative",
+          marginBottom: "32px",
+          height: "72px",
+          zIndex: 9,
+          opacity: regionDropdownOpen ? 0.3 : 1,
+          pointerEvents: regionDropdownOpen ? "none" : "auto",
+          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       >
-        {!dropdownOpen ? (
+        {!langDropdownOpen ? (
           <button
-            onClick={() => { triggerHaptic("light"); setDropdownOpen(true); }}
+            onClick={() => { triggerHaptic("light"); setLangDropdownOpen(true); }}
             className="hover-scale-btn"
             style={{
               width: "100%",
@@ -276,7 +303,7 @@ export default function ProfileScreen({
             >
               {/* Expanded Header Button (clicking toggles dropdown closed) */}
               <button
-                onClick={() => { triggerHaptic("light"); setDropdownOpen(false); }}
+                onClick={() => { triggerHaptic("light"); setLangDropdownOpen(false); }}
                 style={{
                   width: "100%",
                   height: "72px",
@@ -318,7 +345,7 @@ export default function ProfileScreen({
                       onClick={() => {
                         triggerHaptic("light");
                         onLanguageChange(opt.value);
-                        setDropdownOpen(false);
+                        setLangDropdownOpen(false);
                       }}
                       style={{
                         width: "100%",
@@ -345,6 +372,168 @@ export default function ProfileScreen({
           </div>
         )}
       </div>
+
+      {/* Billing region dropdown */}
+      <div
+        style={{
+          position: "relative",
+          marginBottom: "32px",
+          height: "72px",
+          zIndex: 8,
+          opacity: langDropdownOpen ? 0.3 : 1,
+          pointerEvents: langDropdownOpen ? "none" : "auto",
+          transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        {!regionDropdownOpen ? (
+          <button
+            onClick={() => { triggerHaptic("light"); setRegionDropdownOpen(true); }}
+            className="hover-scale-btn"
+            style={{
+              width: "100%",
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              textAlign: "left",
+              outline: "none",
+            }}
+          >
+            <GradientBlock
+              label=""
+              primaryColor={"#cfdfe5"}
+              secondaryColor={"#686F70"}
+              baseColor="#1D1C1B"
+              borderRadius="30px"
+              height="72px"
+              animate={false}
+              glowIntensity={0.6}
+              borderGlow={true}
+              enableMouseTracking={false}
+              enableHoverScale={false}
+              contentAlign={"start"}
+              padding="12px 28px"
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
+              >
+                <div>
+                  <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.payment.billingRegion}
+                  </span>
+                  <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {getRegionLabel(billingRegion)}
+                  </span>
+                </div>
+                {/* Chevron Down icon */}
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#8A94A6" }}>
+                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </GradientBlock>
+          </button>
+        ) : (
+          <div
+            className="animate-dropdown"
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              zIndex: 1000,
+            }}
+          >
+            <GradientBlock
+              label=""
+              primaryColor={"#cfdfe5"}
+              secondaryColor={"#686F70"}
+              baseColor="#1D1C1B"
+              borderRadius="30px"
+              height="auto"
+              animate={false}
+              glowIntensity={0.6}
+              borderGlow={true}
+              enableMouseTracking={false}
+              enableHoverScale={false}
+              contentAlign={"start"}
+              padding="0"
+            >
+              {/* Expanded Header Button (clicking toggles dropdown closed) */}
+              <button
+                onClick={() => { triggerHaptic("light"); setRegionDropdownOpen(false); }}
+                style={{
+                  width: "100%",
+                  height: "72px",
+                  padding: "12px 28px",
+                  background: "transparent",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  outline: "none",
+                }}
+              >
+                <div>
+                  <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.payment.billingRegion}
+                  </span>
+                  <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                    {getRegionLabel(billingRegion)}
+                  </span>
+                </div>
+                {/* Chevron Up icon */}
+                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#fff" }}>
+                  <path d="M11 6.5L6 1.5L1 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {/* Separator line */}
+              <div style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)", margin: "0 28px", width: "calc(100% - 56px)" }} />
+
+              {/* Options list */}
+              <div style={{ padding: "8px 0 16px", width: "100%" }}>
+                {REGION_OPTIONS.map((opt) => {
+                  const isActive = billingRegion === opt.value || (!billingRegion && opt.value === "UAE");
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        triggerHaptic("light");
+                        onBillingRegionChange(opt.value);
+                        setRegionDropdownOpen(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "48px",
+                        padding: "0 28px",
+                        textAlign: "left",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        cursor: "pointer",
+                        fontSize: "15px",
+                        fontWeight: isActive ? 700 : 500,
+                        color: isActive ? "#40D1FD" : "#fff",
+                        transition: "color 0.2s ease",
+                        fontFamily: "var(--font-onest), sans-serif",
+                      }}
+                    >
+                      {getRegionLabel(opt.value)}
+                    </button>
+                  );
+                })}
+              </div>
+            </GradientBlock>
+          </div>
+        )}
+      </div>
       {/* Referral Program */}
       {referralInfo && (
         <div
@@ -357,8 +546,8 @@ export default function ProfileScreen({
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            opacity: dropdownOpen ? 0.3 : 1,
-            pointerEvents: dropdownOpen ? "none" : "auto",
+            opacity: isAnyDropdownOpen ? 0.3 : 1,
+            pointerEvents: isAnyDropdownOpen ? "none" : "auto",
             transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
@@ -431,8 +620,8 @@ export default function ProfileScreen({
       {/* Notifications */}
       <div
         style={{
-          opacity: 1,
-          pointerEvents: dropdownOpen ? "none" : "auto",
+          opacity: isAnyDropdownOpen ? 0.3 : 1,
+          pointerEvents: isAnyDropdownOpen ? "none" : "auto",
           transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >

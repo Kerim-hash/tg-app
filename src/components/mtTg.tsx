@@ -183,6 +183,46 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
 
 export default function TMA() {
   const [language, setLanguage] = useState<Language>("en");
+  const [billingRegion, setBillingRegion] = useState<string>(() => {
+    const stored = safeStorage.getItem("iguard_billing_region") || "";
+    if (stored === "RU") {
+      safeStorage.setItem("iguard_billing_region", "UZB");
+      return "UZB";
+    }
+    return stored;
+  });
+
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [isLoadingMethods, setIsLoadingMethods] = useState(false);
+
+  useEffect(() => {
+    if (!billingRegion) {
+      setPaymentMethods([]);
+      return;
+    }
+    setIsLoadingMethods(true);
+    apiCall(`tma/payment/methods?region=${billingRegion}`, "GET")
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPaymentMethods(data);
+        } else {
+          setPaymentMethods([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch payment methods:", err);
+        setPaymentMethods([]);
+      })
+      .finally(() => {
+        setIsLoadingMethods(false);
+      });
+  }, [billingRegion]);
+
+  const handleBillingRegionChange = (region: string) => {
+    setBillingRegion(region);
+    safeStorage.setItem("iguard_billing_region", region);
+  };
+
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -517,6 +557,28 @@ export default function TMA() {
         } else {
           throw new Error("No invoice URL returned");
         }
+      }
+      const foundDynamic = paymentMethods.find((m) => m.method_type === method);
+      if (foundDynamic) {
+        const data = await apiCall("/payment/link", "POST", {
+          merchant: foundDynamic.method_type,
+          paymentMethodType: foundDynamic.merchant_method_type,
+          planId: Number(selectedPlan.id),
+          userId: String(user.id),
+        });
+
+        setIsPaying(false);
+        const link = data?.link || data?.invoice_url;
+        if (link) {
+          trackEvent("payment_external_opened", { method: foundDynamic.method_type, amount: selectedPlan.usdTotal, opens_new_tab: true });
+          WebApp.openLink(link);
+          if (showOnboarding) {
+            completeOnboarding();
+          }
+          handleReset();
+        } else {
+          throw new Error("No payment link returned from server");
+        }
       } else if (method === "card" || method === "crypto") {
         const merchant = method === "card" ? "PAYPAL" : "cryptocloud";
         const data = await apiCall("/payment/link", "POST", {
@@ -562,6 +624,7 @@ export default function TMA() {
     setIsPaying(true);
 
     try {
+      const foundDynamic = paymentMethods.find((m) => m.method_type === selectedMethod);
       if (selectedMethod === "stars") {
         trackEvent("telegram_stars_flow_viewed", { amount_stars: selectedPlan.starsPrice || 0, plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year" });
         const data = await apiCall("/payment/stars/invoice", "POST", {
@@ -589,6 +652,26 @@ export default function TMA() {
           });
         } else {
           throw new Error("No payment URL returned");
+        }
+      } else if (foundDynamic) {
+        const data = await apiCall("/payment/link", "POST", {
+          merchant: foundDynamic.method_type,
+          paymentMethodType: foundDynamic.merchant_method_type,
+          planId: Number(selectedPlan.id),
+          userId: String(user.id),
+        });
+
+        setIsPaying(false);
+        const link = data?.link || data?.invoice_url;
+        if (link) {
+          trackEvent("payment_external_opened", { method: foundDynamic.method_type, amount: selectedPlan.usdTotal, opens_new_tab: true });
+          WebApp.openLink(link);
+          if (showOnboarding) {
+            completeOnboarding();
+          }
+          handleReset();
+        } else {
+          throw new Error("No payment link returned from server");
         }
       } else if (selectedMethod === "card" || selectedMethod === "crypto") {
         const merchant = selectedMethod === "card" ? "PAYPAL" : "cryptocloud";
@@ -743,6 +826,7 @@ export default function TMA() {
                 onBack={() => setShowPayment(false)}
                 isPaying={isPaying}
                 triggerHaptic={triggerHaptic}
+                paymentMethods={paymentMethods}
               />
             </div>
           </div>
@@ -804,6 +888,9 @@ export default function TMA() {
               personalKey={personalKey}
               onProceedPayment={handleProceedPayment}
               isPaying={isPaying}
+              billingRegion={billingRegion}
+              onBillingRegionChange={handleBillingRegionChange}
+              paymentMethods={paymentMethods}
             />
           </div>
         )}
@@ -820,6 +907,9 @@ export default function TMA() {
               onSelectPlan={setSelectedPlan}
               onProceedPayment={handleProceedPayment}
               isPaying={isPaying}
+              billingRegion={billingRegion}
+              onBillingRegionChange={handleBillingRegionChange}
+              paymentMethods={paymentMethods}
             />
           </div>
         )}
@@ -835,6 +925,8 @@ export default function TMA() {
               onNotifsChange={handleNotifsChange}
               referralInfo={referralInfo}
               triggerHaptic={triggerHaptic}
+              billingRegion={billingRegion}
+              onBillingRegionChange={handleBillingRegionChange}
               onResetOnboarding={() => {
                 safeStorage.removeItem("iguard_onboarding_completed");
                 setShowOnboarding(true);
@@ -881,6 +973,7 @@ export default function TMA() {
             onBack={() => setShowPayment(false)}
             isPaying={isPaying}
             triggerHaptic={triggerHaptic}
+            paymentMethods={paymentMethods}
           />
         </div>
       )}
