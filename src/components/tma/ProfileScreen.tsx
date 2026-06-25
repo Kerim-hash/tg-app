@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Language, Translations, UserData, Notifications, HapticType, ReferralInfo } from "./types";
 import GradientBlock from "../GradientBlock";
 
@@ -82,6 +82,26 @@ export default function ProfileScreen({
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState<"web" | "bot" | null>(null);
+
+  const langRef = useRef<HTMLDivElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: Event) {
+      if (langDropdownOpen && langRef.current && !langRef.current.contains(event.target as Node)) {
+        setLangDropdownOpen(false);
+      }
+      if (regionDropdownOpen && regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setRegionDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [langDropdownOpen, regionDropdownOpen]);
 
   const getRegionLabel = (val: string) => {
     if (val === "UZB") return t.payment.regionUZB;
@@ -213,6 +233,7 @@ export default function ProfileScreen({
 
       {/* Language dropdown */}
       <div
+        ref={langRef}
         style={{
           position: "relative",
           marginBottom: "32px",
@@ -375,6 +396,7 @@ export default function ProfileScreen({
 
       {/* Billing region dropdown */}
       <div
+        ref={regionRef}
         style={{
           position: "relative",
           marginBottom: "32px",
