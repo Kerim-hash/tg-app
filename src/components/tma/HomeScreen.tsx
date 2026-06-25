@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
@@ -120,6 +120,22 @@ export default function HomeScreen({
   const [mounted, setMounted] = useState(false);
   const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: Event) {
+      if (sheetRegionDropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setSheetRegionDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [sheetRegionDropdownOpen]);
 
   const getRegionLabel = (val: string) => {
     if (val === "UZB") return t.payment.regionUZB;
@@ -1118,7 +1134,7 @@ export default function HomeScreen({
                 </div>
 
                 {/* Dropdown Card */}
-                <div style={{ position: "relative", width: "100%", zIndex: 10 }}>
+                <div ref={dropdownRef} style={{ position: "relative", width: "100%", zIndex: 10 }}>
                   {!sheetRegionDropdownOpen ? (
                     <button
                       onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(true); }}

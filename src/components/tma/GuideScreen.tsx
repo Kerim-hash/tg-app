@@ -174,6 +174,22 @@ export default function GuideScreen({
   const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
 
+  const sheetRegionDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: Event) {
+      if (sheetRegionDropdownOpen && sheetRegionDropdownRef.current && !sheetRegionDropdownRef.current.contains(event.target as Node)) {
+        setSheetRegionDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [sheetRegionDropdownOpen]);
+
   const getRegionLabel = (val: string) => {
     if (val === "UZB") return t.payment.regionUZB;
     if (val === "BY") return t.payment.regionBY;
@@ -959,7 +975,7 @@ export default function GuideScreen({
                 </div>
 
                 {/* Dropdown Card */}
-                <div style={{ position: "relative", width: "100%", zIndex: 10 }}>
+                <div ref={sheetRegionDropdownRef} style={{ position: "relative", width: "100%", zIndex: 10 }}>
                   {!sheetRegionDropdownOpen ? (
                     <button
                       onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(true); }}

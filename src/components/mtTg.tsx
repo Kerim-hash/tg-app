@@ -201,7 +201,7 @@ export default function TMA() {
       return;
     }
     setIsLoadingMethods(true);
-    apiCall(`tma/payment/methods?region=${billingRegion}`, "GET")
+    apiCall(`/tma/payment/methods?region=${billingRegion}`, "GET")
       .then((data) => {
         if (Array.isArray(data)) {
           setPaymentMethods(data);
