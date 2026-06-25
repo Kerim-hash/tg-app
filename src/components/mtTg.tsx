@@ -380,14 +380,7 @@ export default function TMA() {
       runAuth(rawInitData);
     } else {
       console.warn("[IGuard] App is running outside Telegram or initData is missing.");
-      // setAuthError("Please open this app inside Telegram");
-        setUser({
-        id: 0,
-        firstName: "test",
-        username: "test",
-        photoUrl: "test",
-        isPremium: false,
-      });
+      setAuthError("Please open this app inside Telegram");
       setIsLoadingAuth(false);
     }
   };
