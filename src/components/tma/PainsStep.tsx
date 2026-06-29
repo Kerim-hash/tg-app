@@ -133,7 +133,7 @@ export default function PainsStep({
       </h2>
 
       <p className={`text-[16px] text-center text-white/40 m-0 leading-relaxed font-sans px-5 ${
-        campaign === "default" ? "mb-10" : "mb-[35px]"
+        campaign === "default" ? "mb-10" : "mb-[28px]"
       }`}>
         {campaign === "gaming"
           ? (language === "ru" ? "Это самые частые причины, почему геймеры используют iGuard:" : language === "es" ? "Estas son las razones más comunes por las que los gamers usan iGuard:" : "These are the most common reasons gamers use iGuard:")
@@ -163,7 +163,7 @@ export default function PainsStep({
                   borderRadius={borderRadius}
                   height="100%"
                   animate={false}
-                  glowIntensity={0.2}
+                  glowIntensity={0.4}
                   borderGlow={false}
                   enableMouseTracking={false}
                   enableHoverScale={false}
@@ -183,7 +183,7 @@ export default function PainsStep({
               </div>
             );
           })}
-          <div className="flex items-center gap-2.5 text-center ml-10 mt-4 text-[#666] text-[14px]">
+          <div className="flex items-center gap-2.5 text-center ml-10 mt-13 text-[#666] text-[14px]">
             <svg width="13" height="9" viewBox="0 0 13 9" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0.707031 4.24256L4.24257 7.7781L11.3136 0.707031" stroke="white" strokeOpacity={0.4} strokeLinecap="square" />
             </svg>

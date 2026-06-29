@@ -55,13 +55,14 @@ export default function ChoosePlanStep({
           const isYearly = plan.periodMonths === 12;
           const isActive = tempSelectedPlanId === plan.id;
 
-          const primaryColor = (isYearly ? "#5B1B85" : "#cfdfe5");
+          const primaryColor = (isYearly ? "#501B77" : "#cfdfe5");
 
           const secondaryColor = (isYearly ? "#7F96D0" : "#606768");
 
           const baseColor = (isYearly ? "#5B1B85" : "#08090a");
 
-          const solidGradient = (isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined);
+          const solidGradient = (isYearly ? "#5B1B85" : undefined);
+          const solidBoxShadow = (isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined);
 
           return (
             <div
@@ -87,6 +88,7 @@ export default function ChoosePlanStep({
                 borderGlow={true}
                 enableMouseTracking={false}
                 solidGradient={solidGradient}
+                solidBoxShadow={solidBoxShadow}
                 enableHoverScale={false}
                 absoluteChildren={true}
               >

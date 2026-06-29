@@ -115,7 +115,7 @@ export default function OnboardingScreen({
         title: language === "ru" ? "Плохое соединение мешает вашей игре?" : language === "es" ? "Tu conexión te está frenando" : "Your connection is holding you back",
         subtitle: language === "ru" ? "Исправьте это за 60 секунд" : language === "es" ? "Corrígelo en 60 segundos" : "Fix it in 60 seconds",
         card1Title: language === "ru" ? "Показать, как работает iGuard" : language === "es" ? "Muéstrame qué hace iGuard" : "Show me what iGuard does",
-        card1Desc: language === "ru" ? "Впервые с VPN? Быстрый обзор" : language === "es" ? "Nuevo en las VPN, recorrido rápido" : "New to VPNs, quick tour",
+        card1Desc: language === "ru" ? "Быстрый обзор, 2 мин" : language === "es" ? "Introducción rápida, 2 min" : "Quick intro, 2 min",
         card1Btn: language === "ru" ? "ОБЗОР" : language === "es" ? "MOSTRAR" : "SHOW ME",
         card2Title: language === "ru" ? "Поехали, я знаю, что делать" : language === "es" ? "Vamos, ya me conozco el truco" : "Let's go, I know the drill",
         card2Desc: language === "ru" ? "Перейти сразу к настройке" : language === "es" ? "Ir directo a la configuración" : "Skip straight to setup",
@@ -328,19 +328,21 @@ export default function OnboardingScreen({
   };
 
   const getPaddingClass = () => {
+    const isSpecialCampaign = true;
+    const topPadding = isSpecialCampaign ? "pt-[70px]" : "pt-5";
     if (
-      (currentStep === 1 && (campaign === "gaming" || campaign === "adults")) ||
+      (currentStep === 1 && isSpecialCampaign) ||
       (currentStep === 2 && campaign === "adults")
     ) {
-      return "pt-5 px-0 pb-0";
+      return `${topPadding} px-0 pb-0`;
     }
     if (currentStep === 0) {
-      return "pt-5 px-5 pb-0";
+      return `${topPadding} px-5 pb-0`;
     }
     if (currentStep > 0 && currentStep < 4) {
-      return "pt-5 px-5 pb-0";
+      return `${topPadding} px-5 pb-0`;
     }
-    return "pt-5 px-5 pb-10";
+    return `${topPadding} px-5 pb-10`;
   };
 
   return (
@@ -413,7 +415,7 @@ export default function OnboardingScreen({
 
       {/* Top Header Section */}
       {currentStep === 0 ? (
-        <div className="text-center mt-3 mb-6 flex items-center justify-center">
+        <div className="text-center mt-3 mb-10 flex items-center justify-center">
           <span className="text-[14px] text-[#40D1FD] font-mono">
             {getHeaderLabel()}
           </span>
@@ -613,14 +615,14 @@ export default function OnboardingScreen({
         <div className="absolute bottom-0 left-0 w-full box-border flex gap-3 justify-between items-center bg-[#12141A]/40 backdrop-blur-[20px] border-t border-white/8 pt-4 px-5 pb-6 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] z-10">
           <button
             onClick={handlePrev}
-            className="h-10 rounded-[16px] bg-[#333333] text-white text-[14px] cursor-pointer outline-none px-[15px] font-mono transition-colors duration-200 ease"
+            className="h-13 rounded-[16px] bg-[#333333] text-white text-[14px] cursor-pointer outline-none px-[15px] font-mono transition-colors duration-200 ease"
           >
             {t.onboarding.back}
           </button>
 
           <button
             onClick={handleNext}
-            className="h-10 rounded-[12px] bg-white text-black text-[14px] cursor-pointer border-none outline-none px-[60px] font-mono transition-transform duration-100 ease"
+            className="h-13 rounded-[12px] bg-white text-black text-[14px] cursor-pointer border-none outline-none px-[60px] font-mono transition-transform duration-100 ease"
           >
             {t.onboarding.next}
           </button>

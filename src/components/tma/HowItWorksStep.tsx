@@ -111,7 +111,7 @@ export default function HowItWorksStep({
                   borderRadius={borderRadius}
                   height="100%"
                   animate={true}
-                  glowIntensity={0.2}
+                  glowIntensity={0.4}
                   borderGlow={false}
                   enableMouseTracking={false}
                   enableHoverScale={false}
@@ -131,7 +131,7 @@ export default function HowItWorksStep({
             );
           })}
 
-          <div className="flex items-center gap-2.5 text-left mt-4 text-white/40 text-[13px] font-sans leading-tight px-5 box-border">
+          <div className="flex items-center gap-2.5 text-left mt-5 text-white/40 text-[13px] font-sans leading-tight px-5 box-border">
             <svg width="13" height="9" viewBox="0 0 13 9" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0.707031 4.24256L4.24257 7.7781L11.3136 0.707031" stroke="white" strokeOpacity="0.4" strokeLinecap="square" />
             </svg>

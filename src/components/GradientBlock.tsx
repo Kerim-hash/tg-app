@@ -18,6 +18,7 @@ interface GradientBlockProps {
   contentAlign?: "center" | "bottom" | "start"; // default "bottom" for label, "center" for children
   borderRadius?: string;
   solidGradient?: string; // custom solid background gradient (e.g. "linear-gradient(to bottom, #5B1C86, #76CFF1)")
+  solidBoxShadow?: string; // custom solid background box shadows (e.g. inset shadows from SVG filter)
   enableHoverScale?: boolean;
   padding?: string;
   absoluteChildren?: boolean;
@@ -39,6 +40,7 @@ export default function GradientBlock({
   contentAlign,
   borderRadius = "20px",
   solidGradient,
+  solidBoxShadow,
   enableHoverScale = true,
   padding,
   absoluteChildren = false,
@@ -159,6 +161,8 @@ export default function GradientBlock({
               transparent 75%
             )
           `,
+          boxShadow: solidBoxShadow || undefined,
+          borderRadius: borderRadius,
           ...(!solidGradient ? driftAnimStyle : {})
         }}
       />

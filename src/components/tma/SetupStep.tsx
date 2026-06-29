@@ -85,7 +85,7 @@ export default function SetupStep({
             <div className="flex relative pb-6">
               {/* Left Column */}
               <div className="w-[34px] flex flex-col items-center shrink-0">
-                <div className="w-[34px] h-[34px] rounded-xl bg-[#1a1a1a] flex items-center justify-center text-[14px] text-white font-mono">
+                <div className="w-[34px] h-[34px] rounded-xl bg-[#1A1A1A] flex items-center justify-center text-[14px] text-white font-mono">
                   1
                 </div>
                 <div className="absolute left-[17px] top-9 bottom-0.5 w-0 border-l-2 border-dotted border-white/15" />
@@ -107,7 +107,7 @@ export default function SetupStep({
             <div className="flex relative pb-6">
               {/* Left Column */}
               <div className="w-[34px] flex flex-col items-center shrink-0">
-                <div className="w-[34px] h-[34px] rounded-xl bg-[#1a1a1a] flex items-center justify-center text-[14px] text-white font-mono">
+                <div className="w-[34px] h-[34px] rounded-xl bg-[#1A1A1A] flex items-center justify-center text-[14px] text-white font-mono">
                   2
                 </div>
                 <div className="absolute left-[17px] top-9 bottom-0.5 w-0 border-l-2 border-dotted border-white/15" />
@@ -127,7 +127,7 @@ export default function SetupStep({
             <div className="flex relative pb-6">
               {/* Left Column */}
               <div className="w-[34px] flex flex-col items-center shrink-0">
-                <div className="w-[34px] h-[34px] rounded-xl bg-[#1a1a1a] flex items-center justify-center text-[14px] text-white font-mono">
+                <div className="w-[34px] h-[34px] rounded-xl bg-[#1A1A1A] flex items-center justify-center text-[14px] text-white font-mono">
                   3
                 </div>
                 <div className="absolute left-[17px] top-9 bottom-0.5 w-0 border-l-2 border-dotted border-white/15" />
@@ -224,8 +224,8 @@ export default function SetupStep({
                           animate={isYearly}
                           glowIntensity={isYearly ? 1.2 : 0.25}
                           borderGlow={true}
-                          enableMouseTracking={false}
-                          solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
+                          solidGradient={isYearly ? "#5B1B85" : undefined}
+                          solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
                           enableHoverScale={false}
                           absoluteChildren={true}
                         >
@@ -235,9 +235,8 @@ export default function SetupStep({
 
                           <div className="absolute inset-0 flex flex-col justify-between p-4 px-3 pb-5 z-20 pointer-events-none box-border text-center items-center">
                             <span
-                              className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${
-                                isYearly ? "bg-black/16" : "bg-white/8"
-                              }`}
+                              className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${isYearly ? "bg-black/16" : "bg-white/8"
+                                }`}
                             >
                               {getPlanLabelText(plan.periodMonths, language)}
                             </span>
@@ -274,17 +273,16 @@ export default function SetupStep({
                         onSelectPlanForPayment(tempSelectedPlanId);
                       }
                     }}
-                    className={`cursor-pointer font-mono text-[12px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${
-                      selectedPlan
+                    className={`cursor-pointer font-mono text-[12px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${selectedPlan
                         ? "bg-white text-black border-none"
                         : "bg-white/2 text-white border border-white/20"
-                    }`}
+                      }`}
                   >
                     {selectedPlan
                       ? t.home.buyFor(
-                          `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                          selectedPlan.starsPrice
-                        ).toUpperCase()
+                        `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                        selectedPlan.starsPrice
+                      ).toUpperCase()
                       : t.onboarding.selectAndBuy.toUpperCase()}
                   </button>
                 </div>
@@ -376,9 +374,8 @@ export default function SetupStep({
               <div className="flex justify-center">
                 <button
                   onClick={onCopy}
-                  className={`font-mono text-[12px] px-6 py-3 rounded-[14px] cursor-pointer transition-all duration-200 ease-in-out ${
-                    copied ? "bg-white/8 border border-white/12 text-white/40" : "bg-white border-none text-black"
-                  }`}
+                  className={`font-mono text-[12px] px-6 py-3 rounded-[14px] cursor-pointer transition-all duration-200 ease-in-out ${copied ? "bg-white/8 border border-white/12 text-white/40" : "bg-white border-none text-black"
+                    }`}
                 >
                   {copied ? "✓ " + t.guide.copied.toUpperCase() : t.guide.copyKey.toUpperCase()}
                 </button>

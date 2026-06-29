@@ -494,8 +494,8 @@ export default function GuideScreen({
                       animate={isYearly}
                       glowIntensity={isYearly ? .3 : 0.5}
                       borderGlow={true}
-                      enableMouseTracking={false}
-                      solidGradient={isYearly ? "radial-gradient(circle at 50% 0%, rgb(196 112 255) 0%, rgb(131 21 209) 45%, rgb(120 143 202) 75%, rgb(77, 168, 213) 100%)" : undefined}
+                      solidGradient={isYearly ? "#5B1B85" : undefined}
+                      solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
                       absoluteChildren={true}
                       enableHoverScale={false}
                     >
