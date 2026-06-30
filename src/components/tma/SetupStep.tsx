@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import GradientBlock from "../GradientBlock";
-import SwipeSlider from "./SwipeSlider";
+import React, { useState, useEffect } from "react";
+import WebApp from "@twa-dev/sdk";
 
 const AppleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -12,12 +11,22 @@ const AppleIcon = () => (
 );
 
 const AndroidIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 18c0 .55.45 1 1 1h1v3c0 .55.45 1 1 1s1-.45 1-1v-3h4v3c0 .55.45 1 1 1s1-.45 1-1v-3h1c.55 0 1-.45 1-1V11H6v7zM16 8l1.41-1.41c.2-.2.2-.51 0-.71a.498.498 0 0 0-.7 0L15.17 7.42A8.914 8.914 0 0 0 12 6.8c-1.15 0-2.25.22-3.17.62L7.29 5.88c-.2-.2-.51-.2-.7 0a.498.498 0 0 0 0 .7L8 8C5.55 9.4 4.09 11.96 4.01 14.93h15.98C19.9 11.96 18.45 9.4 16 8zm-6.5 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm5 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z" fill="black" />
+  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.8793 3.37899L16.5383 0.505167C16.5828 0.428023 16.5949 0.336417 16.5721 0.250349C16.5492 0.164281 16.4933 0.0907428 16.4164 0.0457918C16.3784 0.0235037 16.3364 0.00897168 16.2928 0.00303712C16.2492 -0.00289744 16.2048 -0.000116585 16.1622 0.011219C16.1197 0.0225547 16.0798 0.0422197 16.0449 0.0690746C16.01 0.0959295 15.9808 0.129441 15.959 0.167667L14.2793 3.0786C12.9969 2.49267 11.5535 2.1665 10.0012 2.1665C8.44883 2.1665 7.00547 2.49306 5.72305 3.0786L4.04336 0.167667C3.9986 0.0905884 3.92506 0.0344458 3.83891 0.0115898C3.75276 -0.0112662 3.66106 0.00103654 3.58398 0.0457918C3.50691 0.0905471 3.45076 0.164089 3.42791 0.250238C3.40505 0.336388 3.41735 0.428088 3.46211 0.505167L5.11719 3.37899C2.25781 4.92743 0.319922 7.82313 0 11.213H20C19.6801 7.82313 17.7422 4.92743 14.8793 3.37899ZM5.4082 8.40439C5.24241 8.40439 5.08033 8.35522 4.94248 8.26311C4.80462 8.171 4.69718 8.04008 4.63373 7.8869C4.57028 7.73372 4.55368 7.56517 4.58603 7.40256C4.61837 7.23995 4.69821 7.09059 4.81545 6.97335C4.93268 6.85611 5.08205 6.77628 5.24466 6.74393C5.40727 6.71158 5.57582 6.72819 5.729 6.79163C5.88218 6.85508 6.0131 6.96253 6.10521 7.10038C6.19732 7.23823 6.24648 7.40031 6.24648 7.5661C6.24638 7.7884 6.15803 8.00156 6.00084 8.15874C5.84366 8.31593 5.6305 8.40428 5.4082 8.40439ZM14.5879 8.40439C14.4222 8.40369 14.2605 8.35394 14.1231 8.2614C13.9857 8.16887 13.8788 8.03771 13.8159 7.88447C13.753 7.73124 13.7369 7.5628 13.7697 7.40042C13.8024 7.23804 13.8825 7.089 13.9999 6.97212C14.1173 6.85523 14.2666 6.77574 14.4292 6.74368C14.5917 6.71162 14.76 6.72843 14.913 6.79198C15.066 6.85553 15.1967 6.96297 15.2887 7.10075C15.3806 7.23852 15.4297 7.40046 15.4297 7.5661C15.4296 7.67634 15.4079 7.78548 15.3656 7.88729C15.3233 7.9891 15.2614 8.08158 15.1834 8.15944C15.1053 8.23729 15.0127 8.299 14.9108 8.34103C14.8089 8.38306 14.6997 8.40459 14.5895 8.40439H14.5879Z" fill="black" />
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
   </svg>
 );
 
 import type { HapticType } from "./types";
+import GradientBlock from "../GradientBlock";
+import SwipeSlider from "./SwipeSlider";
 
 interface SetupStepProps {
   language: string;
@@ -67,6 +76,70 @@ export default function SetupStep({
   getBilledFrequencyText,
   setupTexts,
 }: SetupStepProps) {
+  const [userOS, setUserOS] = useState<string>("iOS");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      let platform = WebApp.platform?.toLowerCase();
+      if (platform === "android") {
+        setUserOS("Android");
+      } else if (platform === "ios") {
+        setUserOS("iOS");
+      } else if (platform === "macos") {
+        setUserOS("MacOS");
+      } else {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        if (/android/.test(userAgent)) {
+          setUserOS("Android");
+        } else if (/iphone|ipad|ipod/.test(userAgent)) {
+          setUserOS("iOS");
+        } else if (/mac/.test(userAgent)) {
+          setUserOS("MacOS");
+        } else if (/win/.test(userAgent)) {
+          setUserOS("Windows");
+        } else if (/linux/.test(userAgent)) {
+          setUserOS("Linux");
+        }
+      }
+    }
+  }, []);
+
+  const isAndroidPlatform = userOS === "Android";
+
+  let step1Text = isAndroidPlatform
+    ? (language === "ru" ? "Скачайте Happ в Google Play" : language === "es" ? "Descarga Happ de Play Store" : "Download Happ from Play Store")
+    : (language === "ru" ? "Скачайте Happ в App Store" : language === "es" ? "Descarga Happ de App Store" : "Download Happ from App Store");
+
+  if (userOS === "Windows") {
+    step1Text = language === "ru" ? "Скачайте Happ для Windows" : language === "es" ? "Descarga Happ para Windows" : "Download Happ for Windows";
+  } else if (userOS === "Linux") {
+    step1Text = language === "ru" ? "Скачайте Happ для Linux" : language === "es" ? "Descarga Happ para Linux" : "Download Happ for Linux";
+  } else if (userOS === "MacOS") {
+    step1Text = language === "ru" ? "Скачайте Happ для macOS" : language === "es" ? "Descarga Happ para macOS" : "Download Happ for macOS";
+  }
+
+  let downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
+  let buttonLabel = t.guide.visitAppStore;
+  let PlatformIcon = AppleIcon;
+
+  if (userOS === "Android") {
+    downloadUrl = "https://play.google.com/store/apps/details?id=com.happproxy";
+    buttonLabel = t.onboarding.visitAndroidStore;
+    PlatformIcon = AndroidIcon;
+  } else if (userOS === "Windows") {
+    downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe";
+    buttonLabel = language === "ru" ? "СКАЧАТЬ ДЛЯ WINDOWS" : language === "es" ? "DESCARGAR PARA WINDOWS" : "DOWNLOAD FOR WINDOWS";
+    PlatformIcon = DownloadIcon;
+  } else if (userOS === "Linux") {
+    downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.linux.x64.deb";
+    buttonLabel = language === "ru" ? "СКАЧАТЬ ДЛЯ LINUX" : language === "es" ? "DESCARGAR PARA LINUX" : "DOWNLOAD FOR LINUX";
+    PlatformIcon = DownloadIcon;
+  } else if (userOS === "MacOS") {
+    downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
+    buttonLabel = language === "ru" ? "ПЕРЕЙТИ В APPSTORE" : language === "es" ? "VISITAR APPSTORE" : "VISIT APPSTORE";
+    PlatformIcon = AppleIcon;
+  }
+
   return (
     <div className="w-full flex flex-col box-border flex-1">
       <h2 className="text-[24px] text-center text-white m-0 mb-1.5 leading-tight font-sans">
@@ -93,9 +166,7 @@ export default function SetupStep({
               {/* Right Column */}
               <div className="ml-4 flex flex-col justify-center">
                 <span className="text-[15px] text-white font-normal font-sans leading-tight">
-                  {isAndroid
-                    ? (language === "ru" ? "Скачайте iGuard в Google Play" : language === "es" ? "Descarga iGuard de Play Store" : "Download iGuard from Play Store")
-                    : (language === "ru" ? "Скачайте iGuard в App Store" : language === "es" ? "Descarga iGuard de App Store" : "Download iGuard from App Store")}
+                  {step1Text}
                 </span>
                 <span className="text-[13px] text-brand-gray mt-1 font-sans">
                   {language === "ru" ? "1 мин" : "1 min"}
@@ -274,8 +345,8 @@ export default function SetupStep({
                       }
                     }}
                     className={`cursor-pointer font-mono text-[12px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${selectedPlan
-                        ? "bg-white text-black border-none"
-                        : "bg-white/2 text-white border border-white/20"
+                      ? "bg-white text-black border-none"
+                      : "bg-white/2 text-white border border-white/20"
                       }`}
                   >
                     {selectedPlan
@@ -305,31 +376,17 @@ export default function SetupStep({
             </div>
 
             <div className="flex justify-center w-full mt-1">
-              {isAndroid ? (
-                <button
-                  onClick={() => {
-                    triggerHaptic("medium");
-                    trackEvent("onboarding_connect_playstore_clicked", {});
-                    window.open("https://play.google.com", "_blank");
-                  }}
-                  className="my-1 mx-auto w-fit flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] bg-white text-black text-[12px] cursor-pointer border-none font-mono"
-                >
-                  <AndroidIcon />
-                  {t.onboarding.visitAndroidStore}
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    triggerHaptic("medium");
-                    trackEvent("onboarding_connect_appstore_clicked", {});
-                    window.open("https://apps.apple.com/us/app/happ-proxy-utility/id6504287215", "_blank");
-                  }}
-                  className="my-1 mx-auto w-fit flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] bg-white text-black text-[12px] cursor-pointer border-none font-mono"
-                >
-                  <AppleIcon />
-                  {t.guide.visitAppStore}
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  triggerHaptic("medium");
+                  trackEvent("onboarding_connect_store_clicked", { platform: userOS });
+                  window.open(downloadUrl, "_blank");
+                }}
+                className="my-1 mx-auto w-fit flex items-center justify-center gap-2 px-6 py-3 rounded-[14px] bg-white text-black text-[12px] cursor-pointer border-none font-mono"
+              >
+                <PlatformIcon />
+                {buttonLabel}
+              </button>
             </div>
           </div>
 

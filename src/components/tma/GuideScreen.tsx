@@ -100,7 +100,20 @@ const AppleIcon = () => (
     <path d="M7.98543 17.9453C5.43867 17.9306 3.33203 12.7318 3.33203 10.0842C3.33203 5.75929 6.57644 4.81245 7.82681 4.81245C8.3903 4.81245 8.99199 5.03374 9.5227 5.22956C9.89381 5.36615 10.2776 5.50716 10.4911 5.50716C10.6189 5.50716 10.92 5.38721 11.1858 5.28196C11.7527 5.05627 12.4582 4.77576 13.2797 4.77576C13.2812 4.77576 13.2831 4.77576 13.2846 4.77576C13.898 4.77576 15.7579 4.91038 16.8761 6.58962L17.138 6.98323L16.7611 7.26768C16.2225 7.67402 15.2399 8.41524 15.2399 9.88349C15.2399 11.6225 16.3527 12.2912 16.8874 12.6129C17.1234 12.7548 17.3676 12.9012 17.3676 13.2214C17.3676 13.4305 15.6992 17.9194 13.2762 17.9194C12.6834 17.9194 12.2643 17.7412 11.8947 17.584C11.5206 17.4249 11.198 17.2878 10.6648 17.2878C10.3946 17.2878 10.0529 17.4156 9.69107 17.5512C9.19667 17.7357 8.63705 17.9453 8.00208 17.9453H7.98543Z" fill="black" />
     <path d="M13.539 0.833374C13.6021 3.10859 11.975 4.68703 10.3497 4.58803C10.0819 2.77233 11.9748 0.833374 13.539 0.833374Z" fill="black" />
   </svg>
+);
 
+const AndroidIcon = () => (
+  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14.8793 3.37899L16.5383 0.505167C16.5828 0.428023 16.5949 0.336417 16.5721 0.250349C16.5492 0.164281 16.4933 0.0907428 16.4164 0.0457918C16.3784 0.0235037 16.3364 0.00897168 16.2928 0.00303712C16.2492 -0.00289744 16.2048 -0.000116585 16.1622 0.011219C16.1197 0.0225547 16.0798 0.0422197 16.0449 0.0690746C16.01 0.0959295 15.9808 0.129441 15.959 0.167667L14.2793 3.0786C12.9969 2.49267 11.5535 2.1665 10.0012 2.1665C8.44883 2.1665 7.00547 2.49306 5.72305 3.0786L4.04336 0.167667C3.9986 0.0905884 3.92506 0.0344458 3.83891 0.0115898C3.75276 -0.0112662 3.66106 0.00103654 3.58398 0.0457918C3.50691 0.0905471 3.45076 0.164089 3.42791 0.250238C3.40505 0.336388 3.41735 0.428088 3.46211 0.505167L5.11719 3.37899C2.25781 4.92743 0.319922 7.82313 0 11.213H20C19.6801 7.82313 17.7422 4.92743 14.8793 3.37899ZM5.4082 8.40439C5.24241 8.40439 5.08033 8.35522 4.94248 8.26311C4.80462 8.171 4.69718 8.04008 4.63373 7.8869C4.57028 7.73372 4.55368 7.56517 4.58603 7.40256C4.61837 7.23995 4.69821 7.09059 4.81545 6.97335C4.93268 6.85611 5.08205 6.77628 5.24466 6.74393C5.40727 6.71158 5.57582 6.72819 5.729 6.79163C5.88218 6.85508 6.0131 6.96253 6.10521 7.10038C6.19732 7.23823 6.24648 7.40031 6.24648 7.5661C6.24638 7.7884 6.15803 8.00156 6.00084 8.15874C5.84366 8.31593 5.6305 8.40428 5.4082 8.40439ZM14.5879 8.40439C14.4222 8.40369 14.2605 8.35394 14.1231 8.2614C13.9857 8.16887 13.8788 8.03771 13.8159 7.88447C13.753 7.73124 13.7369 7.5628 13.7697 7.40042C13.8024 7.23804 13.8825 7.089 13.9999 6.97212C14.1173 6.85523 14.2666 6.77574 14.4292 6.74368C14.5917 6.71162 14.76 6.72843 14.913 6.79198C15.066 6.85553 15.1967 6.96297 15.2887 7.10075C15.3806 7.23852 15.4297 7.40046 15.4297 7.5661C15.4296 7.67634 15.4079 7.78548 15.3656 7.88729C15.3233 7.9891 15.2614 8.08158 15.1834 8.15944C15.1053 8.23729 15.0127 8.299 14.9108 8.34103C14.8089 8.38306 14.6997 8.40459 14.5895 8.40439H14.5879Z" fill="black" />
+  </svg>
+);
+
+const DownloadIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
 );
 
 const FAQItem = ({ question, answer }: { question: string; answer: string }) => {
@@ -173,8 +186,35 @@ export default function GuideScreen({
   const [mounted, setMounted] = useState(false);
   const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
+  const [userOS, setUserOS] = useState<string>("iOS");
 
   const sheetRegionDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      let platform = WebApp.platform?.toLowerCase();
+      if (platform === "android") {
+        setUserOS("Android");
+      } else if (platform === "ios") {
+        setUserOS("iOS");
+      } else if (platform === "macos") {
+        setUserOS("MacOS");
+      } else {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        if (/android/.test(userAgent)) {
+          setUserOS("Android");
+        } else if (/iphone|ipad|ipod/.test(userAgent)) {
+          setUserOS("iOS");
+        } else if (/mac/.test(userAgent)) {
+          setUserOS("MacOS");
+        } else if (/win/.test(userAgent)) {
+          setUserOS("Windows");
+        } else if (/linux/.test(userAgent)) {
+          setUserOS("Linux");
+        }
+      }
+    }
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: Event) {
@@ -269,6 +309,79 @@ export default function GuideScreen({
       window.open(url, "_blank");
     }
   };
+
+  // ─── Platform-specific content ───────────────────────────────────────────
+  let downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
+  let step1Text = t.guide.step1Title;
+  let buttonLabel = t.guide.visitAppStore;
+  let PlatformIcon = AppleIcon;
+
+  if (userOS === "Android") {
+    downloadUrl = "https://play.google.com/store/apps/details?id=com.happproxy";
+    step1Text = language === "ru"
+      ? "Скачайте и установите бесплатное приложение Happ из Google Play"
+      : language === "es"
+        ? "Descargue e instale el cliente Happ gratuito desde Google Play"
+        : "Download and Install the free Happ client from Google Play";
+    buttonLabel = language === "ru"
+      ? "СКАЧАТЬ ДЛЯ ANDROID"
+      : language === "es"
+        ? "VISITAR TIENDA ANDROID"
+        : "VISIT ANDROID STORE";
+    PlatformIcon = AndroidIcon;
+  } else if (userOS === "Windows") {
+    downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe";
+    step1Text = language === "ru"
+      ? "Скачайте и установите бесплатное приложение Happ для Windows"
+      : language === "es"
+        ? "Descargue e instale el cliente Happ gratuito para Windows"
+        : "Download and Install the free Happ client for Windows";
+    buttonLabel = language === "ru"
+      ? "СКАЧАТЬ ДЛЯ WINDOWS"
+      : language === "es"
+        ? "DESCARGAR PARA WINDOWS"
+        : "DOWNLOAD FOR WINDOWS";
+    PlatformIcon = DownloadIcon;
+  } else if (userOS === "Linux") {
+    downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.linux.x64.deb";
+    step1Text = language === "ru"
+      ? "Скачайте и установите бесплатное приложение Happ для Linux"
+      : language === "es"
+        ? "Descargue e instale el cliente Happ gratuito para Linux"
+        : "Download and Install the free Happ client for Linux";
+    buttonLabel = language === "ru"
+      ? "СКАЧАТЬ ДЛЯ LINUX"
+      : language === "es"
+        ? "DESCARGAR PARA LINUX"
+        : "DOWNLOAD FOR LINUX";
+    PlatformIcon = DownloadIcon;
+  } else if (userOS === "MacOS") {
+    downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
+    step1Text = language === "ru"
+      ? "Скачайте и установите бесплатное приложение Happ из App Store"
+      : language === "es"
+        ? "Descargue e instale el cliente Happ gratuito desde la App Store"
+        : "Download and Install the free Happ client from the App Store";
+    buttonLabel = language === "ru"
+      ? "ПЕРЕЙТИ В APPSTORE"
+      : language === "es"
+        ? "VISITAR APPSTORE"
+        : "VISIT APPSTORE";
+    PlatformIcon = AppleIcon;
+  } else if (userOS === "TV") {
+    downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility-for-tv/id6748297274";
+    step1Text = language === "ru"
+      ? "Скачайте и установите бесплатное приложение Happ для Apple TV"
+      : language === "es"
+        ? "Descargue e instale el cliente Happ gratuito para Apple TV"
+        : "Download and Install the free Happ client for Apple TV";
+    buttonLabel = language === "ru"
+      ? "ПЕРЕЙТИ В APPSTORE"
+      : language === "es"
+        ? "VISITAR APPSTORE"
+        : "VISIT APPSTORE";
+    PlatformIcon = AppleIcon;
+  }
 
   return (
     <div
@@ -384,7 +497,7 @@ export default function GuideScreen({
               1
             </div>
             <span style={{ fontSize: "16px", color: "#fff", lineHeight: 1.4 }}>
-              {t.guide.step1Title}
+              {step1Text}
             </span>
           </div>
 
@@ -392,7 +505,7 @@ export default function GuideScreen({
             className="hover-scale-btn"
             onClick={() => {
               trackEvent("appstore_link_tapped", { step: 1 });
-              handleOpenLink("https://apps.apple.com/us/app/happ-proxy-utility/id6504287215");
+              handleOpenLink(downloadUrl);
             }}
             style={{
               alignSelf: "center",
@@ -412,8 +525,8 @@ export default function GuideScreen({
               marginTop: "4px",
             }}
           >
-            <AppleIcon />
-            {t.guide.visitAppStore}
+            <PlatformIcon />
+            {buttonLabel}
           </button>
         </div>
 
@@ -1184,7 +1297,7 @@ export default function GuideScreen({
 
                     return methodsToRender.map((method) => {
                       const isSelected = localSelectedMethod === method.id;
-                      
+
                       // Calculate pricing text
                       let priceText = "";
                       if (method.id === "stars") {
