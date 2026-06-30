@@ -16,6 +16,7 @@ interface ProfileScreenProps {
   onResetOnboarding?: () => void;
   billingRegion: string;
   onBillingRegionChange: (region: string) => void;
+  onDropdownOpenChange?: (open: boolean) => void;
 }
 
 const LANG_OPTIONS: { value: Language; label: string }[] = [
@@ -78,6 +79,7 @@ export default function ProfileScreen({
   onResetOnboarding,
   billingRegion,
   onBillingRegionChange,
+  onDropdownOpenChange,
 }: ProfileScreenProps) {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
@@ -125,16 +127,25 @@ export default function ProfileScreen({
   const isAnyDropdownOpen = langDropdownOpen || regionDropdownOpen;
 
   useEffect(() => {
+    if (onDropdownOpenChange) {
+      onDropdownOpenChange(isAnyDropdownOpen);
+    }
+  }, [isAnyDropdownOpen, onDropdownOpenChange]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     const mainEl = document.querySelector("main");
-    if (!mainEl) return;
-    if (isAnyDropdownOpen) {
-      mainEl.style.overflowY = "hidden";
-    } else {
-      mainEl.style.overflowY = "auto";
+
+    if (mainEl) {
+      if (isAnyDropdownOpen) {
+        mainEl.style.overflowY = "hidden";
+      } else {
+        mainEl.style.overflowY = "auto";
+      }
     }
+
     return () => {
-      mainEl.style.overflowY = "auto";
+      if (mainEl) mainEl.style.overflowY = "auto";
     };
   }, [isAnyDropdownOpen]);
 
@@ -238,7 +249,7 @@ export default function ProfileScreen({
           position: "relative",
           marginBottom: "32px",
           height: "72px",
-          zIndex: 9,
+          zIndex: langDropdownOpen ? 1001 : 9,
           opacity: regionDropdownOpen ? 0.3 : 1,
           pointerEvents: regionDropdownOpen ? "none" : "auto",
           transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -401,7 +412,7 @@ export default function ProfileScreen({
           position: "relative",
           marginBottom: "32px",
           height: "72px",
-          zIndex: 8,
+          zIndex: regionDropdownOpen ? 1001 : 8,
           opacity: langDropdownOpen ? 0.3 : 1,
           pointerEvents: langDropdownOpen ? "none" : "auto",
           transition: "opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1)",

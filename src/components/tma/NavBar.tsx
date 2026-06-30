@@ -53,6 +53,7 @@ export default function NavBar({ t, currentTab, onTabChange, isVisible = true }:
 
   return (
     <div
+      className="tma-navbar"
       style={{
         position: "absolute",
         bottom: "20px",

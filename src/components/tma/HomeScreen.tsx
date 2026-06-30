@@ -1134,7 +1134,7 @@ export default function HomeScreen({
                 </div>
 
                 {/* Dropdown Card */}
-                <div ref={dropdownRef} style={{ position: "relative", width: "100%", zIndex: 10 }}>
+                <div ref={dropdownRef} style={{ position: "relative", width: "100%", zIndex: sheetRegionDropdownOpen ? 1001 : 10 }}>
                   {!sheetRegionDropdownOpen ? (
                     <button
                       onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(true); }}

@@ -1088,7 +1088,7 @@ export default function GuideScreen({
                 </div>
 
                 {/* Dropdown Card */}
-                <div ref={sheetRegionDropdownRef} style={{ position: "relative", width: "100%", zIndex: 10 }}>
+                <div ref={sheetRegionDropdownRef} style={{ position: "relative", width: "100%", zIndex: sheetRegionDropdownOpen ? 1001 : 10 }}>
                   {!sheetRegionDropdownOpen ? (
                     <button
                       onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(true); }}

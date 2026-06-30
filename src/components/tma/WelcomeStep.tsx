@@ -92,8 +92,8 @@ export default function WelcomeStep({
       <div className="shrink-0 w-full h-[240px]">
         <GradientBlock
           label=""
-      primaryColor={"#cfdfe5"}
-                        secondaryColor={"#686F70"}
+          primaryColor={"#cfdfe5"}
+          secondaryColor={"#686F70"}
           baseColor="#1C1B1A" // obsidian base color
           borderRadius="70px"
           height="100%"
@@ -105,7 +105,7 @@ export default function WelcomeStep({
           absoluteChildren={true}
         >
           <div className="absolute inset-0 flex flex-col items-center justify-between p-9 px-12 box-border text-center">
-            <h3 className="text-[24px] text-white m-0 mb-2.5 font-sans leading-[1.3] max-w-[185px]">
+            <h3 className={`text-[24px] text-white m-0 mb-2.5 font-sans leading-[1.3]`}>
               {welcomeTexts.card2Title}
             </h3>
             <p className="text-[16px] text-white/40 m-0 mb-7">

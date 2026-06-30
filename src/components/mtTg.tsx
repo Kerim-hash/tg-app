@@ -255,6 +255,7 @@ export default function TMA() {
 
   // Navbar dynamic scroll visibility state
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const lastScrollTopRef = useRef(0);
 
   // Plans
@@ -427,11 +428,11 @@ export default function TMA() {
 
   useEffect(() => {
     handleInitAuth();
-    
+
     // Detect campaign from referral link or start param
     const detected = detectCampaign();
     setCampaign(detected);
-    
+
     const completed = safeStorage.getItem("iguard_onboarding_completed");
     if (completed !== "true") {
       setShowOnboarding(true);
@@ -927,6 +928,7 @@ export default function TMA() {
               triggerHaptic={triggerHaptic}
               billingRegion={billingRegion}
               onBillingRegionChange={handleBillingRegionChange}
+              onDropdownOpenChange={setIsDropdownOpen}
               onResetOnboarding={() => {
                 safeStorage.removeItem("iguard_onboarding_completed");
                 setShowOnboarding(true);
@@ -951,7 +953,7 @@ export default function TMA() {
       <NavBar
         t={t}
         currentTab={currentTab}
-        isVisible={isNavbarVisible}
+        isVisible={isNavbarVisible && !isDropdownOpen}
         onTabChange={(tab) => {
           triggerHaptic("light");
           setCurrentTab(tab);
