@@ -327,9 +327,26 @@ export default function OnboardingScreen({
     onComplete();
   };
 
+  const getPaddingClass = () => {
+    const isSpecialCampaign = campaign === "adults" || campaign === "gaming";
+    const topPadding = isSpecialCampaign ? "pt-[70px]" : "pt-5";
+    if (
+      (currentStep === 1 && isSpecialCampaign) ||
+      (currentStep === 2 && campaign === "adults")
+    ) {
+      return `${topPadding} px-0 pb-0`;
+    }
+    if (currentStep === 0) {
+      return `${topPadding} px-5 pb-0`;
+    }
+    if (currentStep > 0 && currentStep < 4) {
+      return `${topPadding} px-5 pb-0`;
+    }
+    return `${topPadding} px-5 pb-10`;
+  };
 
   return (
-    <div className={`h-full flex flex-col bg-black text-white max-w-[480px] mx-auto overflow-hidden relative box-border pt-[70px] px-5`}>
+    <div className={`h-full flex flex-col bg-black text-white max-w-[480px] mx-auto overflow-hidden relative box-border ${getPaddingClass()}`}>
       {/* Local keyframes for transitions */}
       <style dangerouslySetInnerHTML={{
         __html: `

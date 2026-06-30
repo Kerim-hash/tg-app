@@ -119,10 +119,10 @@ export default function HowItWorksStep({
                 >
                   <div className={`absolute inset-0 flex flex-col justify-center box-border text-left ${item.isLeft ? "pl-9 pr-6" : "pl-6 pr-9"
                     }`}>
-                    <span className="text-[14px] text-brand-gray font-mono mb-0.5">
+                    <span className={`${language === "ru" ? "text-[12px]" : "text-[14px]"} text-brand-gray font-mono mb-0.5`}>
                       {item.label}
                     </span>
-                    <span className="text-[16px] text-white  font-sans">
+                    <span className={`text-white  font-sans ${language === "ru" ? "text-[14px]" : "text-[16px]"}`}>
                       {item.value}
                     </span>
                   </div>
@@ -258,7 +258,7 @@ export default function HowItWorksStep({
             </div>
             <div className="h-[90px] rounded-[30px] bg-brand-dark-gray p-3 px-5 flex flex-col justify-between box-border">
               <div className="flex flex-col">
-                <span className="text-[14px] text-white  font-sans">
+                <span className={`text-white  font-sans ${language === "ru" ? "text-[12px]" : "text-[16px]"}`}>
                   {language === "ru" ? "Обходит региональные блоки" : language === "es" ? "Bypasses regional blocks" : "Bypasses regional blocks"}
                 </span>
               </div>
