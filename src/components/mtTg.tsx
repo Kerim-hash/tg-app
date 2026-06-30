@@ -439,25 +439,6 @@ export default function TMA() {
     }
   }, []);
 
-  // Load and boot Intercom on mount
-  useEffect(() => {
-    const intercomAppId = process.env.NEXT_PUBLIC_INTERCOM_APP_ID || "ljq492l3";
-    try {
-      Intercom({
-        app_id: intercomAppId,
-        hide_default_launcher: true,
-      });
-    } catch (err) {
-      console.error("Failed to initialize Intercom SDK:", err);
-      setIntercomFailed(true);
-    }
-
-    return () => {
-      if ((window as any).Intercom) {
-        (window as any).Intercom("shutdown");
-      }
-    };
-  }, []);
 
   // Update Intercom user attributes when user state changes
   useEffect(() => {
