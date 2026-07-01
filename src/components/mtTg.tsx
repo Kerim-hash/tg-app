@@ -305,6 +305,7 @@ export default function TMA() {
           photoUrl: profile.photo_url || profile.photoUrl || tgUser?.photo_url,
           isPremium: profile.is_premium || profile.isPremium || false,
           activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
+          expiration: profile.expiration,
         });
       }
     } catch (err) {
@@ -789,6 +790,7 @@ export default function TMA() {
           triggerHaptic={triggerHaptic}
           personalKey={personalKey}
           campaign={campaign}
+          expiration={user.expiration}
           onSelectPlanForPayment={(planId) => {
             const targetPlan = plans.find((p) => p.id === planId);
             if (targetPlan) {
@@ -894,6 +896,7 @@ export default function TMA() {
               billingRegion={billingRegion}
               onBillingRegionChange={handleBillingRegionChange}
               paymentMethods={paymentMethods}
+              expiration={user.expiration}
             />
           </div>
         )}

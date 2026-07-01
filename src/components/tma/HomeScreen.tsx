@@ -1011,7 +1011,7 @@ export default function HomeScreen({
             </div>
 
             {/* Key container */}
-            {personalKey ? (
+            {user.expiration && !isNaN(new Date(user.expiration).getTime()) && new Date(user.expiration) > new Date() && personalKey ? (
               <>
                 <GradientBlock
                   label=""

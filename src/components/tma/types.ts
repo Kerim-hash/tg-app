@@ -37,6 +37,7 @@ export interface UserData {
   photoUrl?: string;
   isPremium: boolean;
   activePlan?: ActivePlan;
+  expiration?: string;
 }
 
 export interface Notifications {

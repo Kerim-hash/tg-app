@@ -99,6 +99,7 @@ interface GuideScreenProps {
   billingRegion: string;
   onBillingRegionChange: (region: string) => void;
   paymentMethods?: any[];
+  expiration?: string;
 }
 
 const REGION_OPTIONS = [
@@ -190,6 +191,7 @@ export default function GuideScreen({
   billingRegion,
   onBillingRegionChange,
   paymentMethods = [],
+  expiration,
 }: GuideScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [copied, setCopied] = useState(false);
@@ -827,7 +829,7 @@ export default function GuideScreen({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }}>
-            {personalKey ? (
+            {expiration !== undefined && !isNaN(new Date(expiration).getTime()) && new Date(expiration) > new Date() && personalKey ? (
               <>
                 {/* Access Key visualizer — Figma Glass Input Spec */}
                 <GradientBlock

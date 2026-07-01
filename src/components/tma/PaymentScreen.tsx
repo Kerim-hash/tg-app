@@ -19,11 +19,6 @@ interface PaymentScreenProps {
   paymentMethods?: any[];
 }
 
-const METHOD_CONFIG: { id: PaymentMethod; icon: string }[] = [
-  { id: "card", icon: "💳" },
-  { id: "crypto", icon: "₿" },
-  { id: "stars", icon: "⭐" },
-];
 
 export default function PaymentScreen({
   t,

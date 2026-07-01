@@ -20,6 +20,7 @@ interface OnboardingScreenProps {
   personalKey?: string;
   onSelectPlanForPayment?: (planId: string) => void;
   campaign?: Campaign;
+  expiration?: string;
 }
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
@@ -314,6 +315,7 @@ export default function OnboardingScreen({
   personalKey,
   onSelectPlanForPayment,
   campaign = "default",
+  expiration,
 }: OnboardingScreenProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
@@ -321,11 +323,9 @@ export default function OnboardingScreen({
   const [wifiSecurity, setWifiSecurity] = useState(true);
   const [gamingMode, setGamingMode] = useState(true);
   const [copied, setCopied] = useState(false);
-
   const isAndroid = typeof window !== "undefined" && /android/i.test(navigator.userAgent);
-  const planPurchased = !!personalKey;
+  const planPurchased = expiration !== undefined && !isNaN(new Date(expiration).getTime()) && new Date(expiration) > new Date();
   const activeKey = personalKey || "";
-
   const handleCopy = () => {
     navigator.clipboard.writeText(activeKey);
     setCopied(true);
