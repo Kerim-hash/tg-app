@@ -1,7 +1,36 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import WebApp from "@twa-dev/sdk";
+import { useEffect, useState } from "react";
+import GradientBlock from "../GradientBlock";
+import SwipeSlider from "./SwipeSlider";
+import type { HapticType } from "./types";
+
+interface SetupStepProps {
+  language: string;
+  campaign: string;
+  t: any;
+  isAndroid: boolean;
+  planPurchased: boolean;
+  activeKey: string;
+  copied: boolean;
+  onCopy: () => void;
+  onComplete: () => void;
+  onSelectPlanForPayment?: (id: string) => void;
+  onboardingPlans: any[];
+  tempSelectedPlanId: string;
+  setTempSelectedPlanId: (id: string) => void;
+  selectedPlan: any;
+  triggerHaptic: (type: HapticType) => void;
+  trackEvent: (eventName: string, params?: any) => void;
+  getPlanLabelText: (periodMonths: number, lang: string) => string;
+  getBilledFrequencyText: (periodMonths: number, lang: string, t: any) => string;
+  setupTexts: {
+    title: string;
+    subtitle: string;
+    step3: string;
+    bottomNote: string;
+  };
+}
 
 const AppleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -24,36 +53,87 @@ const DownloadIcon = () => (
   </svg>
 );
 
-import type { HapticType } from "./types";
-import GradientBlock from "../GradientBlock";
-import SwipeSlider from "./SwipeSlider";
-
-interface SetupStepProps {
-  language: string;
-  campaign: string;
-  t: any;
-  isAndroid: boolean;
-  planPurchased: boolean;
-  activeKey: string;
-  copied: boolean;
-  onCopy: () => void;
-  onComplete: () => void;
-  onSelectPlanForPayment?: (planId: string) => void;
-  onboardingPlans: any[];
-  tempSelectedPlanId: string;
-  setTempSelectedPlanId: (id: string) => void;
-  selectedPlan: any;
-  triggerHaptic: (type: HapticType) => void;
-  trackEvent: (eventName: string, params?: any) => void;
-  getPlanLabelText: (periodMonths: number, lang: string) => string;
-  getBilledFrequencyText: (periodMonths: number, lang: string, t: any) => string;
-  setupTexts: {
-    title: string;
-    subtitle: string;
-    step3: string;
-    bottomNote: string;
-  };
-}
+const DICT: Record<string, {
+  googlePlay: string;
+  appStore: string;
+  windowsText: string;
+  linuxText: string;
+  macText: string;
+  downloadWindows: string;
+  downloadLinux: string;
+  visitAppStore: string;
+  oneMin: string;
+  thirtySecs: string;
+  twentySecs: string;
+  step2Text: string;
+  needHelp: string;
+  swipeToStart: string;
+}> = {
+  en: {
+    googlePlay: "Download Happ from Play Store",
+    appStore: "Download Happ from App Store",
+    windowsText: "Download Happ for Windows",
+    linuxText: "Download Happ for Linux",
+    macText: "Download Happ for macOS",
+    downloadWindows: "DOWNLOAD FOR WINDOWS",
+    downloadLinux: "DOWNLOAD FOR LINUX",
+    visitAppStore: "VISIT APPSTORE",
+    oneMin: "1 min",
+    thirtySecs: "30 secs",
+    twentySecs: "20 secs",
+    step2Text: "Pick a plan, pay with card, crypto or Stars",
+    needHelp: "Need help? Check the Guide tab or contact support",
+    swipeToStart: "SWIPE TO START",
+  },
+  ru: {
+    googlePlay: "Скачайте Happ в Google Play",
+    appStore: "Скачайте Happ в App Store",
+    windowsText: "Скачайте Happ для Windows",
+    linuxText: "Скачайте Happ для Linux",
+    macText: "Скачайте Happ для macOS",
+    downloadWindows: "СКАЧАТЬ ДЛЯ WINDOWS",
+    downloadLinux: "СКАЧАТЬ ДЛЯ LINUX",
+    visitAppStore: "ПЕРЕЙТИ В APPSTORE",
+    oneMin: "1 мин",
+    thirtySecs: "30 сек",
+    twentySecs: "20 сек",
+    step2Text: "Выберите тариф, оплатите картой, криптовалютой или Stars",
+    needHelp: "Нужна помощь? Загляните в руководство или напишите в поддержку",
+    swipeToStart: "ПРОВЕДИТЕ ДЛЯ СТАРТА",
+  },
+  uz: {
+    googlePlay: "Google Play'dan Happ ilovasini yuklab oling",
+    appStore: "App Store'dan Happ ilovasini yuklab oling",
+    windowsText: "Windows uchun Happ ilovasini yuklab oling",
+    linuxText: "Linux uchun Happ ilovasini yuklab oling",
+    macText: "macOS uchun Happ ilovasini yuklab oling",
+    downloadWindows: "WINDOWS UCHUN YUKLAB OLISH",
+    downloadLinux: "LINUX UCHUN YUKLAB OLISH",
+    visitAppStore: "VISIT APPSTORE",
+    oneMin: "1 daq",
+    thirtySecs: "30 soniya",
+    twentySecs: "20 soniya",
+    step2Text: "Tarifni tanlang, karta, kriptovalyuta yoki Stars orqali to'lang",
+    needHelp: "Yordam kerakmi? Qo'llanmaga qarang yoki yordam xizmatiga yozing",
+    swipeToStart: "BOSHLASH UCHUN SURING",
+  },
+  by: {
+    googlePlay: "Спампуйце Happ у Google Play",
+    appStore: "Спампуйце Happ у App Store",
+    windowsText: "Спампуйце Happ для Windows",
+    linuxText: "Спампуйце Happ для Linux",
+    macText: "Спампуйце Happ для macOS",
+    downloadWindows: "СКАЧАЦЬ ДЛЯ WINDOWS",
+    downloadLinux: "СКАЧАЦЬ ДЛЯ LINUX",
+    visitAppStore: "VISIT APPSTORE",
+    oneMin: "1 хв",
+    thirtySecs: "30 сек",
+    twentySecs: "20 сек",
+    step2Text: "Абярыце тарыф, аплаціце картай, крыптавалютай або Stars",
+    needHelp: "Патрэбна дапамога? Зазірніце ў кіраўніцтва або напішыце ў падтрымку",
+    swipeToStart: "ПРАВЯДЗІЦЕ ДЛЯ СТАРТУ",
+  }
+};
 
 export default function SetupStep({
   language,
@@ -80,46 +160,38 @@ export default function SetupStep({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      let platform = WebApp.platform?.toLowerCase();
-      if (platform === "android") {
+      const ua = navigator.userAgent;
+      if (/android/i.test(ua)) {
         setUserOS("Android");
-      } else if (platform === "ios") {
+      } else if (/iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream) {
         setUserOS("iOS");
-      } else if (platform === "macos") {
+      } else if (/Macintosh|MacIntel|MacPPC|MacHermes/.test(ua)) {
         setUserOS("MacOS");
-      } else {
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        if (/android/.test(userAgent)) {
-          setUserOS("Android");
-        } else if (/iphone|ipad|ipod/.test(userAgent)) {
-          setUserOS("iOS");
-        } else if (/mac/.test(userAgent)) {
-          setUserOS("MacOS");
-        } else if (/win/.test(userAgent)) {
-          setUserOS("Windows");
-        } else if (/linux/.test(userAgent)) {
-          setUserOS("Linux");
-        }
+      } else if (/Windows|Win32|Win64|Windows NT|Slight/.test(ua)) {
+        setUserOS("Windows");
+      } else if (/Linux/.test(ua)) {
+        setUserOS("Linux");
       }
     }
   }, []);
 
+  const currentDict = DICT[language] || DICT.en;
   const isAndroidPlatform = userOS === "Android";
 
   let step1Text = isAndroidPlatform
-    ? (language === "ru" ? "Скачайте Happ в Google Play" : language === "es" ? "Descarga Happ de Play Store" : "Download Happ from Play Store")
-    : (language === "ru" ? "Скачайте Happ в App Store" : language === "es" ? "Descarga Happ de App Store" : "Download Happ from App Store");
+    ? currentDict.googlePlay
+    : currentDict.appStore;
 
   if (userOS === "Windows") {
-    step1Text = language === "ru" ? "Скачайте Happ для Windows" : language === "es" ? "Descarga Happ para Windows" : "Download Happ for Windows";
+    step1Text = currentDict.windowsText;
   } else if (userOS === "Linux") {
-    step1Text = language === "ru" ? "Скачайте Happ для Linux" : language === "es" ? "Descarga Happ para Linux" : "Download Happ for Linux";
+    step1Text = currentDict.linuxText;
   } else if (userOS === "MacOS") {
-    step1Text = language === "ru" ? "Скачайте Happ для macOS" : language === "es" ? "Descarga Happ para macOS" : "Download Happ for macOS";
+    step1Text = currentDict.macText;
   }
 
   let downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
-  let buttonLabel = t.guide.visitAppStore;
+  let buttonLabel = currentDict.visitAppStore;
   let PlatformIcon = AppleIcon;
 
   if (userOS === "Android") {
@@ -128,15 +200,15 @@ export default function SetupStep({
     PlatformIcon = AndroidIcon;
   } else if (userOS === "Windows") {
     downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe";
-    buttonLabel = language === "ru" ? "СКАЧАТЬ ДЛЯ WINDOWS" : language === "es" ? "DESCARGAR PARA WINDOWS" : "DOWNLOAD FOR WINDOWS";
+    buttonLabel = currentDict.downloadWindows;
     PlatformIcon = DownloadIcon;
   } else if (userOS === "Linux") {
     downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.linux.x64.deb";
-    buttonLabel = language === "ru" ? "СКАЧАТЬ ДЛЯ LINUX" : language === "es" ? "DESCARGAR PARA LINUX" : "DOWNLOAD FOR LINUX";
+    buttonLabel = currentDict.downloadLinux;
     PlatformIcon = DownloadIcon;
   } else if (userOS === "MacOS") {
     downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
-    buttonLabel = language === "ru" ? "ПЕРЕЙТИ В APPSTORE" : language === "es" ? "VISITAR APPSTORE" : "VISIT APPSTORE";
+    buttonLabel = currentDict.visitAppStore;
     PlatformIcon = AppleIcon;
   }
 
@@ -169,7 +241,7 @@ export default function SetupStep({
                   {step1Text}
                 </span>
                 <span className="text-[13px] text-brand-gray mt-1 font-sans">
-                  {language === "ru" ? "1 мин" : "1 min"}
+                  {currentDict.oneMin}
                 </span>
               </div>
             </div>
@@ -186,10 +258,10 @@ export default function SetupStep({
               {/* Right Column */}
               <div className="ml-4 flex flex-col justify-center">
                 <span className="text-[15px] text-white font-normal font-sans leading-tight">
-                  {language === "ru" ? "Выберите тариф, оплатите картой, криптовалютой или Stars" : language === "es" ? "Elige un plan, paga con tarjeta, criptomonedas o Stars" : "Pick a plan, pay with card, crypto or Stars"}
+                  {currentDict.step2Text}
                 </span>
                 <span className="text-[13px] text-brand-gray mt-1 font-sans">
-                  {language === "ru" ? "30 сек" : language === "es" ? "30 s" : "30 secs"}
+                  {currentDict.thirtySecs}
                 </span>
               </div>
             </div>
@@ -209,7 +281,7 @@ export default function SetupStep({
                   {setupTexts.step3}
                 </span>
                 <span className="text-[13px] text-brand-gray mt-1 font-sans">
-                  {language === "ru" ? "20 сек" : language === "es" ? "20 s" : "20 secs"}
+                  {currentDict.twentySecs}
                 </span>
               </div>
             </div>
@@ -228,7 +300,7 @@ export default function SetupStep({
               {/* Right Column */}
               <div className="ml-4 flex flex-col justify-center">
                 <span className="text-[15px] text-white font-normal font-sans leading-tight">
-                  {language === "ru" ? "Нужна помощь? Загляните в руководство или напишите в поддержку" : language === "es" ? "¿Necesitas ayuda? Consulta la pestaña Guía o contacta al soporte" : "Need help? Check the Guide tab or contact support"}
+                  {currentDict.needHelp}
                 </span>
               </div>
             </div>
@@ -242,7 +314,7 @@ export default function SetupStep({
 
             <SwipeSlider
               onComplete={onComplete}
-              text={language === "ru" ? "ПРОВЕДИТЕ ДЛЯ НАЧАЛА" : language === "es" ? "DESLIZA PARA EMPEZAR" : "SWIPE TO START"}
+              text={currentDict.swipeToStart}
               triggerHaptic={triggerHaptic}
             />
           </div>
@@ -306,14 +378,17 @@ export default function SetupStep({
 
                           <div className="absolute inset-0 flex flex-col justify-between p-4 px-3 pb-5 z-20 pointer-events-none box-border text-center items-center">
                             <span
-                              className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${isYearly ? "bg-black/16" : "bg-white/8"
-                                }`}
+                              className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${
+                                isYearly ? "bg-black/16" : "bg-white/8"
+                              }`}
                             >
                               {getPlanLabelText(plan.periodMonths, language)}
                             </span>
 
                             <div>
-                              <span className={`block text-[28px] text-white leading-none font-sans ${language === "ru" ? "text-[24px]" : ""}`}>
+                              <span className={`block text-[28px] text-white leading-none font-sans ${
+                                language === "ru" || language === "by" ? "text-[24px]" : ""
+                              }`}>
                                 {`$ ${plan.usdPerMonth.toFixed(2)}`}
                               </span>
                               <span className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"}`}>
@@ -344,16 +419,17 @@ export default function SetupStep({
                         onSelectPlanForPayment(tempSelectedPlanId);
                       }
                     }}
-                    className={`cursor-pointer font-mono text-[12px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${selectedPlan
-                      ? "bg-white text-black border-none"
-                      : "bg-white/2 text-white border border-white/20"
-                      }`}
+                    className={`cursor-pointer font-mono text-[12px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${
+                      selectedPlan
+                        ? "bg-white text-black border-none"
+                        : "bg-white/2 text-white border border-white/20"
+                    }`}
                   >
                     {selectedPlan
                       ? t.home.buyFor(
-                        `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                        selectedPlan.starsPrice
-                      ).toUpperCase()
+                          `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                          selectedPlan.starsPrice
+                        ).toUpperCase()
                       : t.onboarding.selectAndBuy.toUpperCase()}
                   </button>
                 </div>
@@ -431,8 +507,9 @@ export default function SetupStep({
               <div className="flex justify-center">
                 <button
                   onClick={onCopy}
-                  className={`font-mono text-[12px] px-6 py-3 rounded-[14px] cursor-pointer transition-all duration-200 ease-in-out ${copied ? "bg-white/8 border border-white/12 text-white/40" : "bg-white border-none text-black"
-                    }`}
+                  className={`font-mono text-[12px] px-6 py-3 rounded-[14px] cursor-pointer transition-all duration-200 ease-in-out ${
+                    copied ? "bg-white/8 border border-white/12 text-white/40" : "bg-white border-none text-black"
+                  }`}
                 >
                   {copied ? "✓ " + t.guide.copied.toUpperCase() : t.guide.copyKey.toUpperCase()}
                 </button>
@@ -448,7 +525,7 @@ export default function SetupStep({
 
               <SwipeSlider
                 onComplete={onComplete}
-                text={language === "ru" ? "ПРОВЕДИТЕ ДЛЯ НАЧАЛА" : language === "es" ? "DESLIZA PARA EMPEZAR" : "SWIPE TO START"}
+                text={currentDict.swipeToStart}
                 triggerHaptic={triggerHaptic}
               />
             </div>

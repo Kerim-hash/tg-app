@@ -753,9 +753,11 @@ export default function TMA() {
   if (authError) {
     const authDesc = language === "ru"
       ? "Произошла ошибка при авторизации. Попробуйте снова."
-      : language === "es"
-        ? "Error de autenticación. Inténtelo de nuevo."
-        : "Authentication failed. Please try again.";
+      : language === "uz"
+        ? "Avtorizatsiyadan o'tishda xatolik yuz berdi. Qayta urinib ko'ring."
+        : language === "by"
+          ? "Адбылася памылка пры аўтарызацыі. Паспрабуйце зноў."
+          : "Authentication failed. Please try again.";
     return (
       <ErrorScreen
         t={t}

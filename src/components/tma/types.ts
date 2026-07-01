@@ -1,5 +1,5 @@
 export type Campaign = "default" | "gaming" | "adults" | "uae";
-export type Language = "en" | "ru" | "es";
+export type Language = "en" | "ru" | "uz" | "by";
 export type Tab = "home" | "guide" | "profile" | "support";
 export type PaymentMethod = string;
 export type HapticType = "light" | "medium" | "heavy" | "success" | "warning";
@@ -143,6 +143,7 @@ export interface Translations {
     selectAndBuy: string;
     step3Title: string;
     personalKeyLabel: string;
+    personalKeyEmptyState: string;
     copyKey: string;
     copied: string;
     step4Title: string;
@@ -155,6 +156,10 @@ export interface Translations {
     faq3Answer: string;
     needHelp: string;
     contactSupport: string;
+    btnDownloadAndroid: string;
+    btnDownloadIos: string;
+    btnDownloadWindows: string;
+    btnDownloadMac: string;
   };
   support: {
     title: string;

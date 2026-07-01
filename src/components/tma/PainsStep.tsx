@@ -44,6 +44,98 @@ interface PainsStepProps {
   trackEvent: (eventName: string, params?: any) => void;
 }
 
+const DICT: Record<string, {
+  gamingTitle: string;
+  adultsTitle: string;
+  gamingDesc: string;
+  adultsDesc: string;
+  gamingPains: { title: string; desc: string }[];
+  gamingFooter: string;
+  adultsPains: { reason: string; desc: string; solution: string }[];
+  tableHeaders: { reason: string; solution: string };
+}> = {
+  en: {
+    gamingTitle: "Sound familiar?",
+    adultsTitle: "iGuard unlocks all of everything",
+    gamingDesc: "These are the most common reasons gamers use iGuard:",
+    adultsDesc: "These are the most common reasons people use iGuard. What gets blocked — and why it's your business, not theirs:",
+    gamingPains: [
+      { title: "ISP routing", desc: "High ping abroad" },
+      { title: "Region ban", desc: "Early access or complete game block" },
+      { title: "Region lock", desc: "Friends in other regions" },
+      { title: "Exposed IP", desc: "DDoS in comp lobbies" },
+    ],
+    gamingFooter: "iGuard handles them all",
+    adultsPains: [
+      { reason: "# Adult-content", desc: "ISP / geo-filter", solution: "Routes around the block" },
+      { reason: "# Subscription platforms", desc: "Payment block", solution: "Bypasses geo-restrictions" },
+      { reason: "# Dating apps & services", desc: "Regional ban", solution: "Connects via unrestricted node" },
+      { reason: "# Privacy-first messengers", desc: "Gov / ISP block", solution: "Tunnels through freely" },
+    ],
+    tableHeaders: { reason: "Reason", solution: "Solution" }
+  },
+  ru: {
+    gamingTitle: "Звучит знакомо?",
+    adultsTitle: "iGuard разблокирует абсолютно всё",
+    gamingDesc: "Это самые частые причины, почему геймеры используют iGuard:",
+    adultsDesc: "Это самые частые причины использования iGuard. Что блокируется — ваше личное дело, а не их:",
+    gamingPains: [
+      { title: "Маршрутизация провайдера", desc: "Высокий пинг за границей" },
+      { title: "Блокировка игры", desc: "Ранний доступ или полная блокировка" },
+      { title: "Региональные ограничения", desc: "Друзья в других регионах" },
+      { title: "Открытый IP-адрес", desc: "DDoS в соревновательных лобби" },
+    ],
+    gamingFooter: "iGuard решает всё это",
+    adultsPains: [
+      { reason: "# Взрослый контент", desc: "Провайдер / гео-фильтр", solution: "Обходит блокировку" },
+      { reason: "# Платные платформы", desc: "Блокировка оплаты", solution: "Обходит гео-ограничения" },
+      { reason: "# Знакомства и сервисы", desc: "Блокировка в регионе", solution: "Подключает через свободный узел" },
+      { reason: "# Защищенные мессенджеры", desc: "Блокировка провайдером", solution: "Свободное туннелирование" },
+    ],
+    tableHeaders: { reason: "Причина", solution: "Решение" }
+  },
+  uz: {
+    gamingTitle: "Tanish holatmi?",
+    adultsTitle: "iGuard mutlaqo hamma narsani blokdan chiqaradi",
+    gamingDesc: "Bu geymerlar iGuard-dan foydalanishining eng keng tarqalgan sabablari:",
+    adultsDesc: "Bu iGuard-dan foydalanishning eng keng tarqalgan sabablari. Nima bloklangani — ularning emas, sizning shaxsiy ishingiz:",
+    gamingPains: [
+      { title: "Provayder marshrutlashi", desc: "Chet elda yuqori ping" },
+      { title: "O'yin bloklanishi", desc: "Erkin foydalanish yoki to'liq o'yin bloki" },
+      { title: "Mintaqaviy cheklovlar", desc: "Boshqa mintaqalardagi do'stlar" },
+      { title: "Ochiq IP manzil", desc: "Musobaqa lobbilarida DDoS" },
+    ],
+    gamingFooter: "iGuard bularning barchasini hal qiladi",
+    adultsPains: [
+      { reason: "# Kattalar uchun kontent", desc: "ISP / geo-filtr", solution: "Blokni aylanib o'tadi" },
+      { reason: "# Pullik platformalar", desc: "To'lov bloki", solution: "Geo-cheklovlarni chetlab o'tadi" },
+      { reason: "# Tanishuv ilovalari va xizmatlari", desc: "Mintaqaviy taqiq", solution: "Cheklanmagan tugun orqali ulanadi" },
+      { reason: "# Himoyalangan messenjerlar", desc: "Hukumat / ISP bloki", solution: "Erkin tunnel orqali o'tadi" },
+    ],
+    tableHeaders: { reason: "Sabab", solution: "Yechim" }
+  },
+  by: {
+    gamingTitle: "Гучыць знаёма?",
+    adultsTitle: "iGuard разблакуе абсалютна ўсё",
+    gamingDesc: "Гэта самыя частыя прычыны, чаму геймеры выкарыстоўваюць iGuard:",
+    adultsDesc: "Гэта самыя частыя прычыны выкарыстання iGuard. Што блакуецца — ваша асабістая справа, а не іх:",
+    gamingPains: [
+      { title: "Маршрутызацыя правайдэра", desc: "Высокі пінг за мяжой" },
+      { title: "Блакіроўка гульні", desc: "Ранні доступ або поўная блакіроўка" },
+      { title: "Рэгіянальныя абмежаванні", desc: "Сябры ў іншых рэгіёнах" },
+      { title: "Адкрытый IP-адрас", desc: "DDoS у спаборніцкіх лобі" },
+    ],
+    gamingFooter: "iGuard вырашае ўсё гэта",
+    adultsPains: [
+      { reason: "# Кантэнт для дарослых", desc: "Правайдэр / геа-фільтр", solution: "Абыходзіць блакіроўку" },
+      { reason: "# Платныя платформы", desc: "Блакіроўка аплаты", solution: "Абыходзіць геа-абмежаванні" },
+      { reason: "# Знаёмствы і сэрвісы", desc: "Блакіроўка ў рэгіёне", solution: "Падключае праз свабодны вузел" },
+      { reason: "# Абароненыя месенджары", desc: "Блакіроўка правайдэрам", solution: "Свабоднае тунэляванне" },
+    ],
+    tableHeaders: { reason: "Прычына", solution: "Рашэнне" }
+  }
+};
+
 export default function PainsStep({
   language,
   campaign,
@@ -55,80 +147,15 @@ export default function PainsStep({
   triggerHaptic,
   trackEvent,
 }: PainsStepProps) {
-  const gamingPains = [
-    {
-      title: language === "ru" ? "Маршрутизация провайдера" : language === "es" ? "Enrutamiento ISP" : "ISP routing",
-      desc: language === "ru" ? "Высокий пинг за границей" : language === "es" ? "Ping alto en el extranjero" : "High ping abroad"
-    },
-    {
-      title: language === "ru" ? "Блокировка игры" : language === "es" ? "Bloqueo de región" : "Region ban",
-      desc: language === "ru" ? "Ранний доступ или полная блокировка" : language === "es" ? "Acceso anticipado o bloqueo total" : "Early access or complete game block"
-    },
-    {
-      title: language === "ru" ? "Региональные ограничения" : language === "es" ? "Bloqueo regional" : "Region lock",
-      desc: language === "ru" ? "Друзья в других регионах" : language === "es" ? "Amigos en otras regiones" : "Friends in other regions"
-    },
-    {
-      title: language === "ru" ? "Открытый IP-адрес" : language === "es" ? "IP expuesta" : "Exposed IP",
-      desc: language === "ru" ? "DDoS в соревновательных лобби" : language === "es" ? "DDoS en salas competitivas" : "DDoS in comp lobbies"
-    }
-  ];
-  const gamingPainsFooter = language === "ru" ? "iGuard решает всё это" : language === "es" ? "iGuard los soluciona todos" : "iGuard handle them all";
-
-  const adultsPains = [
-    {
-      reason: "# Adult-content",
-      reasonRu: "# Взрослый контент",
-      reasonEs: "# Contenido adulto",
-      reasonDesc: "ISP / geo-filter",
-      reasonDescRu: "Провайдер / гео-фильтр",
-      reasonDescEs: "ISP / filtro geográfico",
-      solution: "Routes around the block",
-      solutionRu: "Обходит блокировку",
-      solutionEs: "Rutas alrededor del bloqueo",
-    },
-    {
-      reason: "# Subscription platforms",
-      reasonRu: "# Платные платформы",
-      reasonEs: "# Plataformas de suscripción",
-      reasonDesc: "Payment block",
-      reasonDescRu: "Блокировка оплаты",
-      reasonDescEs: "Bloqueo de pago",
-      solution: "Bypasses geo-restrictions",
-      solutionRu: "Обходит гео-ограничения",
-      solutionEs: "Supera restricciones",
-    },
-    {
-      reason: "# Dating apps & services",
-      reasonRu: "# Знакомства и сервисы",
-      reasonEs: "# Apps de citas",
-      reasonDesc: "Regional ban",
-      reasonDescRu: "Блокировка в регионе",
-      reasonDescEs: "Prohibición regional",
-      solution: "Connects via unrestricted node",
-      solutionRu: "Подключает через свободный узел",
-      solutionEs: "Conecta mediante nodo libre",
-    },
-    {
-      reason: "# Privacy-first messengers",
-      reasonRu: "# Защищенные мессенджеры",
-      reasonEs: "# Mensajería privada",
-      reasonDesc: "Gov / ISP block",
-      reasonDescRu: "Блокировка провайдером",
-      reasonDescEs: "Bloqueo gubernamental / ISP",
-      solution: "Tunnels through freely",
-      solutionRu: "Свободное туннелирование",
-      solutionEs: "Túneles libres",
-    }
-  ];
+  const currentDict = DICT[language] || DICT.en;
 
   return (
     <div className="w-full flex flex-col box-border">
       <h2 className="text-[24px] text-center text-white m-0 mb-[10px] leading-tight px-5 font-sans">
         {campaign === "gaming"
-          ? (language === "ru" ? "Звучит знакомо?" : language === "es" ? "¿Te suena familiar?" : "Sound familiar?")
+          ? currentDict.gamingTitle
           : campaign === "adults"
-            ? (language === "ru" ? "iGuard разблокирует абсолютно всё" : language === "es" ? "iGuard desbloquea absolutamente todo" : "iGuard unlocks all of everything")
+            ? currentDict.adultsTitle
             : t.onboarding.useCasesTitle}
       </h2>
 
@@ -136,15 +163,15 @@ export default function PainsStep({
         campaign === "default" ? "mb-10" : "mb-[28px]"
       }`}>
         {campaign === "gaming"
-          ? (language === "ru" ? "Это самые частые причины, почему геймеры используют iGuard:" : language === "es" ? "Estas son las razones más comunes por las que los gamers usan iGuard:" : "These are the most common reasons gamers use iGuard:")
+          ? currentDict.gamingDesc
           : campaign === "adults"
-            ? (language === "ru" ? "Это самые частые причины использования iGuard. Что блокируется — ваше личное дело, а не их:" : language === "es" ? "Estas son las razones más comunes para usar iGuard. Lo que se bloquea es asunto tuyo, no de ellos:" : "These are the most common reasons people use iGuard. What gets blocked — and why it's your business, not theirs:")
+            ? currentDict.adultsDesc
             : t.onboarding.useCasesDesc}
       </p>
 
       {campaign === "gaming" ? (
         <div className="flex flex-col w-full">
-          {gamingPains.map((pain, idx) => {
+          {currentDict.gamingPains.map((pain, idx) => {
             const isLeft = idx % 2 === 0;
             const borderRadius = isLeft ? "0px 38px 38px 0px" : "38px 0px 0px 38px";
 
@@ -172,7 +199,7 @@ export default function PainsStep({
                   <div className={`absolute inset-0 flex flex-col justify-center box-border text-left ${
                     isLeft ? "pl-10 pr-6" : "pl-6 pr-4"
                   }`}>
-                    <span className="text-[14px] text-white/40  tracking-[1px] block mb-0.5">
+                    <span className="text-[14px] text-white/40 tracking-[1px] block mb-0.5">
                       {pain.title}
                     </span>
                     <span className="text-[16px] text-white block leading-tight font-sans">
@@ -185,9 +212,9 @@ export default function PainsStep({
           })}
           <div className="flex items-center gap-2.5 text-center ml-10 mt-13 text-[#666] text-[14px]">
             <svg width="13" height="9" viewBox="0 0 13 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.707031 4.24256L4.24257 7.7781L11.3136 0.707031" stroke="white" strokeOpacity={0.4} strokeLinecap="square" />
+              <path d="M0.707031 4.24256L4.24257 7.7781L11.3136 0.707031" stroke="white" strokeOpacity="0.4" strokeLinecap="square" />
             </svg>
-            {gamingPainsFooter}
+            {currentDict.gamingFooter}
           </div>
         </div>
       ) : campaign === "adults" ? (
@@ -209,26 +236,22 @@ export default function PainsStep({
           {/* Headers */}
           <div className="flex w-full mb-4 relative z-20">
             <div className="w-[175px] shrink-0 pl-5 pr-4 box-border text-[14px] text-brand-cyan font-semibold font-mono">
-              {language === "ru" ? "Причина" : language === "es" ? "Razón" : "Reason"}
+              {currentDict.tableHeaders.reason}
             </div>
             <div className="w-[215px] shrink-0 pl-4 pr-5 box-border text-[14px] text-brand-cyan font-semibold font-mono">
-              {language === "ru" ? "Решение" : language === "es" ? "Solución" : "Solution"}
+              {currentDict.tableHeaders.solution}
             </div>
           </div>
 
           {/* Rows */}
           <div className="flex flex-col gap-5 w-full">
-            {adultsPains.map((pain, idx) => {
-              const reason = language === "ru" ? pain.reasonRu : language === "es" ? pain.reasonEs : pain.reason;
-              const desc = language === "ru" ? pain.reasonDescRu : language === "es" ? pain.reasonDescEs : pain.reasonDesc;
-              const solution = language === "ru" ? pain.solutionRu : language === "es" ? pain.solutionEs : pain.solution;
-
+            {currentDict.adultsPains.map((pain, idx) => {
               return (
                 <div key={idx} className="flex flex-col w-full relative z-20">
-                  {/* Cyan category header badge */}
+                  {/* Category header badge */}
                   <div className="flex justify-start w-full">
                     <span className="bg-brand-cyan text-black text-[14px] line-h-[95%] font-mono py-1 pl-5 pr-4 rounded-none inline-block">
-                      {reason}
+                      {pain.reason}
                     </span>
                   </div>
 
@@ -237,14 +260,14 @@ export default function PainsStep({
                     {/* Left: Description */}
                     <div className="w-[175px] shrink-0 pl-5 pr-4 box-border flex items-center">
                       <span className="text-[14px] text-white font-sans leading-tight">
-                        {desc}
+                        {pain.desc}
                       </span>
                     </div>
 
                     {/* Right: Solution */}
                     <div className="w-[215px] shrink-0 pl-4 pr-2 box-border flex items-center">
                       <span className="text-[14px] text-white/60 font-sans leading-tight">
-                        {solution}
+                        {pain.solution}
                       </span>
                     </div>
                   </div>
