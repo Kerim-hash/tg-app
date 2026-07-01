@@ -15,12 +15,18 @@ function getPlanLabelText(periodMonths: number, lang: string): string {
     if (periodMonths === 6) return "6 месяцев";
     if (periodMonths === 12) return "1 год";
     return `${periodMonths} мес.`;
-  } else if (lang === "es") {
-    if (periodMonths === 1) return "30 Días";
-    if (periodMonths === 3) return "3 Meses";
-    if (periodMonths === 6) return "6 Meses";
-    if (periodMonths === 12) return "1 Año";
-    return `${periodMonths} Meses`;
+  } else if (lang === "uz") {
+    if (periodMonths === 1) return "30 kun";
+    if (periodMonths === 3) return "3 oy";
+    if (periodMonths === 6) return "6 oy";
+    if (periodMonths === 12) return "1 yil";
+    return `${periodMonths} oy`;
+  } else if (lang === "by") {
+    if (periodMonths === 1) return "30 дзён";
+    if (periodMonths === 3) return "3 месяцы";
+    if (periodMonths === 6) return "6 месяцаў";
+    if (periodMonths === 12) return "1 год";
+    return `${periodMonths} мес.`;
   } else {
     if (periodMonths === 1) return "30 Days";
     if (periodMonths === 3) return "3 Months";
@@ -41,8 +47,14 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
     if (periodMonths === 3) return "Оплата каждые 3 месяца";
     if (periodMonths === 6) return "Оплата каждые 6 месяцев";
     return `Оплата каждые ${periodMonths} мес.`;
-  } else if (lang === "es") {
-    return `Facturado cada ${periodMonths} meses`;
+  } else if (lang === "uz") {
+    if (periodMonths === 3) return "Har 3 oyda to'lov";
+    if (periodMonths === 6) return "Har 6 oyda to'lov";
+    return `Har ${periodMonths} oyda to'lov`;
+  } else if (lang === "by") {
+    if (periodMonths === 3) return "Аплата кожныя 3 месяцы";
+    if (periodMonths === 6) return "Аплата кожныя 6 месяцаў";
+    return `Аплата кожныя ${periodMonths} мес.`;
   } else {
     return `Billed every ${periodMonths} months`;
   }
@@ -179,7 +191,7 @@ export default function GuideScreen({
   onBillingRegionChange,
   paymentMethods = [],
 }: GuideScreenProps) {
-  const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Inicio" ? "es" : "en";
+  const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [copied, setCopied] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -310,76 +322,129 @@ export default function GuideScreen({
     }
   };
 
+  const PLATFORM_DICT: Record<string, Record<string, { step1Text: string; buttonLabel: string }>> = {
+    en: {
+      Android: {
+        step1Text: "Download and Install the free Happ client from Google Play",
+        buttonLabel: "DOWNLOAD FOR ANDROID",
+      },
+      Windows: {
+        step1Text: "Download and Install the free Happ client for Windows",
+        buttonLabel: "DOWNLOAD FOR WINDOWS",
+      },
+      Linux: {
+        step1Text: "Download and Install the free Happ client for Linux",
+        buttonLabel: "DOWNLOAD FOR LINUX",
+      },
+      MacOS: {
+        step1Text: "Download and Install the free Happ client from the App Store",
+        buttonLabel: "VISIT APPSTORE",
+      },
+      TV: {
+        step1Text: "Download and Install the free Happ client for Apple TV",
+        buttonLabel: "VISIT APPSTORE",
+      }
+    },
+    ru: {
+      Android: {
+        step1Text: "Скачайте и установите бесплатное приложение Happ из Google Play",
+        buttonLabel: "СКАЧАТЬ ДЛЯ ANDROID",
+      },
+      Windows: {
+        step1Text: "Скачайте и установите бесплатное приложение Happ для Windows",
+        buttonLabel: "СКАЧАТЬ ДЛЯ WINDOWS",
+      },
+      Linux: {
+        step1Text: "Скачайте и установите бесплатное приложение Happ для Linux",
+        buttonLabel: "СКАЧАТЬ ДЛЯ LINUX",
+      },
+      MacOS: {
+        step1Text: "Скачайте и установите бесплатное приложение Happ из App Store",
+        buttonLabel: "ПЕРЕЙТИ В APPSTORE",
+      },
+      TV: {
+        step1Text: "Скачайте и установите бесплатное приложение Happ для Apple TV",
+        buttonLabel: "ПЕРЕЙТИ В APPSTORE",
+      }
+    },
+    uz: {
+      Android: {
+        step1Text: "Google Play'dan bepul Happ ilovasini yuklab oling va o'rnating",
+        buttonLabel: "ANDROID UCHUN YUKLAB OLISH",
+      },
+      Windows: {
+        step1Text: "Windows uchun bepul Happ ilovasini yuklab oling va o'rnating",
+        buttonLabel: "WINDOWS UCHUN YUKLAB OLISH",
+      },
+      Linux: {
+        step1Text: "Linux uchun bepul Happ ilovasini yuklab oling va o'rnating",
+        buttonLabel: "LINUX UCHUN YUKLAB OLISH",
+      },
+      MacOS: {
+        step1Text: "App Store'dan bepul Happ ilovasini yuklab oling va o'rnating",
+        buttonLabel: "APPSTORE'GA O'TISH",
+      },
+      TV: {
+        step1Text: "Apple TV uchun bepul Happ ilovasini yuklab oling va o'rnating",
+        buttonLabel: "APPSTORE'GA O'TISH",
+      }
+    },
+    by: {
+      Android: {
+        step1Text: "Спампуйце і ўсталюйце бясплатнае прыкладанне Happ з Google Play",
+        buttonLabel: "СПАМПАВАЦЬ ДЛЯ ANDROID",
+      },
+      Windows: {
+        step1Text: "Спампуйце і ўсталюйце бясплатнае прыкладанне Happ для Windows",
+        buttonLabel: "СПАМПАВАЦЬ ДЛЯ WINDOWS",
+      },
+      Linux: {
+        step1Text: "Спампуйце і ўсталюйце бясплатнае прыкладанне Happ для Linux",
+        buttonLabel: "СПАМПАВАЦЬ ДЛЯ LINUX",
+      },
+      MacOS: {
+        step1Text: "Спампуйце і ўсталюйце бясплатнае прыкладанне Happ з App Store",
+        buttonLabel: "ПЕРАЙСЦІ Ў APPSTORE",
+      },
+      TV: {
+        step1Text: "Спампуйце і ўсталюйце бясплатнае прыкладанне Happ для Apple TV",
+        buttonLabel: "ПЕРАЙСЦІ Ў APPSTORE",
+      }
+    }
+  };
+
   // ─── Platform-specific content ───────────────────────────────────────────
   let downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
   let step1Text = t.guide.step1Title;
   let buttonLabel = t.guide.visitAppStore;
   let PlatformIcon = AppleIcon;
 
+  const currentPlatformDict = PLATFORM_DICT[language] || PLATFORM_DICT.en;
+
   if (userOS === "Android") {
     downloadUrl = "https://play.google.com/store/apps/details?id=com.happproxy";
-    step1Text = language === "ru"
-      ? "Скачайте и установите бесплатное приложение Happ из Google Play"
-      : language === "es"
-        ? "Descargue e instale el cliente Happ gratuito desde Google Play"
-        : "Download and Install the free Happ client from Google Play";
-    buttonLabel = language === "ru"
-      ? "СКАЧАТЬ ДЛЯ ANDROID"
-      : language === "es"
-        ? "VISITAR TIENDA ANDROID"
-        : "VISIT ANDROID STORE";
+    step1Text = currentPlatformDict.Android.step1Text;
+    buttonLabel = currentPlatformDict.Android.buttonLabel;
     PlatformIcon = AndroidIcon;
   } else if (userOS === "Windows") {
     downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe";
-    step1Text = language === "ru"
-      ? "Скачайте и установите бесплатное приложение Happ для Windows"
-      : language === "es"
-        ? "Descargue e instale el cliente Happ gratuito para Windows"
-        : "Download and Install the free Happ client for Windows";
-    buttonLabel = language === "ru"
-      ? "СКАЧАТЬ ДЛЯ WINDOWS"
-      : language === "es"
-        ? "DESCARGAR PARA WINDOWS"
-        : "DOWNLOAD FOR WINDOWS";
+    step1Text = currentPlatformDict.Windows.step1Text;
+    buttonLabel = currentPlatformDict.Windows.buttonLabel;
     PlatformIcon = DownloadIcon;
   } else if (userOS === "Linux") {
     downloadUrl = "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.linux.x64.deb";
-    step1Text = language === "ru"
-      ? "Скачайте и установите бесплатное приложение Happ для Linux"
-      : language === "es"
-        ? "Descargue e instale el cliente Happ gratuito para Linux"
-        : "Download and Install the free Happ client for Linux";
-    buttonLabel = language === "ru"
-      ? "СКАЧАТЬ ДЛЯ LINUX"
-      : language === "es"
-        ? "DESCARGAR PARA LINUX"
-        : "DOWNLOAD FOR LINUX";
+    step1Text = currentPlatformDict.Linux.step1Text;
+    buttonLabel = currentPlatformDict.Linux.buttonLabel;
     PlatformIcon = DownloadIcon;
   } else if (userOS === "MacOS") {
     downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215";
-    step1Text = language === "ru"
-      ? "Скачайте и установите бесплатное приложение Happ из App Store"
-      : language === "es"
-        ? "Descargue e instale el cliente Happ gratuito desde la App Store"
-        : "Download and Install the free Happ client from the App Store";
-    buttonLabel = language === "ru"
-      ? "ПЕРЕЙТИ В APPSTORE"
-      : language === "es"
-        ? "VISITAR APPSTORE"
-        : "VISIT APPSTORE";
+    step1Text = currentPlatformDict.MacOS.step1Text;
+    buttonLabel = currentPlatformDict.MacOS.buttonLabel;
     PlatformIcon = AppleIcon;
   } else if (userOS === "TV") {
     downloadUrl = "https://apps.apple.com/us/app/happ-proxy-utility-for-tv/id6748297274";
-    step1Text = language === "ru"
-      ? "Скачайте и установите бесплатное приложение Happ для Apple TV"
-      : language === "es"
-        ? "Descargue e instale el cliente Happ gratuito para Apple TV"
-        : "Download and Install the free Happ client for Apple TV";
-    buttonLabel = language === "ru"
-      ? "ПЕРЕЙТИ В APPSTORE"
-      : language === "es"
-        ? "VISITAR APPSTORE"
-        : "VISIT APPSTORE";
+    step1Text = currentPlatformDict.TV.step1Text;
+    buttonLabel = currentPlatformDict.TV.buttonLabel;
     PlatformIcon = AppleIcon;
   }
 
@@ -659,7 +724,7 @@ export default function GuideScreen({
                         <div>
                           <span style={{
                             display: "block",
-                            fontSize: language === "ru" ? "20px" : "24px",
+                            fontSize: language === "ru" || language === "by" ? "20px" : "24px",
                             color: "#fff",
                             lineHeight: 1.1,
                             letterSpacing: "-0.02em"

@@ -15,12 +15,18 @@ function getPlanLabelText(periodMonths: number, lang: string): string {
     if (periodMonths === 6) return "6 месяцев";
     if (periodMonths === 12) return "1 год";
     return `${periodMonths} мес.`;
-  } else if (lang === "es") {
-    if (periodMonths === 1) return "30 Días";
-    if (periodMonths === 3) return "3 Meses";
-    if (periodMonths === 6) return "6 Meses";
-    if (periodMonths === 12) return "1 Año";
-    return `${periodMonths} Meses`;
+  } else if (lang === "uz") {
+    if (periodMonths === 1) return "30 kun";
+    if (periodMonths === 3) return "3 oy";
+    if (periodMonths === 6) return "6 oy";
+    if (periodMonths === 12) return "1 yil";
+    return `${periodMonths} oy`;
+  } else if (lang === "by") {
+    if (periodMonths === 1) return "30 дзён";
+    if (periodMonths === 3) return "3 месяцы";
+    if (periodMonths === 6) return "6 месяцаў";
+    if (periodMonths === 12) return "1 год";
+    return `${periodMonths} мес.`;
   } else {
     if (periodMonths === 1) return "30 Days";
     if (periodMonths === 3) return "3 Months";
@@ -41,8 +47,14 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
     if (periodMonths === 3) return "Оплата каждые 3 месяца";
     if (periodMonths === 6) return "Оплата каждые 6 месяцев";
     return `Оплата каждые ${periodMonths} мес.`;
-  } else if (lang === "es") {
-    return `Facturado cada ${periodMonths} meses`;
+  } else if (lang === "uz") {
+    if (periodMonths === 3) return "Har 3 oyda to'lov";
+    if (periodMonths === 6) return "Har 6 oyda to'lov";
+    return `Har ${periodMonths} oyda to'lov`;
+  } else if (lang === "by") {
+    if (periodMonths === 3) return "Аплата кожныя 3 месяцы";
+    if (periodMonths === 6) return "Аплата кожныя 6 месяцаў";
+    return `Аплата кожныя ${periodMonths} мес.`;
   } else {
     return `Billed every ${periodMonths} months`;
   }
@@ -112,7 +124,7 @@ export default function HomeScreen({
   onBillingRegionChange,
   paymentMethods = [],
 }: HomeScreenProps) {
-  const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Inicio" ? "es" : "en";
+  const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [isPlanSheetOpen, setIsPlanSheetOpen] = useState(false);
   const [isKeySheetOpen, setIsKeySheetOpen] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
@@ -583,7 +595,7 @@ export default function HomeScreen({
                     <div>
                       <span style={{
                         display: "block",
-                        fontSize: language === "ru" ? "20px" : "24px",
+                        fontSize: language === "ru" || language === "by" ? "20px" : "24px",
                         color: "#fff",
                         lineHeight: 1.1,
                       }}>
@@ -882,7 +894,7 @@ export default function HomeScreen({
                           <div>
                             <span style={{
                               display: "block",
-                              fontSize: language === "ru" ? "24px" : "28px",
+                              fontSize: language === "ru" || language === "by" ? "24px" : "28px",
                               color: "#fff",
                               lineHeight: 1.1,
                             }}>

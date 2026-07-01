@@ -24,6 +24,68 @@ interface ChoosePlanStepProps {
   getBilledFrequencyText: (periodMonths: number, lang: string, t: any) => string;
 }
 
+const DICT: Record<string, {
+  underCards: string;
+  cryptoNote: string;
+  cardNote: string;
+  includedInBoth: string;
+  whatsAlwaysIncluded: string;
+  pains: { title: string; desc: string }[];
+}> = {
+  en: {
+    underCards: "No logs · 50+ servers · 7-day refund ·\nUnlimited bandwidth",
+    cryptoNote: "with Crypto, Telegram Stars, or Card",
+    cardNote: "with Card, Crypto, or Telegram Stars",
+    includedInBoth: "Included in both",
+    whatsAlwaysIncluded: "What's always included",
+    pains: [
+      { title: "Unlimited bandwidth", desc: "No throttling, ever" },
+      { title: "50+ server locations", desc: "Find the fastest node for any game" },
+      { title: "7-day money-back", desc: "Not for you? Full refund, no questions" },
+      { title: "Gaming mode", desc: "Optimised routing for game traffic" },
+    ]
+  },
+  ru: {
+    underCards: "Без логов · 50+ серверов · 7 дней гарантия ·\nБезлимитный трафик",
+    cryptoNote: "с помощью Crypto, Telegram Stars или Карты",
+    cardNote: "с помощью Карты, Crypto или Telegram Stars",
+    includedInBoth: "Включено в оба",
+    whatsAlwaysIncluded: "Что всегда включено",
+    pains: [
+      { title: "Безлимитный трафик", desc: "Никаких ограничений скорости" },
+      { title: "50+ локаций серверов", desc: "Найдите самый быстрый узел для любой игры" },
+      { title: "7 дней гарантии возврата", desc: "Не понравилось? Вернем деньги без лишних вопросов" },
+      { title: "Игровой режим", desc: "Оптимизированная маршрутизация игрового трафика" },
+    ]
+  },
+  uz: {
+    underCards: "Loglarsiz · 50+ serverlar · 7 kunlik kafolat ·\nCheksiz tarmoq kengligi",
+    cryptoNote: "Crypto, Telegram Stars yoki Karta yordamida",
+    cardNote: "Karta, Crypto yoki Telegram Stars yordamida",
+    includedInBoth: "Har ikkisiga kiritilgan",
+    whatsAlwaysIncluded: "Nimalar har doim kiritilgan",
+    pains: [
+      { title: "Cheksiz trafik", desc: "Tezlik cheklovlarisiz" },
+      { title: "50+ server joylashuvlari", desc: "Har qanday o'yin uchun eng tezkor tugunni toping" },
+      { title: "7 kunlik qaytarish kafolati", desc: "Yoqmadimi? Savollarsiz pulni qaytaramiz" },
+      { title: "O'yin rejimi", desc: "O'yin trafigi uchun optimallashtirilgan marshrutlash" },
+    ]
+  },
+  by: {
+    underCards: "Без логаў · 50+ сервераў · 7 дзён гарантыі ·\nНеабмежаваная прапускная здольнасць",
+    cryptoNote: "з дапамогай Crypto, Telegram Stars або Карты",
+    cardNote: "з дапамогай Карты, Crypto или Telegram Stars",
+    includedInBoth: "Уключана ў абодва",
+    whatsAlwaysIncluded: "Што заўсёды ўключана",
+    pains: [
+      { title: "Безлімітны трафік", desc: "Ніякіх абмежаванняў хуткасці" },
+      { title: "50+ лакацый сервераў", desc: "Знайдзіце самы хуткі вузел для любой гульні" },
+      { title: "7 дзён гарантыі вяртання", desc: "Не спадабалася? Вернем грошы без лішніх пытанняў" },
+      { title: "Гульнявы рэжым", desc: "Аптымізаваная маршрутызацыя гульнявога трафіку" },
+    ]
+  }
+};
+
 export default function ChoosePlanStep({
   language,
   campaign,
@@ -39,6 +101,8 @@ export default function ChoosePlanStep({
   getPlanLabelText,
   getBilledFrequencyText,
 }: ChoosePlanStepProps) {
+  const currentDict = DICT[language] || DICT.en;
+
   return (
     <div className="w-full flex flex-col box-border">
       <h2 className="text-[24px] text-center text-white m-0 mb-1.5 leading-tight font-sans">
@@ -49,20 +113,11 @@ export default function ChoosePlanStep({
         {plansTexts.desc}
       </p>
 
-      {/* Plans Cards */}
-      <div className="grid grid-cols-2 gap-2.5 w-full box-border">
+      {/* Plans List */}
+      <div className="flex flex-col gap-2.5 w-full select-none">
         {onboardingPlans.map((plan) => {
+          const isSelected = tempSelectedPlanId === plan.id;
           const isYearly = plan.periodMonths === 12;
-          const isActive = tempSelectedPlanId === plan.id;
-
-          const primaryColor = (isYearly ? "#501B77" : "#cfdfe5");
-
-          const secondaryColor = (isYearly ? "#7F96D0" : "#606768");
-
-          const baseColor = (isYearly ? "#5B1B85" : "#08090a");
-
-          const solidGradient = (isYearly ? "#5B1B85" : undefined);
-          const solidBoxShadow = (isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined);
 
           return (
             <div
@@ -70,62 +125,58 @@ export default function ChoosePlanStep({
               onClick={() => {
                 triggerHaptic("light");
                 setTempSelectedPlanId(plan.id);
-                const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
-                const priceVal = plan.usdTotal ?? 0;
-                trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
               }}
-              className="w-full h-[170px] rounded-[45px] relative cursor-pointer overflow-hidden select-none"
+              className="cursor-pointer"
             >
               <GradientBlock
                 label=""
-                primaryColor={primaryColor}
-                secondaryColor={secondaryColor}
-                baseColor={baseColor}
-                borderRadius="45px"
-                height="100%"
+                primaryColor={isYearly ? "#E0F2FE" : "#cfdfe5"}
+                secondaryColor={isYearly ? "#0369A1" : "#686F70"}
+                baseColor={isSelected ? "rgba(255, 255, 255, 0.04)" : "#1C1C1E"}
+                borderRadius="40px"
+                height="100px"
                 animate={isYearly}
-                glowIntensity={isYearly ? 1.2 : 0.25}
-                borderGlow={true}
+                glowIntensity={isYearly ? 2.5 : 0.4}
+                borderGlow={isSelected}
                 enableMouseTracking={false}
-                solidGradient={solidGradient}
-                solidBoxShadow={solidBoxShadow}
                 enableHoverScale={false}
-                absoluteChildren={true}
+                padding="0 24px"
               >
-                {/* White Border Overlay when Selected */}
-                {isActive && (
-                  <div className="absolute inset-0 border-2 border-white rounded-[45px] pointer-events-none z-30" />
-                )}
-
-                <div className="absolute inset-0 flex flex-col justify-between p-4 px-3 pb-5 z-20 pointer-events-none box-border text-center items-center">
-                  {/* Plan title badge */}
-                  <span
-                    className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${campaign === "adults"
-                      ? "bg-white/15"
-                      : (isYearly ? "bg-black/16" : "bg-white/8")
-                      }`}
-                  >
-                    {getPlanLabelText(plan.periodMonths, language)}
-                  </span>
+                <div className="flex items-center justify-between w-full h-full">
+                  <div className="flex flex-col items-start gap-1 select-none">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white text-[20px] font-sans font-medium">
+                        {getPlanLabelText(plan.periodMonths, language)}
+                      </span>
+                      {plan.badge && (
+                        <span className="bg-brand-cyan text-black font-mono text-[9px] px-1.5 py-0.5 rounded-[6px] font-bold">
+                          {plan.badge.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
                   <div>
                     <span
-                      className={`block text-[28px] text-white leading-none font-sans ${language === "ru" ? "text-[24px]" : ""
-                        }`}
+                      className={`block text-[28px] text-white leading-none font-sans ${
+                        language === "ru" || language === "by" ? "text-[24px]" : ""
+                      }`}
                     >
                       {`$ ${plan.usdPerMonth.toFixed(2)}`}
                     </span>
                     <span
-                      className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"
-                        }`}
+                      className={`block text-[10px] mt-0.5 font-sans ${
+                        isYearly ? "text-white/85" : "text-[#8A94A6]"
+                      }`}
                     >
                       {t.home.perMonth}
                     </span>
                   </div>
 
                   <span
-                    className={`block text-[11px] font-sans ${isYearly ? "text-[#E0F2FE] opacity-90" : "text-[#8A94A6]"
-                      }`}
+                    className={`block text-[11px] font-sans ${
+                      isYearly ? "text-[#E0F2FE] opacity-90" : "text-[#8A94A6]"
+                    }`}
                   >
                     {getBilledFrequencyText(plan.periodMonths, language, t)}
                   </span>
@@ -139,34 +190,12 @@ export default function ChoosePlanStep({
       {campaign === "adults" ? (
         <>
           {/* Under-cards texts */}
-          <div className="mt-6 text-center text-white text-[14px] font-sans leading-relaxed font-normal">
-            {language === "ru" ? (
-              <>
-                Без логов · 50+ серверов · 7 дней гарантия ·
-                <br />
-                Безлимитный трафик
-              </>
-            ) : language === "es" ? (
-              <>
-                Sin registros · 50+ servidores · Garantía de 7 días ·
-                <br />
-                Ancho de banda ilimitado
-              </>
-            ) : (
-              <>
-                No logs · 50+ servers · 7-day refund ·
-                <br />
-                Unlimited bandwidth
-              </>
-            )}
+          <div className="mt-6 text-center text-white text-[14px] font-sans leading-relaxed font-normal whitespace-pre-line">
+            {currentDict.underCards}
           </div>
 
           <div className="mt-4 text-center text-white/40 text-[13px] font-sans">
-            {language === "ru"
-              ? "с помощью Crypto, Telegram Stars или Карты"
-              : language === "es"
-                ? "con Crypto, Telegram Stars o Tarjeta"
-                : "with Crypto, Telegram Stars, or Card"}
+            {currentDict.cryptoNote}
           </div>
 
           {/* SELECT AND BUY Button */}
@@ -183,16 +212,17 @@ export default function ChoosePlanStep({
                   onSelectPlanForPayment(tempSelectedPlanId);
                 }
               }}
-              className={`cursor-pointer font-mono text-[14px] px-4 py-3 rounded-[12px] transition-all duration-250 ease-in-out ${selectedPlan
-                ? "bg-white text-black border-none"
-                : "bg-transparent text-white border border-white/30"
-                }`}
+              className={`cursor-pointer font-mono text-[14px] px-4 py-3 rounded-[12px] transition-all duration-250 ease-in-out ${
+                selectedPlan
+                  ? "bg-white text-black border-none"
+                  : "bg-transparent text-white border border-white/30"
+              }`}
             >
               {selectedPlan
                 ? t.home.buyFor(
-                  `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                  selectedPlan.starsPrice
-                ).toUpperCase()
+                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                    selectedPlan.starsPrice
+                  ).toUpperCase()
                 : t.onboarding.selectAndBuy.toUpperCase()}
             </button>
           </div>
@@ -213,27 +243,24 @@ export default function ChoosePlanStep({
                   onSelectPlanForPayment(tempSelectedPlanId);
                 }
               }}
-              className={`cursor-pointer font-mono text-[14px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${selectedPlan
-                ? "bg-white text-black border-none"
-                : "bg-white/2 text-white border border-white/20"
-                }`}
+              className={`cursor-pointer font-mono text-[14px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${
+                selectedPlan
+                  ? "bg-white text-black border-none"
+                  : "bg-white/2 text-white border border-white/20"
+              }`}
             >
               {selectedPlan
                 ? t.home.buyFor(
-                  `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                  selectedPlan.starsPrice
-                ).toUpperCase()
+                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                    selectedPlan.starsPrice
+                  ).toUpperCase()
                 : t.onboarding.selectAndBuy.toUpperCase()}
             </button>
           </div>
 
           {campaign === "gaming" && (
             <div className="mt-5 text-center text-white/40 text-[14px] font-sans">
-              {language === "ru"
-                ? "с помощью Карты, Crypto или Telegram Stars"
-                : language === "es"
-                  ? "con Tarjeta, Crypto o Telegram Stars"
-                  : "with Card, Crypto, or Telegram Stars"}
+              {currentDict.cardNote}
             </div>
           )}
 
@@ -241,33 +268,15 @@ export default function ChoosePlanStep({
             /* Gaming campaign: Included in both section */
             <div className="mt-10 w-full px-1 box-border">
               <h4 className="text-[18px] text-white m-0 mb-[10px] font-sans">
-                {language === "ru" ? "Включено в оба" : language === "es" ? "Incluido en ambos" : "Included in both"}
+                {currentDict.includedInBoth}
               </h4>
 
               <div className="flex flex-col gap-4 mt-3">
-                {[
-                  {
-                    title: language === "ru" ? "Безлимитный трафик" : language === "es" ? "Ancho de banda ilimitado" : "Unlimited bandwidth",
-                    desc: language === "ru" ? "Никаких ограничений скорости" : language === "es" ? "Sin restricciones de velocidad" : "No throttling, ever",
-                  },
-                  {
-                    title: language === "ru" ? "50+ локаций серверов" : language === "es" ? "Más de 50 ubicaciones de servidor" : "50+ server locations",
-                    desc: language === "ru" ? "Найдите самый быстрый узел для любой игры" : language === "es" ? "Encuentra el nodo más rápido para cualquier juego" : "Find the fastest node for any game",
-                  },
-                  {
-                    title: language === "ru" ? "7 дней гарантии возврата" : language === "es" ? "Garantía de reembolso de 7 días" : "7-day money-back",
-                    desc: language === "ru" ? "Не понравилось? Вернем деньги без лишних вопросов" : language === "es" ? "¿No es para ti? Reembolso completo, sin preguntas" : "Not for you? Full refund, no questions",
-                  },
-                  {
-                    title: language === "ru" ? "Игровой режим" : language === "es" ? "Modo de juego" : "Gaming mode",
-                    desc: language === "ru" ? "Оптимизированная маршрутизация игрового трафика" : language === "es" ? "Enrutamiento optimizado para tráfico de juegos" : "Optimised routing for game traffic",
-                  },
-                ].map((item, idx) => (
+                {currentDict.pains.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M5 9.99989L8.53553 13.5354L15.6066 6.46436" stroke="white" strokeLinecap="square" />
                     </svg>
-
 
                     <div className="flex flex-col">
                       <span className="text-white text-[14px] font-sans font-normal leading-tight">
@@ -285,7 +294,7 @@ export default function ChoosePlanStep({
             /* What's always included Checklist */
             <div className="mt-7.5 w-full px-1 box-border">
               <h4 className="text-[14px] text-white m-0 mb-3 font-sans">
-                {language === "ru" ? "Что всегда включено" : language === "es" ? "Qué está incluido" : "What's always included"}
+                {currentDict.whatsAlwaysIncluded}
               </h4>
 
               <div className="flex flex-col gap-2.5 mt-3">

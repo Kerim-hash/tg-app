@@ -21,8 +21,9 @@ interface ProfileScreenProps {
 
 const LANG_OPTIONS: { value: Language; label: string }[] = [
   { value: "en", label: "English" },
-  { value: "ru", label: "Russian" },
-  { value: "es", label: "Español" },
+  { value: "ru", label: "Русский" },
+  { value: "uz", label: "O'zbekcha" },
+  { value: "by", label: "Беларуская" },
 ];
 
 const REGION_OPTIONS = [
@@ -675,7 +676,7 @@ export default function ProfileScreen({
             >
               <div>
                 <p style={{ fontSize: "18px", color: "#fff", margin: "0 0 2px" }}>{label}</p>
-                <p style={{ fontSize: "14px", color: "#666", margin: 0 }}>{desc}</p>
+                {desc && <p style={{ fontSize: "14px", color: "#666", margin: 0 }}>{desc}</p>}
               </div>
               <Toggle
                 value={notifs[key]}
