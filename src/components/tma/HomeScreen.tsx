@@ -1011,82 +1011,167 @@ export default function HomeScreen({
             </div>
 
             {/* Key container */}
-            <GradientBlock
-              label=""
-              primaryColor={"#cfdfe5"}
-              secondaryColor={"#686F70"}
-              baseColor="#1D1C1B"
-              borderRadius="30px"
-              height="85px"
-              animate={false}
-              glowIntensity={0.6}
-              borderGlow={true}
-              enableMouseTracking={false}
-              contentAlign={"start"}
-              padding="12px 28px"
-            >
-              <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
-                {t.guide.personalKeyLabel}
-              </span>
-              <span
-                style={{
-                  display: "block",
-                  width: "100%",
-                  fontSize: "16px",
-                  color: "#fff",
-                  fontFamily: "var(--font-onest), sans-serif",
-                  fontWeight: 400,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  lineHeight: 1.4,
-                }}
-              >
-                {activeKey}
-              </span>
-            </GradientBlock>
+            {personalKey ? (
+              <>
+                <GradientBlock
+                  label=""
+                  primaryColor={"#cfdfe5"}
+                  secondaryColor={"#686F70"}
+                  baseColor="#1D1C1B"
+                  borderRadius="30px"
+                  height="85px"
+                  animate={false}
+                  glowIntensity={0.6}
+                  borderGlow={true}
+                  enableMouseTracking={false}
+                  contentAlign={"start"}
+                  padding="12px 28px"
+                >
+                  <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.guide.personalKeyLabel}
+                  </span>
+                  <span
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      fontSize: "16px",
+                      color: "#fff",
+                      fontFamily: "var(--font-onest), sans-serif",
+                      fontWeight: 400,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {activeKey}
+                  </span>
+                </GradientBlock>
 
+                {/* Side-by-side Buttons */}
+                <div style={{ display: "flex", gap: "15px", margin: "12px auto 0", width: "100%" }}>
+                  <button
+                    onClick={() => {
+                      trackEvent("read_guide_tapped", { source: "home_modal" });
+                      triggerHaptic("light");
+                      setIsKeySheetOpen(false);
+                      onTabChange("guide");
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "10px 15px",
+                      borderRadius: "14px",
+                      background: "#333333",
+                      color: "#fff",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      fontFamily: "JetBrains Mono, monospace",
+                      textWrap: "nowrap",
+                      border: "none",
+                    }}
+                  >
+                    {t.success.readGuide.toUpperCase()}
+                  </button>
+                  <button
+                    onClick={handleCopyAndClose}
+                    style={{
+                      flex: 1.5,
+                      padding: "10px 15px",
+                      borderRadius: "14px",
+                      background: "#fff",
+                      border: "none",
+                      color: "#000",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      fontFamily: "JetBrains Mono, monospace",
+                    }}
+                  >
+                    {t.success.copyAndClose.toUpperCase()}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <GradientBlock
+                  label=""
+                  primaryColor={"#cfdfe5"}
+                  secondaryColor={"#686F70"}
+                  baseColor="#1D1C1B"
+                  borderRadius="30px"
+                  height="auto"
+                  animate={false}
+                  glowIntensity={0.6}
+                  borderGlow={true}
+                  enableMouseTracking={false}
+                  contentAlign={"start"}
+                  padding="16px 28px"
+                >
+                  <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.guide.personalKeyLabel}
+                  </span>
+                  <span
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      fontSize: "14px",
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontFamily: "var(--font-onest), sans-serif",
+                      fontWeight: 400,
+                      lineHeight: 1.4,
+                      marginTop: "4px",
+                    }}
+                  >
+                    {t.guide.personalKeyEmptyState}
+                  </span>
+                </GradientBlock>
 
-            {/* Side-by-side Buttons */}
-            <div style={{ display: "flex", gap: "15px", margin: "12px auto 0" }}>
-              <button
-                onClick={() => {
-                  trackEvent("read_guide_tapped", { source: "home_modal" });
-                  triggerHaptic("light");
-                  setIsKeySheetOpen(false);
-                  onTabChange("guide");
-                }}
-                style={{
-                  flex: 1,
-                  padding: "10px 15px",
-                  borderRadius: "14px",
-                  background: "#333333",
-                  color: "#fff",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  fontFamily: "JetBrains Mono, monospace",
-                  textWrap: "nowrap"
-                }}
-              >
-                {t.success.readGuide.toUpperCase()}
-              </button>
-              <button
-                onClick={handleCopyAndClose}
-                style={{
-                  flex: 1.5,
-                  padding: "10px 15px",
-                  borderRadius: "14px",
-                  background: "#fff",
-                  border: "none",
-                  color: "#000",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  fontFamily: "JetBrains Mono, monospace",
-                }}
-              >
-                {t.success.copyAndClose.toUpperCase()}
-              </button>
-            </div>
+                {/* Side-by-side Buttons */}
+                <div style={{ display: "flex", gap: "15px", margin: "12px auto 0", width: "100%" }}>
+                  <button
+                    onClick={() => {
+                      trackEvent("read_guide_tapped", { source: "home_modal" });
+                      triggerHaptic("light");
+                      setIsKeySheetOpen(false);
+                      onTabChange("guide");
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "10px 15px",
+                      borderRadius: "14px",
+                      background: "#333333",
+                      color: "#fff",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      fontFamily: "JetBrains Mono, monospace",
+                      textWrap: "nowrap",
+                      border: "none",
+                    }}
+                  >
+                    {t.success.readGuide.toUpperCase()}
+                  </button>
+                  <button
+                    onClick={() => {
+                      triggerHaptic("medium");
+                      setIsKeySheetOpen(false);
+                      setIsPlanSheetOpen(true);
+                    }}
+                    style={{
+                      flex: 1.5,
+                      padding: "10px 15px",
+                      borderRadius: "14px",
+                      background: "#fff",
+                      border: "none",
+                      color: "#000",
+                      fontSize: "14px",
+                      cursor: "pointer",
+                      fontFamily: "JetBrains Mono, monospace",
+                    }}
+                  >
+                    {t.onboarding.selectAndBuy.toUpperCase()}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </>,
         document.body

@@ -1,6 +1,7 @@
 "use client";
 
-import type { Tab, Translations } from "./types";
+import { useState, useRef } from "react";
+import type { Tab, Translations, HapticType } from "./types";
 import { trackEvent } from "../../lib/mixpanel";
 
 interface NavBarProps {
@@ -8,6 +9,8 @@ interface NavBarProps {
   currentTab: Tab;
   onTabChange: (tab: Tab) => void;
   isVisible?: boolean;
+  onResetOnboarding?: () => void;
+  triggerHaptic?: (type: HapticType) => void;
 }
 
 const HomeIcon = () => (
@@ -41,7 +44,16 @@ const SupportIcon = () => (
 
 type IconComponent = () => JSX.Element;
 
-export default function NavBar({ t, currentTab, onTabChange, isVisible = true }: NavBarProps) {
+export default function NavBar({
+  t,
+  currentTab,
+  onTabChange,
+  isVisible = true,
+  onResetOnboarding,
+  triggerHaptic,
+}: NavBarProps) {
+  const [profileClicks, setProfileClicks] = useState(0);
+  const lastClickTimeRef = useRef<number>(0);
   const tabs: { id: Tab; label: string; Icon: IconComponent }[] = [
     { id: "home", label: t.nav.home, Icon: HomeIcon },
     { id: "guide", label: t.nav.guide, Icon: GuideIcon },
@@ -102,6 +114,38 @@ export default function NavBar({ t, currentTab, onTabChange, isVisible = true }:
           <button
             key={id}
             onClick={() => {
+              if (id === "profile") {
+                const now = Date.now();
+                if (now - lastClickTimeRef.current > 2000) {
+                  setProfileClicks(1);
+                  lastClickTimeRef.current = now;
+                } else {
+                  const nextClicks = profileClicks + 1;
+                  setProfileClicks(nextClicks);
+                  lastClickTimeRef.current = now;
+
+                  if (triggerHaptic) {
+                    if (nextClicks >= 3 && nextClicks < 5) {
+                      triggerHaptic("light");
+                    } else if (nextClicks === 5) {
+                      triggerHaptic("medium");
+                    } else if (nextClicks === 6) {
+                      triggerHaptic("heavy");
+                    }
+                  }
+
+                  if (nextClicks >= 7) {
+                    if (triggerHaptic) triggerHaptic("success");
+                    setProfileClicks(0);
+                    if (onResetOnboarding) {
+                      onResetOnboarding();
+                    }
+                  }
+                }
+              } else {
+                setProfileClicks(0);
+              }
+
               if (currentTab !== id) {
                 trackEvent("tab_switched", { from: currentTab, to: id });
               }

@@ -937,6 +937,11 @@ export default function TMA() {
         t={t}
         currentTab={currentTab}
         isVisible={isNavbarVisible && !isDropdownOpen}
+        onResetOnboarding={() => {
+          safeStorage.removeItem("iguard_onboarding_completed");
+          setShowOnboarding(true);
+        }}
+        triggerHaptic={triggerHaptic}
         onTabChange={(tab) => {
           triggerHaptic("light");
           setCurrentTab(tab);

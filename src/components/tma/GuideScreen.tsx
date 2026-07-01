@@ -827,74 +827,111 @@ export default function GuideScreen({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }}>
-            {/* Access Key visualizer — Figma Glass Input Spec */}
-            <GradientBlock
-              label=""
-              primaryColor={"#cfdfe5"}
-              secondaryColor={"#686F70"}
-              baseColor="#1D1C1B"
-              borderRadius="30px"
-              height="85px"
-              animate={false}
-              glowIntensity={0.6}
-              borderGlow={true}
-              enableMouseTracking={false}
-              contentAlign={"start"}
-              padding="12px 28px"
-            >
-              <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
-                {t.guide.personalKeyLabel}
-              </span>
-              <span
-                style={{
-                  display: "block",
-                  width: "100%",
-                  fontSize: "16px",
-                  color: "#fff",
-                  fontFamily: "var(--font-onest), sans-serif",
-                  fontWeight: 400,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  lineHeight: 1.4,
-                }}
-              >
-                {activeKey}
-              </span>
-            </GradientBlock>
+            {personalKey ? (
+              <>
+                {/* Access Key visualizer — Figma Glass Input Spec */}
+                <GradientBlock
+                  label=""
+                  primaryColor={"#cfdfe5"}
+                  secondaryColor={"#686F70"}
+                  baseColor="#1D1C1B"
+                  borderRadius="30px"
+                  height="85px"
+                  animate={false}
+                  glowIntensity={0.6}
+                  borderGlow={true}
+                  enableMouseTracking={false}
+                  contentAlign={"start"}
+                  padding="12px 28px"
+                >
+                  <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
+                    {t.guide.personalKeyLabel}
+                  </span>
+                  <span
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      fontSize: "16px",
+                      color: "#fff",
+                      fontFamily: "var(--font-onest), sans-serif",
+                      fontWeight: 400,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {activeKey}
+                  </span>
+                </GradientBlock>
 
-            <button
-              className="hover-scale-btn"
-              onClick={() => {
-                trackEvent("access_key_copied", { step: 3, source: "guide" });
-                handleCopy();
-              }}
-              style={{
-                padding: "10px 15px",
-                borderRadius: "14px",
-                fontSize: "14px",
-                letterSpacing: "0.05em",
-                alignSelf: "center",
-                cursor: "pointer",
-                outline: "none",
-                textTransform: "uppercase",
-                fontFamily: "JetBrains Mono, monospace",
-                transition: "all 0.25s ease",
-                ...(copied
-                  ? {
-                    background: "rgba(255, 255, 255, 0.08)",
-                    color: "#8A94A6",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
-                  }
-                  : {
-                    background: "#FFFFFF",
-                    border: "1px solid rgba(255, 255, 255, 0.25)",
-                    color: "#000",
-                  }),
-              }}
-            >
-              {copied ? "✓ " + t.guide.copied : t.guide.copyKey}
-            </button>
+                <button
+                  className="hover-scale-btn"
+                  onClick={() => {
+                    trackEvent("access_key_copied", { step: 3, source: "guide" });
+                    handleCopy();
+                  }}
+                  style={{
+                    padding: "10px 15px",
+                    borderRadius: "14px",
+                    fontSize: "14px",
+                    letterSpacing: "0.05em",
+                    alignSelf: "center",
+                    cursor: "pointer",
+                    outline: "none",
+                    textTransform: "uppercase",
+                    fontFamily: "JetBrains Mono, monospace",
+                    transition: "all 0.25s ease",
+                    ...(copied
+                      ? {
+                        background: "rgba(255, 255, 255, 0.08)",
+                        color: "#8A94A6",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                      }
+                      : {
+                        background: "#FFFFFF",
+                        border: "1px solid rgba(255, 255, 255, 0.25)",
+                        color: "#000",
+                      }),
+                  }}
+                >
+                  {copied ? "✓ " + t.guide.copied : t.guide.copyKey}
+                </button>
+              </>
+            ) : (
+              <GradientBlock
+                label=""
+                primaryColor={"#cfdfe5"}
+                secondaryColor={"#686F70"}
+                baseColor="#1D1C1B"
+                borderRadius="30px"
+                height="auto"
+                animate={false}
+                glowIntensity={0.6}
+                borderGlow={true}
+                enableMouseTracking={false}
+                contentAlign={"start"}
+                padding="16px 28px"
+              >
+                <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
+                  {t.guide.personalKeyLabel}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    fontSize: "14px",
+                    color: "rgba(255, 255, 255, 0.6)",
+                    fontFamily: "var(--font-onest), sans-serif",
+                    fontWeight: 400,
+                    lineHeight: 1.4,
+                    marginTop: "4px",
+                  }}
+                >
+                  {t.guide.personalKeyEmptyState}
+                </span>
+              </GradientBlock>
+            )}
           </div>
         </div>
 

@@ -480,41 +480,68 @@ export default function SetupStep({
               </span>
             </div>
 
-            <div className="flex flex-col gap-3 w-full mt-1">
-              <GradientBlock
-                label=""
-                primaryColor="#cfdfe5"
-                secondaryColor="#686F70"
-                baseColor="#1D1C1B"
-                borderRadius="30px"
-                height="85px"
-                animate={false}
-                glowIntensity={0.6}
-                borderGlow={true}
-                enableMouseTracking={false}
-                enableHoverScale={false}
-                contentAlign="start"
-                padding="12px 28px"
-              >
-                <span className="text-[13px] text-[#8E8E93] font-sans">
-                  {t.guide.personalKeyLabel}
-                </span>
-                <span className="block w-full text-[16px] text-white font-sans whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed">
-                  {activeKey}
-                </span>
-              </GradientBlock>
-
-              <div className="flex justify-center">
-                <button
-                  onClick={onCopy}
-                  className={`font-mono text-[12px] px-6 py-3 rounded-[14px] cursor-pointer transition-all duration-200 ease-in-out ${
-                    copied ? "bg-white/8 border border-white/12 text-white/40" : "bg-white border-none text-black"
-                  }`}
+            {planPurchased && activeKey ? (
+              <div className="flex flex-col gap-3 w-full mt-1">
+                <GradientBlock
+                  label=""
+                  primaryColor="#cfdfe5"
+                  secondaryColor="#686F70"
+                  baseColor="#1D1C1B"
+                  borderRadius="30px"
+                  height="85px"
+                  animate={false}
+                  glowIntensity={0.6}
+                  borderGlow={true}
+                  enableMouseTracking={false}
+                  enableHoverScale={false}
+                  contentAlign="start"
+                  padding="12px 28px"
                 >
-                  {copied ? "✓ " + t.guide.copied.toUpperCase() : t.guide.copyKey.toUpperCase()}
-                </button>
+                  <span className="text-[13px] text-[#8E8E93] font-sans">
+                    {t.guide.personalKeyLabel}
+                  </span>
+                  <span className="block w-full text-[16px] text-white font-sans whitespace-nowrap overflow-hidden text-ellipsis leading-relaxed">
+                    {activeKey}
+                  </span>
+                </GradientBlock>
+
+                <div className="flex justify-center">
+                  <button
+                    onClick={onCopy}
+                    className={`font-mono text-[12px] px-6 py-3 rounded-[14px] cursor-pointer transition-all duration-200 ease-in-out ${
+                      copied ? "bg-white/8 border border-white/12 text-white/40" : "bg-white border-none text-black"
+                    }`}
+                  >
+                    {copied ? "✓ " + t.guide.copied.toUpperCase() : t.guide.copyKey.toUpperCase()}
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3 w-full mt-1">
+                <GradientBlock
+                  label=""
+                  primaryColor="#cfdfe5"
+                  secondaryColor="#686F70"
+                  baseColor="#1D1C1B"
+                  borderRadius="30px"
+                  height="auto"
+                  animate={false}
+                  glowIntensity={0.6}
+                  borderGlow={true}
+                  enableMouseTracking={false}
+                  enableHoverScale={false}
+                  contentAlign="start"
+                  padding="16px 28px"
+                >
+                  <span className="text-[13px] text-[#8E8E93] font-sans">
+                    {t.guide.personalKeyLabel}
+                  </span>
+                  <span className="block w-full text-[14px] text-white/60 font-sans leading-relaxed mt-1">
+                    {t.guide.personalKeyEmptyState}
+                  </span>
+                </GradientBlock>
+              </div>
+            )}
           </div>
 
           {campaign !== "default" && (
