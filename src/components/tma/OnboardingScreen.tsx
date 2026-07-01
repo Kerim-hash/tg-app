@@ -518,7 +518,7 @@ export default function OnboardingScreen({
 
   const getPaddingClass = () => {
     const isSpecialCampaign = campaign === "adults" || campaign === "gaming";
-    const topPadding = isSpecialCampaign ? "pt-[70px]" : "pt-5";
+    const topPadding = "pt-[70px]";
     if (
       (currentStep === 1 && isSpecialCampaign) ||
       (currentStep === 2 && campaign === "adults")
