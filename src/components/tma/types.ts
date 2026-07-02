@@ -38,6 +38,7 @@ export interface UserData {
   isPremium: boolean;
   activePlan?: ActivePlan;
   expiration?: string;
+  paymentMethodSaved?: boolean;
 }
 
 export interface Notifications {
@@ -79,6 +80,11 @@ export interface Translations {
     billedMonthly: string;
     billedYearly: string;
     secureFor: string;
+    autoRenewalActive: string;
+    autoRenewalDesc: string;
+    unsubscribeBtn: string;
+    unsubscribeConfirm: string;
+    unsubscribeSuccess: string;
   };
   payment: {
     selectMethod: string;

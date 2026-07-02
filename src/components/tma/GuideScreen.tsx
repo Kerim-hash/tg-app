@@ -100,6 +100,7 @@ interface GuideScreenProps {
   onBillingRegionChange: (region: string) => void;
   paymentMethods?: any[];
   expiration?: string;
+  paymentMethodSaved?: boolean;
 }
 
 const REGION_OPTIONS = [
@@ -192,6 +193,7 @@ export default function GuideScreen({
   onBillingRegionChange,
   paymentMethods = [],
   expiration,
+  paymentMethodSaved = false,
 }: GuideScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [copied, setCopied] = useState(false);
@@ -637,8 +639,48 @@ export default function GuideScreen({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }} ref={step2Ref}>
-            {/* Interactive plan selection */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", width: "100%" }}>
+            {paymentMethodSaved ? (
+              <div
+                style={{
+                  width: "100%",
+                  borderRadius: "24px",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  background: "rgba(255, 255, 255, 0.02)",
+                  padding: "24px",
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "12px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "24px",
+                    background: "rgba(0, 209, 255, 0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="#00D1FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span style={{ fontSize: "16px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-mono), monospace" }}>
+                  {t.home.autoRenewalActive}
+                </span>
+                <span style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.4 }}>
+                  {t.home.autoRenewalDesc}
+                </span>
+              </div>
+            ) : (
+              <>
+                {/* Interactive plan selection */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", width: "100%" }}>
               {plans.map((plan) => {
                 const isYearly = plan.periodMonths === 12;
                 const isActive = selectedPlan?.id === plan.id;
@@ -786,7 +828,9 @@ export default function GuideScreen({
                 )
                 : t.onboarding.selectAndBuy.toUpperCase()}
             </button>
-          </div>
+          </>
+        )}
+      </div>
         </div>
 
         {/* Separator dots */}

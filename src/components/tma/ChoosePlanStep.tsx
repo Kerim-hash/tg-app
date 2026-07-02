@@ -132,11 +132,19 @@ export default function ChoosePlanStep({
             <div
               key={plan.id}
               onClick={() => {
-                triggerHaptic("light");
-                setTempSelectedPlanId(plan.id);
-                const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
-                const priceVal = plan.usdTotal ?? 0;
-                trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
+                if (tempSelectedPlanId === plan.id) {
+                  triggerHaptic("medium");
+                  trackEvent("onboarding_plans_cta_clicked", { trigger: "double_click" });
+                  if (onSelectPlanForPayment) {
+                    onSelectPlanForPayment(plan.id);
+                  }
+                } else {
+                  triggerHaptic("light");
+                  setTempSelectedPlanId(plan.id);
+                  const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
+                  const priceVal = plan.usdTotal ?? 0;
+                  trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
+                }
               }}
               className="w-full h-[170px] rounded-[45px] relative cursor-pointer overflow-hidden select-none"
             >

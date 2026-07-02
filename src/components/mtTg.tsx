@@ -306,7 +306,14 @@ export default function TMA() {
           isPremium: profile.is_premium || profile.isPremium || false,
           activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
           expiration: profile.expiration,
+          paymentMethodSaved: profile.payment_method_saved || profile.paymentMethodSaved || false,
         });
+
+        const hasActivePlan = profile.expiration && !isNaN(new Date(profile.expiration).getTime()) && new Date(profile.expiration) > new Date();
+        if (hasActivePlan) {
+          safeStorage.setItem("iguard_onboarding_completed", "true");
+          setShowOnboarding(false);
+        }
       }
     } catch (err) {
       console.error("[IGuard] Profile fetch error:", err);
@@ -877,6 +884,7 @@ export default function TMA() {
               billingRegion={billingRegion}
               onBillingRegionChange={handleBillingRegionChange}
               paymentMethods={paymentMethods}
+              onRefreshProfile={refreshUserData}
             />
           </div>
         )}
@@ -897,6 +905,7 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               paymentMethods={paymentMethods}
               expiration={user.expiration}
+              paymentMethodSaved={user.paymentMethodSaved}
             />
           </div>
         )}

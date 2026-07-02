@@ -516,26 +516,25 @@ export default function OnboardingScreen({
     onComplete();
   };
 
-  const getPaddingClass = () => {
+  const getContentPaddingClass = () => {
     const isSpecialCampaign = campaign === "adults" || campaign === "gaming";
-    const topPadding = "pt-[70px]";
-    if (
+    const horizPadding = (
       (currentStep === 1 && isSpecialCampaign) ||
       (currentStep === 2 && campaign === "adults")
-    ) {
-      return `${topPadding} px-0 pb-0`;
-    }
-    if (currentStep === 0) {
-      return `${topPadding} px-5 pb-0`;
-    }
+    ) ? "px-0" : "px-5";
+
+    let bottomPadding = "pb-4";
     if (currentStep > 0 && currentStep < 4) {
-      return `${topPadding} px-5 pb-0`;
+      bottomPadding = "pb-[100px]";
+    } else if (currentStep === 4) {
+      bottomPadding = "pb-10";
     }
-    return `${topPadding} px-5 pb-10`;
+
+    return `pt-[175px] ${horizPadding} ${bottomPadding}`;
   };
 
   return (
-    <div className={`h-full flex flex-col bg-black text-white max-w-[480px] mx-auto overflow-hidden relative box-border ${getPaddingClass()}`}>
+    <div className="h-full flex flex-col bg-black text-white max-w-[480px] mx-auto overflow-hidden relative box-border pt-0 px-0 pb-0">
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes slideInFromRight {
@@ -602,57 +601,74 @@ export default function OnboardingScreen({
       }} />
 
       {/* Top Header Section */}
-      {currentStep === 0 ? (
-        <div className="text-center mt-3 mb-10 flex items-center justify-center">
-          <span className="text-[14px] text-[#40D1FD] font-mono">
-            {getHeaderLabel()}
-          </span>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-2 h-11 mt-3 mb-10 w-full">
-          {/* Category Label */}
-          <span className="text-[14px] text-[#40D1FD] font-mono">
-            {getHeaderLabel()}
-          </span>
-
-          {/* Step dots */}
-          <div className="flex gap-4 items-center h-5">
-            {[0, 1, 2, 3, 4].map((idx) => {
-              const isActive = idx === currentStep;
-              const isCompleted = idx < currentStep;
-
-              let heightClass = "h-1";
-              let bgClass = "bg-white/20";
-
-              if (isActive) {
-                heightClass = "h-3";
-                bgClass = "bg-[#00D1FF]";
-              } else if (idx === currentStep - 1) {
-                heightClass = "h-2";
-                bgClass = "bg-white";
-              } else if (isCompleted) {
-                bgClass = "bg-white";
-              }
-
-              return (
-                <div
-                  key={idx}
-                  className={`w-1 rounded-[1px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${heightClass} ${bgClass}`}
-                />
-              );
-            })}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "175px",
+          background: "rgba(0, 0, 0, 0.4)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          zIndex: 100,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          paddingBottom: "40px",
+          boxSizing: "border-box",
+        }}
+      >
+        {currentStep === 0 ? (
+          <div className="text-center flex items-center justify-center w-full">
+            <span className="text-[14px] text-[#40D1FD] font-mono">
+              {getHeaderLabel()}
+            </span>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col items-center gap-2 w-full">
+            {/* Category Label */}
+            <span className="text-[14px] text-[#40D1FD] font-mono">
+              {getHeaderLabel()}
+            </span>
+
+            {/* Step dots */}
+            <div className="flex gap-4 items-center h-5">
+              {[0, 1, 2, 3, 4].map((idx) => {
+                const isActive = idx === currentStep;
+                const isCompleted = idx < currentStep;
+
+                let heightClass = "h-1";
+                let bgClass = "bg-white/20";
+
+                if (isActive) {
+                  heightClass = "h-3";
+                  bgClass = "bg-[#00D1FF]";
+                } else if (idx === currentStep - 1) {
+                  heightClass = "h-2";
+                  bgClass = "bg-white";
+                } else if (isCompleted) {
+                  bgClass = "bg-white";
+                }
+
+                return (
+                  <div
+                    key={idx}
+                    className={`w-1 rounded-[1px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${heightClass} ${bgClass}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main Slide Content Area */}
       <div
         key={currentStep} // forces re-render for slide animations
         className={`${
           direction === "next" ? "animate-slide-in-right" : "animate-slide-in-left"
-        } hide-scrollbar w-full flex-1 flex flex-col justify-start items-center overflow-y-auto box-border mb-0 pb-4 ${
-          currentStep > 0 && currentStep < 4 ? "pb-[100px]" : ""
-        }`}
+        } hide-scrollbar w-full flex-1 flex flex-col justify-start items-center overflow-y-auto box-border ${getContentPaddingClass()}`}
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {currentStep === 0 && (
@@ -819,3 +835,5 @@ export default function OnboardingScreen({
     </div>
   );
 }
+
+
