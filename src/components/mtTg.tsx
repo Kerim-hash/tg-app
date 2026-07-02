@@ -776,7 +776,7 @@ export default function TMA() {
       />
     );
   }
-  if (showOnboarding) {
+  if (false && showOnboarding) {
     return (
       <>
         <OnboardingScreen
@@ -805,7 +805,7 @@ export default function TMA() {
               <PaymentScreen
                 t={t}
                 language={language}
-                plan={selectedPlan}
+                plan={selectedPlan as Plan}
                 selectedMethod={selectedMethod}
                 onSelectMethod={setSelectedMethod}
                 onProceed={handlePayment}
