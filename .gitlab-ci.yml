@@ -1,3 +1,8 @@
+include:
+  - project: fastguard/devops
+    ref: master
+    file: /templates/telegram-deploy-notify.yml
+
 variables:
   WORKLOADS_REPO: https://${GITLAB_USER_DEV}:${GITLAB_USER_TOKEN_DEV}@gitlab.fastguard.site/fastguard/deployment.git
   WORKLOADS_BRANCH: master
@@ -5,6 +10,7 @@ variables:
 stages:
   - build
   - deploy
+  - notify
 
 build-dev:
   image: docker:latest
@@ -95,3 +101,11 @@ deploy-prod:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^(v).*$/'
       when: manual
+
+deploy-prod-notify:
+  extends: .telegram_deploy_notify
+  needs:
+    - job: deploy-prod
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+      when: always
