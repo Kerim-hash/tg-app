@@ -195,6 +195,18 @@ export interface Translations {
     needHelp: string;
     contactSupport: string;
   };
+  successPayment: {
+    title: string;
+    subtitle: string;
+    backBtn: string;
+    closeBtn: string;
+  };
+  reject: {
+    title: string;
+    subtitle: string;
+    backBtn: string;
+    closeBtn: string;
+  };
   loading: string;
   onboarding: {
     welcome: string;
