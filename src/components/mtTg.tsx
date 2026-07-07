@@ -438,7 +438,7 @@ export default function TMA() {
         isPremium: false,
         activePlan: parseActivePlan("2029-06-29T18:00:00Z"),
         expiration: "2029-06-29T18:00:00Z",
-        paymentMethodSaved: true,
+        paymentMethodSaved: false,
       })
       setIsLoadingAuth(false);
     }

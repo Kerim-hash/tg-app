@@ -45,7 +45,7 @@ export default function FinalReadyStep({
             trackEvent("onboarding_completed", {});
             onComplete();
           }}
-          text={t.onboarding.swipeToStart}
+          text={t.onboarding.startBtn.toUpperCase()}
           triggerHaptic={triggerHaptic}
         />
       </div>

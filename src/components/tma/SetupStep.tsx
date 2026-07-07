@@ -68,6 +68,7 @@ const DICT: Record<string, {
   step2Text: string;
   needHelp: string;
   swipeToStart: string;
+  startBtn: string;
 }> = {
   en: {
     googlePlay: "Download Happ from Play Store",
@@ -84,6 +85,7 @@ const DICT: Record<string, {
     step2Text: "Pick a plan, pay with card, crypto or Stars",
     needHelp: "Need help? Check the Guide tab or contact support",
     swipeToStart: "SWIPE TO START",
+    startBtn: "START",
   },
   ru: {
     googlePlay: "Скачайте Happ в Google Play",
@@ -100,6 +102,7 @@ const DICT: Record<string, {
     step2Text: "Выберите тариф, оплатите картой, криптовалютой или Stars",
     needHelp: "Нужна помощь? Загляните в руководство или напишите в поддержку",
     swipeToStart: "ПРОВЕДИТЕ ДЛЯ СТАРТА",
+    startBtn: "НАЧАТЬ",
   },
   uz: {
     googlePlay: "Google Play'dan Happ ilovasini yuklab oling",
@@ -116,6 +119,7 @@ const DICT: Record<string, {
     step2Text: "Tarifni tanlang, karta, kriptovalyuta yoki Stars orqali to'lang",
     needHelp: "Yordam kerakmi? Qo'llanmaga qarang yoki yordam xizmatiga yozing",
     swipeToStart: "BOSHLASH UCHUN SURING",
+    startBtn: "BOSHLASH",
   },
   by: {
     googlePlay: "Спампуйце Happ у Google Play",
@@ -132,6 +136,7 @@ const DICT: Record<string, {
     step2Text: "Абярыце тарыф, аплаціце картай, крыптавалютай або Stars",
     needHelp: "Патрэбна дапамога? Зазірніце ў кіраўніцтва або напішыце ў падтрымку",
     swipeToStart: "ПРАВЯДЗІЦЕ ДЛЯ СТАРТУ",
+    startBtn: "ПАЧАЦЬ",
   }
 };
 
@@ -314,7 +319,7 @@ export default function SetupStep({
 
             <SwipeSlider
               onComplete={onComplete}
-              text={currentDict.swipeToStart}
+              text={currentDict.startBtn.toUpperCase()}
               triggerHaptic={triggerHaptic}
             />
           </div>
@@ -560,7 +565,7 @@ export default function SetupStep({
 
               <SwipeSlider
                 onComplete={onComplete}
-                text={currentDict.swipeToStart}
+                text={currentDict.startBtn.toUpperCase()}
                 triggerHaptic={triggerHaptic}
               />
             </div>

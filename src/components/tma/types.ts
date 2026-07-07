@@ -258,5 +258,6 @@ export interface Translations {
     everythingInOnePlace: string;
     quickReference: string;
     swipeToStart: string;
+    startBtn: string;
   };
 }

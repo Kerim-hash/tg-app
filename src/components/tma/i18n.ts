@@ -199,6 +199,7 @@ const en: Translations = {
     everythingInOnePlace: "Everything in one place",
     quickReference: "A quick reference you'll come back to",
     swipeToStart: "SWIPE TO START",
+    startBtn: "START",
   },
 };
 
@@ -401,6 +402,7 @@ const ru: Translations = {
     everythingInOnePlace: "Всё в одном месте",
     quickReference: "Быстрый доступ, к которому вы будете возвращаться",
     swipeToStart: "ПРОВЕДИТЕ ДЛЯ СТАРТА",
+    startBtn: "НАЧАТЬ",
   },
 };
 
@@ -603,6 +605,7 @@ const uz: Translations = {
     everythingInOnePlace: "Hammasi bir joyda",
     quickReference: "Siz hali ko'p qaytadigan tezkor ma'lumotnoma",
     swipeToStart: "BOSHLASH UCHUN SURING",
+    startBtn: "BOSHLASH",
   },
 };
 
@@ -805,6 +808,7 @@ const by: Translations = {
     everythingInOnePlace: "Усё ў адным месцы",
     quickReference: "Хуткі доступ, да якога вы будзеце вяртацца",
     swipeToStart: "ПРАВЯДЗІЦЕ ДЛЯ СТАРТУ",
+    startBtn: "ПАЧАЦЬ",
   },
 };
 

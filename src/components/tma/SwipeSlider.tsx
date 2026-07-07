@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-
+import React, { useState } from "react";
 import type { HapticType } from "./types";
 
 interface SwipeSliderProps {
@@ -10,96 +9,95 @@ interface SwipeSliderProps {
   triggerHaptic: (type: HapticType) => void;
 }
 
+interface Ripple {
+  x: number;
+  y: number;
+  size: number;
+  id: number;
+}
+
 export default function SwipeSlider({
   onComplete,
   text,
   triggerHaptic,
 }: SwipeSliderProps) {
-  const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const startXRef = useRef(0);
+  const [ripples, setRipples] = useState<Ripple[]>([]);
 
-  const handleStart = (clientX: number) => {
-    setIsDragging(true);
-    startXRef.current = clientX - dragX;
-  };
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    triggerHaptic("success");
 
-  const handleMove = (clientX: number) => {
-    if (!isDragging || !containerRef.current) return;
-    const containerWidth = containerRef.current.clientWidth;
-    const maxDrag = containerWidth - 50 - 12; // container width - handle width - padding (6px left, 6px right)
-    let newX = clientX - startXRef.current;
-    if (newX < 0) newX = 0;
-    if (newX > maxDrag) newX = maxDrag;
-    setDragX(newX);
-  };
+    const button = e.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 2; // double size to ensure it covers the button completely
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
 
-  const handleEnd = () => {
-    if (!isDragging || !containerRef.current) return;
-    setIsDragging(false);
-    const containerWidth = containerRef.current.clientWidth;
-    const maxDrag = containerWidth - 50 - 12;
-    if (dragX >= maxDrag * 0.9) {
-      setDragX(maxDrag);
-      triggerHaptic("success");
+    const newRipple = {
+      x,
+      y,
+      size,
+      id: Date.now() + Math.random(),
+    };
+
+    setRipples((prev) => [...prev, newRipple]);
+
+    // Complete the step action after ripple animation peak
+    setTimeout(() => {
       onComplete();
-    } else {
-      setDragX(0);
-    }
+    }, 280);
   };
 
-  useEffect(() => {
-    const handleGlobalMove = (e: MouseEvent) => handleMove(e.clientX);
-    const handleGlobalTouchMove = (e: TouchEvent) => {
-      if (e.cancelable) {
-        e.preventDefault();
-      }
-      if (e.touches[0]) handleMove(e.touches[0].clientX);
-    };
-    const handleGlobalEnd = () => handleEnd();
-
-    if (isDragging) {
-      window.addEventListener("mousemove", handleGlobalMove);
-      window.addEventListener("mouseup", handleGlobalEnd);
-      window.addEventListener("touchmove", handleGlobalTouchMove, { passive: false });
-      window.addEventListener("touchend", handleGlobalEnd);
-    }
-    return () => {
-      window.removeEventListener("mousemove", handleGlobalMove);
-      window.removeEventListener("mouseup", handleGlobalEnd);
-      window.removeEventListener("touchmove", handleGlobalTouchMove);
-      window.removeEventListener("touchend", handleGlobalEnd);
-    };
-  }, [isDragging, dragX]);
+  const handleRippleEnd = (id: number) => {
+    setRipples((prev) => prev.filter((r) => r.id !== id));
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-[56px] rounded-xl bg-[#2A2A2C] flex items-center justify-center overflow-hidden select-none box-border"
-    >
-      <span className="font-mono text-[12px] text-white/60 pointer-events-none ml-6">
-        {text}
-      </span>
-
-      <div
-        onMouseDown={(e) => handleStart(e.clientX)}
-        onTouchStart={(e) => {
-          if (e.cancelable) {
-            e.preventDefault();
+    <div className="w-full">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes material-ripple {
+            0% {
+              transform: scale(0);
+              opacity: 0.35;
+            }
+            100% {
+              transform: scale(1);
+              opacity: 0;
+            }
           }
-          if (e.touches[0]) handleStart(e.touches[0].clientX);
-        }}
-        style={{
-          left: `calc(6px + ${dragX}px)`,
-          transition: isDragging ? "none" : "left 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
-        className="absolute top-2 w-[50px] h-[40px] rounded-xl bg-white flex items-center justify-center cursor-grab z-10"
+          .ripple-container {
+            position: relative;
+            overflow: hidden;
+          }
+          .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            transform-origin: center;
+            animation: material-ripple 500ms cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+          }
+        `
+      }} />
+      <button
+        onClick={handleClick}
+        className="ripple-container w-full h-[56px] rounded-xl bg-[#6C63FF] hover:bg-[#5B52EE] active:bg-[#4E45DE] text-white font-mono text-[14px] font-bold tracking-wider flex items-center justify-center cursor-pointer border-none outline-none select-none transition-colors duration-250 ease-in-out shadow-lg shadow-[#6C63FF]/20"
       >
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5.83333 12.0202L11.6667 6.18685L5.83333 0.353516M11.6667 6.18685L0 6.18685" stroke="black" strokeLinejoin="round" />
-        </svg>
-      </div>
+        {text}
+        {ripples.map((ripple) => (
+          <span
+            key={ripple.id}
+            className="ripple-effect"
+            style={{
+              left: ripple.x,
+              top: ripple.y,
+              width: ripple.size,
+              height: ripple.size,
+            }}
+            onAnimationEnd={() => handleRippleEnd(ripple.id)}
+          />
+        ))}
+      </button>
     </div>
   );
 }
