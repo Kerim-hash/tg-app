@@ -503,6 +503,10 @@ export default function TMA() {
             };
           });
           setPlans(mappedPlans);
+          const yearlyPlan = mappedPlans.find((p) => p.periodMonths === 12);
+          if (yearlyPlan) {
+            setSelectedPlan(yearlyPlan);
+          }
         }
       })
       .catch((err) => {

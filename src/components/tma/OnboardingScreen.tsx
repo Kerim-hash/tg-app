@@ -320,6 +320,16 @@ export default function OnboardingScreen({
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [tempSelectedPlanId, setTempSelectedPlanId] = useState<string>("");
+
+  useEffect(() => {
+    if (plans && plans.length > 0 && !tempSelectedPlanId) {
+      const yearlyPlan = plans.find((p) => p.periodMonths === 12);
+      if (yearlyPlan) {
+        setTempSelectedPlanId(yearlyPlan.id);
+      }
+    }
+  }, [plans, tempSelectedPlanId]);
+
   const [wifiSecurity, setWifiSecurity] = useState(true);
   const [gamingMode, setGamingMode] = useState(true);
   const [copied, setCopied] = useState(false);

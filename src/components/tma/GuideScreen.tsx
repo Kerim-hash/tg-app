@@ -715,18 +715,40 @@ export default function GuideScreen({
                       absoluteChildren={true}
                       enableHoverScale={false}
                     >
-                      {/* White Border Overlay when Selected */}
+                      {/* Border and Checkmark Icon Overlay when Selected */}
                       {isActive && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            border: "1px solid #FFFFFF",
-                            borderRadius: "45px",
-                            pointerEvents: "none",
-                            zIndex: 30,
-                          }}
-                        />
+                        <>
+                          <div
+                            style={{
+                              position: "absolute",
+                              inset: 0,
+                              border: "2px solid #6C63FF",
+                              borderRadius: "45px",
+                              pointerEvents: "none",
+                              zIndex: 30,
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "16px",
+                              right: "16px",
+                              width: "20px",
+                              height: "20px",
+                              borderRadius: "50%",
+                              background: "#6C63FF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              pointerEvents: "none",
+                              zIndex: 30,
+                            }}
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        </>
                       )}
 
                       {/* Overlay Content */}
@@ -783,45 +805,46 @@ export default function GuideScreen({
               })}
             </div>
 
-            <button
-              className="hover-scale-btn"
-              onClick={() => {
-                triggerHaptic("medium");
-                if (selectedPlan) {
-                  trackEvent("guide_select_and_buy_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal });
-                  setLocalSelectedMethod(null);
-                  setIsPaymentSheetOpen(true);
-                } else {
-                  const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
-                  trackEvent("guide_select_and_buy_tapped", { plan: yearlyPlan.periodMonths === 1 ? "30_days" : "1_year", price: yearlyPlan.starsPrice || yearlyPlan.usdTotal });
-                  onSelectPlan(yearlyPlan);
-                  setLocalSelectedMethod(null);
-                  setTimeout(() => setIsPaymentSheetOpen(true), 100);
-                }
-              }}
-              style={{
-                width: "280px",
-                padding: "10px 14px",
-                borderRadius: "14px",
-                background: selectedPlan ? "#FFFFFF" : "transparent",
-                border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
-                color: selectedPlan ? "#000000" : "#FFFFFF",
-                fontSize: "12px",
-                letterSpacing: "0.05em",
-                alignSelf: "center",
-                cursor: "pointer",
-                outline: "none",
-                fontFamily: "var(--font-mono), monospace",
-                transition: "all 0.25s ease",
-              }}
-            >
-              {selectedPlan
-                ? t.home.buyFor(
-                  `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                  selectedPlan.starsPrice
-                )
-                : t.onboarding.selectAndBuy.toUpperCase()}
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+              <button
+                className={selectedPlan ? "hover-scale-btn" : ""}
+                disabled={!selectedPlan}
+                onClick={() => {
+                  triggerHaptic("medium");
+                  if (selectedPlan) {
+                    trackEvent("guide_select_and_buy_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal });
+                    setLocalSelectedMethod(null);
+                    setIsPaymentSheetOpen(true);
+                  }
+                }}
+                style={{
+                  width: "280px",
+                  padding: "10px 14px",
+                  borderRadius: "14px",
+                  background: selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)",
+                  border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+                  color: selectedPlan ? "#000000" : "rgba(255, 255, 255, 0.3)",
+                  fontSize: "12px",
+                  letterSpacing: "0.05em",
+                  cursor: selectedPlan ? "pointer" : "default",
+                  outline: "none",
+                  fontFamily: "var(--font-mono), monospace",
+                  transition: "all 0.25s ease",
+                }}
+              >
+                {selectedPlan
+                  ? t.home.buyFor(
+                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                    selectedPlan.starsPrice
+                  )
+                  : t.onboarding.selectAndBuy.toUpperCase()}
+              </button>
+              {!selectedPlan && (
+                <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>

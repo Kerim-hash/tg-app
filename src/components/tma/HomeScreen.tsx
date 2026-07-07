@@ -619,18 +619,40 @@ export default function HomeScreen({
                     absoluteChildren={true}
                     enableHoverScale={false}
                   >
-                    {/* White Border Overlay when Selected */}
+                    {/* Border and Checkmark Icon Overlay when Selected */}
                     {isActive && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          border: "1px solid #FFFFFF",
-                          borderRadius: "45px",
-                          pointerEvents: "none",
-                          zIndex: 30,
-                        }}
-                      />
+                      <>
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            border: "2px solid #6C63FF",
+                            borderRadius: "45px",
+                            pointerEvents: "none",
+                            zIndex: 30,
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "16px",
+                            right: "16px",
+                            width: "20px",
+                            height: "20px",
+                            borderRadius: "50%",
+                            background: "#6C63FF",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                            zIndex: 30,
+                          }}
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                      </>
                     )}
 
                     {/* Overlay Content */}
@@ -686,49 +708,53 @@ export default function HomeScreen({
           </div>
 
           {/* Action Buy Button below cards */}
-          <button
-            className={user.paymentMethodSaved ? "" : "hover-scale-btn"}
-            onClick={() => {
-              if (user.paymentMethodSaved) {
-                triggerHaptic("warning");
-                return;
-              }
-              triggerHaptic("medium");
-              if (selectedPlan) {
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+            <button
+              className={user.paymentMethodSaved ? "" : (selectedPlan ? "hover-scale-btn" : "")}
+              disabled={!user.paymentMethodSaved && !selectedPlan}
+              onClick={() => {
+                if (user.paymentMethodSaved) {
+                  triggerHaptic("warning");
+                  return;
+                }
+                if (!selectedPlan) {
+                  triggerHaptic("warning");
+                  return;
+                }
+                triggerHaptic("medium");
                 setLocalSelectedMethod(null);
                 setIsPaymentSheetOpen(true);
-              } else {
-                const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
-                onSelectPlan(yearlyPlan);
-                setLocalSelectedMethod(null);
-                setTimeout(() => setIsPaymentSheetOpen(true), 100);
-              }
-            }}
-            style={{
-              padding: "10px 15px",
-              borderRadius: "14px",
-              background: user.paymentMethodSaved ? "transparent" : (selectedPlan ? "#FFFFFF" : "transparent"),
-              border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : (selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)"),
-              color: user.paymentMethodSaved ? "rgba(255, 255, 255, 0.35)" : (selectedPlan ? "#000000" : "#FFFFFF"),
-              fontSize: "14px",
-              alignSelf: "center",
-              cursor: user.paymentMethodSaved ? "default" : "pointer",
-              outline: "none",
-              textTransform: "uppercase",
-              fontFamily: "JetBrains Mono, monospace",
-              transition: "all 0.25s ease",
-              opacity: user.paymentMethodSaved ? 0.5 : 1,
-            }}
-          >
-            {user.paymentMethodSaved
-              ? t.home.autoRenewalActive.toUpperCase()
-              : (selectedPlan
-                  ? t.home.buyFor(
-                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                    selectedPlan.starsPrice
-                  )
-                  : t.onboarding.selectAndBuy.toUpperCase())}
-          </button>
+              }}
+              style={{
+                padding: "10px 15px",
+                borderRadius: "14px",
+                background: user.paymentMethodSaved ? "transparent" : (selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)"),
+                border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : (selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)"),
+                color: user.paymentMethodSaved ? "rgba(255, 255, 255, 0.35)" : (selectedPlan ? "#000000" : "rgba(255, 255, 255, 0.3)"),
+                fontSize: "14px",
+                cursor: (user.paymentMethodSaved || !selectedPlan) ? "default" : "pointer",
+                outline: "none",
+                textTransform: "uppercase",
+                fontFamily: "JetBrains Mono, monospace",
+                transition: "all 0.25s ease",
+                opacity: user.paymentMethodSaved ? 0.5 : 1,
+              }}
+            >
+              {user.paymentMethodSaved
+                ? t.home.autoRenewalActive.toUpperCase()
+                : (selectedPlan
+                    ? t.home.buyFor(
+                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                      selectedPlan.starsPrice
+                    )
+                    : t.onboarding.selectAndBuy.toUpperCase())}
+            </button>
+            {!user.paymentMethodSaved && !selectedPlan && (
+              <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -928,18 +954,40 @@ export default function HomeScreen({
                         enableHoverScale={false}
                         absoluteChildren={true}
                       >
-                        {/* White Border Overlay when Selected */}
+                        {/* Border and Checkmark Icon Overlay when Selected */}
                         {isActive && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              inset: 0,
-                              border: "1px solid #FFFFFF",
-                              borderRadius: "36px",
-                              pointerEvents: "none",
-                              zIndex: 30,
-                            }}
-                          />
+                          <>
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                border: "2px solid #6C63FF",
+                                borderRadius: "36px",
+                                pointerEvents: "none",
+                                zIndex: 30,
+                              }}
+                            />
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "16px",
+                                right: "16px",
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "50%",
+                                background: "#6C63FF",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                pointerEvents: "none",
+                                zIndex: 30,
+                              }}
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          </>
                         )}
 
                         {/* Overlay Content */}
@@ -993,47 +1041,45 @@ export default function HomeScreen({
                 })}
               </div>
 
-              <button
-                onClick={() => {
-                  triggerHaptic("medium");
-                  if (selectedPlan) {
-                    trackEvent("select_and_continue_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
-                    setIsPlanSheetOpen(false);
-                    setLocalSelectedMethod(null);
-                    setIsPaymentSheetOpen(true);
-                  } else {
-                    const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
-                    trackEvent("select_and_continue_tapped", { plan: yearlyPlan.periodMonths === 1 ? "30_days" : "1_year", price: yearlyPlan.starsPrice || yearlyPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
-                    onSelectPlan(yearlyPlan);
-                    setLocalSelectedMethod(null);
-                    setTimeout(() => {
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+                <button
+                  disabled={!selectedPlan}
+                  onClick={() => {
+                    triggerHaptic("medium");
+                    if (selectedPlan) {
+                      trackEvent("select_and_continue_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
                       setIsPlanSheetOpen(false);
+                      setLocalSelectedMethod(null);
                       setIsPaymentSheetOpen(true);
-                    }, 100);
-                  }
-                }}
-                style={{
-                  width: "280px",
-                  padding: "10px 15px",
-                  borderRadius: "14px",
-                  background: selectedPlan ? "#FFFFFF" : "transparent",
-                  border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
-                  color: selectedPlan ? "#000000" : "#FFFFFF",
-                  fontSize: "12px",
-                  alignSelf: "center",
-                  cursor: "pointer",
-                  outline: "none",
-                  fontFamily: "var(--font-mono), monospace",
-                  transition: "all 0.25s ease",
-                }}
-              >
-                {selectedPlan
-                  ? t.home.buyFor(
-                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                    selectedPlan.starsPrice
-                  )
-                  : t.onboarding.selectAndBuy.toUpperCase()}
-              </button>
+                    }
+                  }}
+                  style={{
+                    width: "280px",
+                    padding: "10px 15px",
+                    borderRadius: "14px",
+                    background: selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)",
+                    border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+                    color: selectedPlan ? "#000000" : "rgba(255, 255, 255, 0.3)",
+                    fontSize: "12px",
+                    cursor: selectedPlan ? "pointer" : "default",
+                    outline: "none",
+                    fontFamily: "var(--font-mono), monospace",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  {selectedPlan
+                    ? t.home.buyFor(
+                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                      selectedPlan.starsPrice
+                    ).toUpperCase()
+                    : t.onboarding.selectAndBuy.toUpperCase()}
+                </button>
+                {!selectedPlan && (
+                  <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </>,
