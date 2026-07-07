@@ -61,30 +61,24 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
 }
 
 const SERVERS_ROW1 = [
-  { name: "Russia", flag: "🇷🇺" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Austria", flag: "🇦🇹" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Kazahstan", flag: "🇰🇿" },
   { name: "Albania", flag: "🇦🇱" },
+  { name: "Austria", flag: "🇦🇹" },
+  { name: "Canada", flag: "🇨🇦" },
+  { name: "France", flag: "🇫🇷" },
 ];
 
 const SERVERS_ROW2 = [
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Netherlands", flag: "🇳🇱" },
-  { name: "Singapore", flag: "🇸🇬" },
-  { name: "Armenia", flag: "🇦🇲" },
-  { name: "France", flag: "🇫🇷" },
   { name: "Germany", flag: "🇩🇪" },
+  { name: "Italy", flag: "🇮🇹" },
+  { name: "Singapore", flag: "🇸🇬" },
+  { name: "Spain", flag: "🇪🇸" },
 ];
 
 const SERVERS_ROW3 = [
-  { name: "Armenia", flag: "🇦🇲" },
-  { name: "USA", flag: "🇺🇸" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Sweden", flag: "🇸🇪" },
+  { name: "Thailand", flag: "🇹🇭" },
   { name: "Turkey", flag: "🇹🇷" },
-  { name: "Albania", flag: "🇦🇱" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "United States", flag: "🇺🇸" },
 ];
 interface GuideScreenProps {
   t: Translations;
@@ -1052,7 +1046,7 @@ export default function GuideScreen({
           {/* Row 1: Left to Right */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "guide-marquee-ltr 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
+              {[...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
                 <span
                   key={`r1-${idx}`}
                   style={{
@@ -1076,7 +1070,7 @@ export default function GuideScreen({
           {/* Row 2: Right to Left */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "guide-marquee-rtl 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
+              {[...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
                 <span
                   key={`r2-${idx}`}
                   style={{
@@ -1100,7 +1094,7 @@ export default function GuideScreen({
           {/* Row 3: Left to Right */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "guide-marquee-ltr 22s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
+              {[...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
                 <span
                   key={`r3-${idx}`}
                   style={{
