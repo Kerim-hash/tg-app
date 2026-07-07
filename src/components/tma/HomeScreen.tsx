@@ -147,10 +147,16 @@ export default function HomeScreen({
   }, [sheetRegionDropdownOpen]);
 
   const getRegionLabel = (val: string) => {
-    if (val === "UZB") return t.payment.regionUZB;
-    if (val === "BY") return t.payment.regionBY;
-    return t.payment.regionUAE;
+    if (val === "UZB") return "🇺🇿 UZ UZB";
+    if (val === "BY") return "🇧🇾 BY BY";
+    return "🇦🇪 AE UAE";
   };
+
+  useEffect(() => {
+    if (isPaymentSheetOpen && !billingRegion) {
+      setSheetRegionDropdownOpen(true);
+    }
+  }, [isPaymentSheetOpen, billingRegion]);
 
   useEffect(() => {
     if (billingRegion) {
