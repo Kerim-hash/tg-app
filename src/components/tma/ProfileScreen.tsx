@@ -167,7 +167,7 @@ export default function ProfileScreen({
   ];
 
   return (
-    <div style={{ padding: "50px 16px 8px", fontFamily: "var(--font-onest), sans-serif" }}>
+    <div style={{ padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 8px", fontFamily: "var(--font-onest), sans-serif" }}>
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes dropdownScaleIn {

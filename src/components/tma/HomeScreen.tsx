@@ -213,7 +213,7 @@ export default function HomeScreen({
   return (
     <div
       style={{
-        padding: "50px 16px 24px",
+        padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 24px",
         display: "flex",
         flexDirection: "column",
         gap: "20px",
