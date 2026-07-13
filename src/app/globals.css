@@ -65,6 +65,11 @@ html, body {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Inherit font-family for buttons and form controls to prevent fallback to browser default */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
 @keyframes bounce-short {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }

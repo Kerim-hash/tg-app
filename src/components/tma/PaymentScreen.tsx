@@ -83,7 +83,7 @@ export default function PaymentScreen({
         background: "#090B0E",
         display: "flex",
         flexDirection: "column",
-        padding: "20px 16px 40px",
+        padding: "20px 16px calc(48px + env(safe-area-inset-bottom, 20px))",
         maxWidth: "480px",
         margin: "0 auto",
         fontFamily: "var(--font-onest), sans-serif",
@@ -169,54 +169,53 @@ export default function PaymentScreen({
                 borderGlow={true}
                 enableMouseTracking={false}
                 enableHoverScale={false}
-                absoluteChildren={true}
-              >
-                {isSelected && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      border: "1px solid #FFFFFF",
-                      borderRadius: "30px",
-                      pointerEvents: "none",
-                      zIndex: 30,
-                    }}
-                  />
-                )}
+              />
 
+              {isSelected && (
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 30px",
-                    zIndex: 20,
+                    border: "1.5px solid #00D1FF",
+                    borderRadius: "30px",
                     pointerEvents: "none",
-                    boxSizing: "border-box",
+                    zIndex: 30,
+                  }}
+                />
+              )}
+
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "0 30px",
+                  zIndex: 20,
+                  pointerEvents: "none",
+                  boxSizing: "border-box",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "15px",
+                    color: isSelected ? "#00D1FF" : "#FFFFFF",
+                    fontFamily: "var(--font-onest), sans-serif",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "15px",
-                      color: isSelected ? "#00D1FF" : "#FFFFFF",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    {method.name}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      color: isSelected ? "rgba(255,255,255,0.85)" : "#8A94A6",
-                      fontFamily: "var(--font-onest), sans-serif",
-                    }}
-                  >
-                    {getMethodPrice(method)}
-                  </span>
-                </div>
-              </GradientBlock>
+                  {method.name}
+                </span>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: isSelected ? "rgba(255,255,255,0.85)" : "#8A94A6",
+                    fontFamily: "var(--font-onest), sans-serif",
+                  }}
+                >
+                  {getMethodPrice(method)}
+                </span>
+              </div>
             </button>
           );
         })}
