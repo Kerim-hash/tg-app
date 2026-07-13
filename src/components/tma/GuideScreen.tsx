@@ -1233,7 +1233,7 @@ export default function GuideScreen({
               border: "1px solid rgba(255,255,255,0.08)",
               borderBottom: "none",
               borderRadius: "32px 32px 0 0",
-              padding: "24px 20px 32px",
+              padding: "24px 20px calc(40px + env(safe-area-inset-bottom, 16px))",
               zIndex: 210,
               boxSizing: "border-box",
               display: "flex",
@@ -1516,6 +1516,7 @@ export default function GuideScreen({
                             glowIntensity={0.6}
                             borderGlow={true}
                             enableMouseTracking={false}
+                            enableHoverScale={false}
                           />
 
                           {isSelected && (
@@ -1583,13 +1584,13 @@ export default function GuideScreen({
                     }
                   }}
                   style={{
-                    width: "280px",
-                    padding: "10px 15px",
+                    width: "310px",
+                    padding: "14px 20px",
                     borderRadius: "14px",
                     background: localSelectedMethod ? "#FFFFFF" : "transparent",
                     border: localSelectedMethod ? "none" : "1.5px solid #FFFFFF",
                     color: localSelectedMethod ? "#000000" : "#FFFFFF",
-                    fontSize: "12px",
+                    fontSize: "14px",
                     alignSelf: "center",
                     cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",
                     outline: "none",
