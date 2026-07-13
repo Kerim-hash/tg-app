@@ -306,7 +306,14 @@ export default function TMA() {
           isPremium: profile.is_premium || profile.isPremium || false,
           activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
           expiration: profile.expiration,
+          paymentMethodSaved: profile.payment_method_saved || profile.paymentMethodSaved || false,
         });
+
+        const hasActivePlan = profile.expiration && !isNaN(new Date(profile.expiration).getTime()) && new Date(profile.expiration) > new Date();
+        if (hasActivePlan) {
+          safeStorage.setItem("iguard_onboarding_completed", "true");
+          setShowOnboarding(false);
+        }
       }
     } catch (err) {
       console.error("[IGuard] Profile fetch error:", err);
@@ -373,6 +380,12 @@ export default function TMA() {
     try {
       WebApp.ready();
       WebApp.expand();
+      try {
+        if (WebApp.setHeaderColor) WebApp.setHeaderColor("#000000");
+        if (WebApp.setBackgroundColor) WebApp.setBackgroundColor("#000000");
+      } catch (err) {
+        console.warn("Failed to set WebApp colors:", err);
+      }
       setLanguage(getDefaultLanguage());
       tgUser = WebApp.initDataUnsafe?.user;
       rawInitData = WebApp.initData;
@@ -434,10 +447,10 @@ export default function TMA() {
     const detected = detectCampaign();
     setCampaign(detected);
 
-    const completed = safeStorage.getItem("iguard_onboarding_completed");
-    if (completed !== "true") {
-      setShowOnboarding(true);
-    }
+    // const completed = safeStorage.getItem("iguard_onboarding_completed");
+    // if (completed !== "true") {
+    //   setShowOnboarding(true);
+    // }
   }, []);
 
 
@@ -486,6 +499,10 @@ export default function TMA() {
             };
           });
           setPlans(mappedPlans);
+          const yearlyPlan = mappedPlans.find((p) => p.periodMonths === 12);
+          if (yearlyPlan) {
+            setSelectedPlan(yearlyPlan);
+          }
         }
       })
       .catch((err) => {
@@ -877,6 +894,7 @@ export default function TMA() {
               billingRegion={billingRegion}
               onBillingRegionChange={handleBillingRegionChange}
               paymentMethods={paymentMethods}
+              onRefreshProfile={refreshUserData}
             />
           </div>
         )}
@@ -897,6 +915,7 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               paymentMethods={paymentMethods}
               expiration={user.expiration}
+              paymentMethodSaved={user.paymentMethodSaved}
             />
           </div>
         )}
@@ -916,8 +935,8 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               onDropdownOpenChange={setIsDropdownOpen}
               onResetOnboarding={() => {
-                safeStorage.removeItem("iguard_onboarding_completed");
-                setShowOnboarding(true);
+                // safeStorage.removeItem("iguard_onboarding_completed");
+                // setShowOnboarding(true);
               }}
             />
           </div>
@@ -941,8 +960,8 @@ export default function TMA() {
         currentTab={currentTab}
         isVisible={isNavbarVisible && !isDropdownOpen}
         onResetOnboarding={() => {
-          safeStorage.removeItem("iguard_onboarding_completed");
-          setShowOnboarding(true);
+          // safeStorage.removeItem("iguard_onboarding_completed");
+          // setShowOnboarding(true);
         }}
         triggerHaptic={triggerHaptic}
         onTabChange={(tab) => {

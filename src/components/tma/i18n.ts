@@ -21,6 +21,11 @@ const en: Translations = {
     billedMonthly: "Billed Monthly",
     billedYearly: "Billed Yearly",
     secureFor: "Secure for",
+    autoRenewalActive: "AUTO-RENEWAL ACTIVE",
+    autoRenewalDesc: "Your subscription will renew automatically.",
+    unsubscribeBtn: "CANCEL AUTO-PAYMENT",
+    unsubscribeConfirm: "Are you sure you want to cancel auto-payments?",
+    unsubscribeSuccess: "Auto-renewal cancelled successfully.",
   },
   payment: {
     selectMethod: "Select a payment method",
@@ -131,6 +136,18 @@ const en: Translations = {
     needHelp: "Need additional help?",
     contactSupport: "CONTACT SUPPORT",
   },
+  successPayment: {
+    title: "Payment Successful!",
+    subtitle: "Your subscription has been activated successfully. You can now use all features of the application without restrictions.",
+    backBtn: "Return to App",
+    closeBtn: "Close",
+  },
+  reject: {
+    title: "Payment Failed",
+    subtitle: "Unfortunately, your payment could not be processed. Please check your card details or try another payment method.",
+    backBtn: "Try Again",
+    closeBtn: "Close",
+  },
   loading: "Securing Connection...",
   onboarding: {
     welcome: "Welcome",
@@ -182,6 +199,7 @@ const en: Translations = {
     everythingInOnePlace: "Everything in one place",
     quickReference: "A quick reference you'll come back to",
     swipeToStart: "SWIPE TO START",
+    startBtn: "START",
   },
 };
 
@@ -206,6 +224,11 @@ const ru: Translations = {
     billedMonthly: "Оплата помесячно",
     billedYearly: "Оплата ежегодно",
     secureFor: "Защищено на",
+    autoRenewalActive: "АВТОПРОДЛЕНИЕ АКТИВНО",
+    autoRenewalDesc: "Ваша подписка продлевается автоматически.",
+    unsubscribeBtn: "ОТМЕНИТЬ АВТОПРОДЛЕНИЕ",
+    unsubscribeConfirm: "Вы уверены, что хотите отменить автопродление?",
+    unsubscribeSuccess: "Автопродление успешно отменено.",
   },
   payment: {
     selectMethod: "Выберите способ оплаты",
@@ -316,6 +339,18 @@ const ru: Translations = {
     needHelp: "Нужна дополнительная помощь?",
     contactSupport: "СВЯЗАТЬСЯ С ПОДДЕРЖКОЙ",
   },
+  successPayment: {
+    title: "Оплата прошла успешно!",
+    subtitle: "Ваша подписка успешно активирована. Теперь вы можете пользоваться всеми функциями приложения без ограничений.",
+    backBtn: "Вернуться в приложение",
+    closeBtn: "Закрыть",
+  },
+  reject: {
+    title: "Ошибка оплаты",
+    subtitle: "К сожалению, ваш платёж не был обработан. Пожалуйста, проверьте данные карты или попробуйте другой способ оплаты.",
+    backBtn: "Попробовать снова",
+    closeBtn: "Закрыть",
+  },
   loading: "Защищаем соединение...",
   onboarding: {
     welcome: "Welcome",
@@ -367,6 +402,7 @@ const ru: Translations = {
     everythingInOnePlace: "Всё в одном месте",
     quickReference: "Быстрый доступ, к которому вы будете возвращаться",
     swipeToStart: "ПРОВЕДИТЕ ДЛЯ СТАРТА",
+    startBtn: "НАЧАТЬ",
   },
 };
 
@@ -391,6 +427,11 @@ const uz: Translations = {
     billedMonthly: "Oylik to'lov",
     billedYearly: "Yillik to'lov",
     secureFor: "Himoyalangan",
+    autoRenewalActive: "AVTOMATIK UZAYTIRISH FAOL",
+    autoRenewalDesc: "Obunangiz avtomatik ravishda uzaytiriladi.",
+    unsubscribeBtn: "AVTO-TO'LOVNI BEKOR QILISH",
+    unsubscribeConfirm: "Avtomatik to'lovni bekor qilishni xohlaysizmi?",
+    unsubscribeSuccess: "Avtomatik to'lov muvaffaqiyatli bekor qilindi.",
   },
   payment: {
     selectMethod: "To'lov usulini tanlang",
@@ -501,6 +542,18 @@ const uz: Translations = {
     needHelp: "Qo'shimcha yordam kerakmi?",
     contactSupport: "QO'LLAB-QUVVATLASH XIZMATIGA MUROJAAT QILISH",
   },
+  successPayment: {
+    title: "To'lov muvaffaqiyatli!",
+    subtitle: "Obunangiz muvaffaqiyatli faollashtirildi. Endi siz dasturning barcha funksiyalaridan cheklovlarsiz foydalanishingiz mumkin.",
+    backBtn: "Ilovaga qaytish",
+    closeBtn: "Yopish",
+  },
+  reject: {
+    title: "To'lovda xatolik",
+    subtitle: "Afsuski, to'lovingiz amalga oshirilmadi. Iltimos, karta ma'lumotlarini tekshiring yoki boshqa to'lov usulini sinab ko'ring.",
+    backBtn: "Qayta urinib ko'rish",
+    closeBtn: "Yopish",
+  },
   loading: "Ulanish xavfsizligi ta'minlanyapti...",
   onboarding: {
     welcome: "Xush kelibsiz",
@@ -552,6 +605,7 @@ const uz: Translations = {
     everythingInOnePlace: "Hammasi bir joyda",
     quickReference: "Siz hali ko'p qaytadigan tezkor ma'lumotnoma",
     swipeToStart: "BOSHLASH UCHUN SURING",
+    startBtn: "BOSHLASH",
   },
 };
 
@@ -576,6 +630,11 @@ const by: Translations = {
     billedMonthly: "Аплата штомесяц",
     billedYearly: "Аплата штогод",
     secureFor: "Абаронена на",
+    autoRenewalActive: "АЎТАПАДАЎЖЭННЕ АКТЫЎНА",
+    autoRenewalDesc: "Ваша падпіска падаўжаецца аўтаматычна.",
+    unsubscribeBtn: "ОТМЕНИТЬ АЎТАПЛАЦЁЖ",
+    unsubscribeConfirm: "Вы ўпэўнены, што хочаце адмяніць аўтападаўжэнне?",
+    unsubscribeSuccess: "Аўтападаўжэнне паспяхова адменена.",
   },
   payment: {
     selectMethod: "Абярыце спосаб аплаты",
@@ -686,6 +745,18 @@ const by: Translations = {
     needHelp: "Патрэбна дадатковая дапамога?",
     contactSupport: "ЗВЯРНУЦЦА Ў ПАДТРЫМКУ",
   },
+  successPayment: {
+    title: "Аплата прайшла паспяхова!",
+    subtitle: "Ваша падпіска паспяхова актываваная. Цяпер вы можаце карыстацца ўсімі функцыямі дадатку без абмежаванняў.",
+    backBtn: "Вярнуцца ў дадатак",
+    closeBtn: "Зачыніць",
+  },
+  reject: {
+    title: "Памылка аплаты",
+    subtitle: "На жаль, ваш плацёж не быў апрацаваны. Калі ласка, праверце дадзеныя карты або паспрабуйце іншы спосаб аплаты.",
+    backBtn: "Паспрабаваць зноў",
+    closeBtn: "Зачыніць",
+  },
   loading: "Абараняем злучэнне...",
   onboarding: {
     welcome: "Welcome",
@@ -737,6 +808,7 @@ const by: Translations = {
     everythingInOnePlace: "Усё ў адным месцы",
     quickReference: "Хуткі доступ, да якога вы будзеце вяртацца",
     swipeToStart: "ПРАВЯДЗІЦЕ ДЛЯ СТАРТУ",
+    startBtn: "ПАЧАЦЬ",
   },
 };
 

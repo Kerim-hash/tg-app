@@ -130,12 +130,17 @@ export default function PaymentScreen({
             <button
               key={method.id}
               onClick={() => {
-                triggerHaptic("light");
-                trackEvent("payment_method_selected", { method: method.id, amount: plan.usdTotal, currency: "USD" });
-                apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
-                  console.error("Failed to track payment_method_selected event on backend:", err);
-                });
-                onSelectMethod(method.id);
+                if (selectedMethod === method.id) {
+                  triggerHaptic("success");
+                  onProceed();
+                } else {
+                  triggerHaptic("light");
+                  trackEvent("payment_method_selected", { method: method.id, amount: plan.usdTotal, currency: "USD" });
+                  apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                    console.error("Failed to track payment_method_selected event on backend:", err);
+                  });
+                  onSelectMethod(method.id);
+                }
               }}
               style={{
                 width: "100%",

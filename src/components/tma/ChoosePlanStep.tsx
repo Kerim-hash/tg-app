@@ -132,11 +132,19 @@ export default function ChoosePlanStep({
             <div
               key={plan.id}
               onClick={() => {
-                triggerHaptic("light");
-                setTempSelectedPlanId(plan.id);
-                const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
-                const priceVal = plan.usdTotal ?? 0;
-                trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
+                if (tempSelectedPlanId === plan.id) {
+                  triggerHaptic("medium");
+                  trackEvent("onboarding_plans_cta_clicked", { trigger: "double_click" });
+                  if (onSelectPlanForPayment) {
+                    onSelectPlanForPayment(plan.id);
+                  }
+                } else {
+                  triggerHaptic("light");
+                  setTempSelectedPlanId(plan.id);
+                  const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
+                  const priceVal = plan.usdTotal ?? 0;
+                  trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
+                }
               }}
               className="w-full h-[170px] rounded-[45px] relative cursor-pointer overflow-hidden select-none"
             >
@@ -156,9 +164,16 @@ export default function ChoosePlanStep({
                 enableHoverScale={false}
                 absoluteChildren={true}
               >
-                {/* White Border Overlay when Selected */}
+                {/* Border and Checkmark Icon Overlay when Selected */}
                 {isActive && (
-                  <div className="absolute inset-0 border-2 border-white rounded-[45px] pointer-events-none z-30" />
+                  <>
+                    <div className="absolute inset-0 border-2 border-[#6C63FF] rounded-[45px] pointer-events-none z-30" />
+                    <div className="absolute top-4.5 right-4.5 w-[20px] h-[20px] rounded-full bg-[#6C63FF] flex items-center justify-center pointer-events-none z-30 shadow-sm shadow-[#6C63FF]/30">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                  </>
                 )}
 
                 <div className="absolute inset-0 flex flex-col justify-between p-4 px-3 pb-5 z-20 pointer-events-none box-border text-center items-center">
@@ -213,8 +228,9 @@ export default function ChoosePlanStep({
             </div>
 
             {/* SELECT AND BUY Button */}
-            <div className="flex justify-center mt-6 w-full">
+            <div className="flex flex-col items-center mt-6 w-full relative group">
               <button
+                disabled={!tempSelectedPlanId}
                 onClick={() => {
                   if (!tempSelectedPlanId) {
                     triggerHaptic("warning");
@@ -226,9 +242,9 @@ export default function ChoosePlanStep({
                     onSelectPlanForPayment(tempSelectedPlanId);
                   }
                 }}
-                className={`cursor-pointer font-mono text-[14px] px-4 py-3 rounded-[12px] transition-all duration-250 ease-in-out ${selectedPlan
-                  ? "bg-white text-black border-none"
-                  : "bg-transparent text-white border border-white/30"
+                className={`font-mono text-[14px] px-4 py-3 rounded-[12px] transition-all duration-250 ease-in-out ${tempSelectedPlanId
+                  ? "bg-white text-black cursor-pointer hover:bg-white/90 border-none"
+                  : "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed"
                   }`}
               >
                 {selectedPlan
@@ -238,13 +254,19 @@ export default function ChoosePlanStep({
                   ).toUpperCase()
                   : t.onboarding.selectAndBuy.toUpperCase()}
               </button>
+              {!tempSelectedPlanId && (
+                <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+                </div>
+              )}
             </div>
           </>
         ) : (
           <>
             {/* SELECT AND BUY Button */}
-            <div className="flex justify-center mt-7.5 w-full">
+            <div className="flex flex-col items-center mt-7.5 w-full relative group">
               <button
+                disabled={!tempSelectedPlanId}
                 onClick={() => {
                   if (!tempSelectedPlanId) {
                     triggerHaptic("warning");
@@ -256,9 +278,9 @@ export default function ChoosePlanStep({
                     onSelectPlanForPayment(tempSelectedPlanId);
                   }
                 }}
-                className={`cursor-pointer font-mono text-[14px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${selectedPlan
-                  ? "bg-white text-black border-none"
-                  : "bg-white/2 text-white border border-white/20"
+                className={`font-mono text-[14px] px-6 py-2.5 rounded-[14px] transition-all duration-250 ease-in-out ${tempSelectedPlanId
+                  ? "bg-white text-black cursor-pointer hover:bg-white/90 border-none"
+                  : "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed"
                   }`}
               >
                 {selectedPlan
@@ -268,6 +290,11 @@ export default function ChoosePlanStep({
                   ).toUpperCase()
                   : t.onboarding.selectAndBuy.toUpperCase()}
               </button>
+              {!tempSelectedPlanId && (
+                <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+                </div>
+              )}
             </div>
 
             {campaign === "gaming" && (

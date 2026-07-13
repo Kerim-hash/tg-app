@@ -61,30 +61,24 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
 }
 
 const SERVERS_ROW1 = [
-  { name: "Russia", flag: "🇷🇺" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Austria", flag: "🇦🇹" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Kazahstan", flag: "🇰🇿" },
   { name: "Albania", flag: "🇦🇱" },
+  { name: "Austria", flag: "🇦🇹" },
+  { name: "Canada", flag: "🇨🇦" },
+  { name: "France", flag: "🇫🇷" },
 ];
 
 const SERVERS_ROW2 = [
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Netherlands", flag: "🇳🇱" },
-  { name: "Singapore", flag: "🇸🇬" },
-  { name: "Armenia", flag: "🇦🇲" },
-  { name: "France", flag: "🇫🇷" },
   { name: "Germany", flag: "🇩🇪" },
+  { name: "Italy", flag: "🇮🇹" },
+  { name: "Singapore", flag: "🇸🇬" },
+  { name: "Spain", flag: "🇪🇸" },
 ];
 
 const SERVERS_ROW3 = [
-  { name: "Armenia", flag: "🇦🇲" },
-  { name: "USA", flag: "🇺🇸" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Sweden", flag: "🇸🇪" },
+  { name: "Thailand", flag: "🇹🇭" },
   { name: "Turkey", flag: "🇹🇷" },
-  { name: "Albania", flag: "🇦🇱" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "United States", flag: "🇺🇸" },
 ];
 
 interface HomeScreenProps {
@@ -101,6 +95,7 @@ interface HomeScreenProps {
   billingRegion: string;
   onBillingRegionChange: (region: string) => void;
   paymentMethods?: any[];
+  onRefreshProfile?: () => Promise<void>;
 }
 
 const REGION_OPTIONS = [
@@ -123,12 +118,14 @@ export default function HomeScreen({
   billingRegion,
   onBillingRegionChange,
   paymentMethods = [],
+  onRefreshProfile,
 }: HomeScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [isPlanSheetOpen, setIsPlanSheetOpen] = useState(false);
   const [isKeySheetOpen, setIsKeySheetOpen] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [isUnsubscribing, setIsUnsubscribing] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
@@ -150,10 +147,16 @@ export default function HomeScreen({
   }, [sheetRegionDropdownOpen]);
 
   const getRegionLabel = (val: string) => {
-    if (val === "UZB") return t.payment.regionUZB;
-    if (val === "BY") return t.payment.regionBY;
-    return t.payment.regionUAE;
+    if (val === "UZB") return "🇺🇿 UZ UZB";
+    if (val === "BY") return "🇧🇾 BY BY";
+    return "🇦🇪 AE UAE";
   };
+
+  useEffect(() => {
+    if (isPaymentSheetOpen && !billingRegion) {
+      setSheetRegionDropdownOpen(true);
+    }
+  }, [isPaymentSheetOpen, billingRegion]);
 
   useEffect(() => {
     if (billingRegion) {
@@ -210,7 +213,7 @@ export default function HomeScreen({
   return (
     <div
       style={{
-        padding: "50px 16px 24px",
+        padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 24px",
         display: "flex",
         flexDirection: "column",
         gap: "20px",
@@ -445,8 +448,12 @@ export default function HomeScreen({
           {t.home.connectDevice.toUpperCase()}
         </button>
         <button
-          className="hover-scale-btn"
+          className={user.paymentMethodSaved ? "" : "hover-scale-btn"}
           onClick={() => {
+            if (user.paymentMethodSaved) {
+              triggerHaptic("warning");
+              return;
+            }
             triggerHaptic("medium");
             if (user.activePlan) {
               const daysLeft = user.activePlan.daysLeft || 0;
@@ -463,16 +470,18 @@ export default function HomeScreen({
             flex: 0.75,
             padding: "10px 15px",
             borderRadius: "14px",
-            background: "#fff",
-            border: "none",
-            color: "#000",
+            background: user.paymentMethodSaved ? "transparent" : "#fff",
+            border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
+            color: user.paymentMethodSaved ? "rgba(255, 255, 255, 0.35)" : "#000",
             fontSize: "14px",
-            cursor: "pointer",
+            cursor: user.paymentMethodSaved ? "default" : "pointer",
             whiteSpace: "nowrap",
             fontFamily: "var(--font-mono), monospace",
           }}
         >
-          {(hasActivePlan ? t.home.extendPlan : t.home.buyPlan).toUpperCase()}
+          {user.paymentMethodSaved
+            ? t.home.autoRenewalActive.toUpperCase()
+            : (hasActivePlan ? t.home.extendPlan : t.home.buyPlan).toUpperCase()}
         </button>
       </div>
 
@@ -486,172 +495,274 @@ export default function HomeScreen({
         }}
       />
 
-      {/* Choose a plan (HomeScreen embedded preview) */}
-      <div
-        id="plans-section"
-        className="animate-fade-in-up"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "30px",
-          width: "100%",
-          animationDelay: "400ms",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: "24px", color: "#fff", margin: "0 0 6px" }}>
-            {t.home.choosePlan}
-          </h2>
-          <p style={{ fontSize: "16px", color: "#666666", margin: 0 }}>{t.home.moneyBack}</p>
+      {/* Choose a plan (HomeScreen embedded preview) or Unsubscribe Interface */}
+      {user.paymentMethodSaved ? (
+        <div
+          id="unsubscribe-section"
+          className="animate-fade-in-up flex flex-col gap-6 w-full p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.08] box-border items-center text-center"
+          style={{ animationDelay: "400ms" }}
+        >
+          <div className="w-14 h-14 rounded-full bg-[#00D1FF]/10 flex items-center justify-center mb-1">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 6L9 17L4 12" stroke="#00D1FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+
+          <div>
+            <h2 className="text-[20px] text-white m-0 mb-2">
+              {t.home.autoRenewalActive}
+            </h2>
+            <p className="text-[14px] text-white/45 m-0 leading-normal">
+              {t.home.autoRenewalDesc}
+            </p>
+          </div>
+
+          <button
+            className="hover-scale-btn w-full h-[50px] rounded-2xl bg-transparent border border-[#FF4D4F]/30 text-[#FF4D4F] text-[13px] font-semibold font-mono uppercase flex items-center justify-center gap-2 transition-all duration-250 ease-in-out"
+            onClick={async () => {
+              const confirmUnsubscribe = window.confirm(t.home.unsubscribeConfirm);
+              if (!confirmUnsubscribe) return;
+
+              triggerHaptic("medium");
+              setIsUnsubscribing(true);
+              try {
+                await apiCall("/payment/unsubscribe", "POST");
+                triggerHaptic("success");
+                alert(t.home.unsubscribeSuccess);
+                if (onRefreshProfile) {
+                  await onRefreshProfile();
+                }
+              } catch (err: any) {
+                triggerHaptic("warning");
+                console.error("Failed to unsubscribe:", err);
+                alert(err.message || "Unsubscribe failed. Please try again.");
+              } finally {
+                setIsUnsubscribing(false);
+              }
+            }}
+            disabled={isUnsubscribing}
+            style={{ cursor: isUnsubscribing ? "default" : "pointer" }}
+          >
+            {isUnsubscribing ? (
+              <span className="animate-pulse">PROCESSING...</span>
+            ) : (
+              t.home.unsubscribeBtn
+            )}
+          </button>
         </div>
+      ) : (
+        <div
+          id="plans-section"
+          className="animate-fade-in-up"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "30px",
+            width: "100%",
+            animationDelay: "400ms",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <h2 style={{ fontSize: "24px", color: "#fff", margin: "0 0 6px" }}>
+              {t.home.choosePlan}
+            </h2>
+            <p style={{ fontSize: "16px", color: "#666666", margin: 0 }}>{t.home.moneyBack}</p>
+          </div>
 
 
-        {/* Plan cards selector inside Main Screen — GradientBlock Figma Spec */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", width: "100%" }}>
-          {plans.map((plan) => {
-            const isYearly = plan.periodMonths === 12;
-            const isActive = selectedPlan?.id === plan.id;
+          {/* Plan cards selector inside Main Screen — GradientBlock Figma Spec */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", width: "100%" }}>
+            {plans.map((plan) => {
+              const isYearly = plan.periodMonths === 12;
+              const isActive = selectedPlan?.id === plan.id;
 
-            return (
-              <button
-                key={plan.id}
-                onClick={() => {
-                  triggerHaptic("light");
-                  trackEvent("plan_card_selected", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
-                  onSelectPlan(plan);
-                }}
-                style={{
-                  width: "100%",
-                  height: "170px",
-                  borderRadius: "45px",
-                  position: "relative",
-                  cursor: "pointer",
-                  border: "none",
-                  outline: "none",
-                  overflow: "hidden",
-                  background: "transparent",
-                  padding: 0,
-                }}
-              >
-
-                <GradientBlock
-                  label=""
-                  primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
-                  secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                  baseColor={isYearly ? "#5B1B85" : "#08090a"}
-                  borderRadius="45px"
-                  height="100%"
-                  animate={isYearly}
-                  glowIntensity={isYearly ? .3 : 0.5}
-                  borderGlow={true}
-                  solidGradient={isYearly ? "#5B1B85" : undefined}
-                  solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
-                  absoluteChildren={true}
-                  enableHoverScale={false}
+              return (
+                <button
+                  key={plan.id}
+                  onClick={() => {
+                    if (user.paymentMethodSaved) {
+                      triggerHaptic("warning");
+                      return;
+                    }
+                    if (selectedPlan?.id === plan.id) {
+                      triggerHaptic("medium");
+                      setLocalSelectedMethod(null);
+                      setIsPaymentSheetOpen(true);
+                    } else {
+                      triggerHaptic("light");
+                      trackEvent("plan_card_selected", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
+                      onSelectPlan(plan);
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    height: "170px",
+                    borderRadius: "45px",
+                    position: "relative",
+                    cursor: user.paymentMethodSaved ? "default" : "pointer",
+                    border: "none",
+                    outline: "none",
+                    overflow: "hidden",
+                    background: "transparent",
+                    padding: 0,
+                    opacity: user.paymentMethodSaved ? 0.5 : 1,
+                    transition: "opacity 0.2s ease",
+                  }}
                 >
-                  {/* White Border Overlay when Selected */}
-                  {isActive && (
+
+                  <GradientBlock
+                    label=""
+                    primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
+                    secondaryColor={isYearly ? "#7F96D0" : "#606768"}
+                    baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                    borderRadius="45px"
+                    height="100%"
+                    animate={isYearly}
+                    glowIntensity={isYearly ? .3 : 0.5}
+                    borderGlow={true}
+                    solidGradient={isYearly ? "#5B1B85" : undefined}
+                    solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
+                    absoluteChildren={true}
+                    enableHoverScale={false}
+                  >
+                    {/* Border and Checkmark Icon Overlay when Selected */}
+                    {isActive && (
+                      <>
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            border: "2px solid #6C63FF",
+                            borderRadius: "45px",
+                            pointerEvents: "none",
+                            zIndex: 30,
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "16px",
+                            right: "16px",
+                            width: "20px",
+                            height: "20px",
+                            borderRadius: "50%",
+                            background: "#6C63FF",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                            zIndex: 30,
+                          }}
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Overlay Content */}
                     <div
                       style={{
                         position: "absolute",
                         inset: 0,
-                        border: "1px solid #FFFFFF",
-                        borderRadius: "45px",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        padding: "15px 12px 22px",
                         pointerEvents: "none",
-                        zIndex: 30,
-                      }}
-                    />
-                  )}
-
-                  {/* Overlay Content */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      padding: "15px 12px 22px",
-                      pointerEvents: "none",
-                      boxSizing: "border-box",
-                      textAlign: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: "inline-block",
-                        fontSize: "12px",
-                        padding: "6px 8px",
-                        borderRadius: "20px",
-                        background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
-                        color: "#fff",
-                        fontFamily: "JetBrains Mono, monospace",
-                        textTransform: "capitalize"
+                        boxSizing: "border-box",
+                        textAlign: "center",
+                        alignItems: "center",
                       }}
                     >
-                      {getPlanLabelText(plan.periodMonths, language)}
-                    </span>
-                    <div>
-                      <span style={{
-                        display: "block",
-                        fontSize: language === "ru" || language === "by" ? "20px" : "24px",
-                        color: "#fff",
-                        lineHeight: 1.1,
-                      }}>
-                        {`$ ${plan.usdPerMonth.toFixed(2)}`}
+                      <span
+                        style={{
+                          display: "inline-block",
+                          fontSize: "12px",
+                          padding: "6px 8px",
+                          borderRadius: "20px",
+                          background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
+                          color: "#fff",
+                          fontFamily: "JetBrains Mono, monospace",
+                          textTransform: "capitalize"
+                        }}
+                      >
+                        {getPlanLabelText(plan.periodMonths, language)}
                       </span>
-                      <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
-                        {t.home.perMonth}
+                      <div>
+                        <span style={{
+                          display: "block",
+                          fontSize: language === "ru" || language === "by" ? "20px" : "24px",
+                          color: "#fff",
+                          lineHeight: 1.1,
+                        }}>
+                          {`$ ${plan.usdPerMonth.toFixed(2)}`}
+                        </span>
+                        <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
+                          {t.home.perMonth}
+                        </span>
+                      </div>
+                      <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
+                        {getBilledFrequencyText(plan.periodMonths, language, t)}
                       </span>
                     </div>
-                    <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
-                      {getBilledFrequencyText(plan.periodMonths, language, t)}
-                    </span>
-                  </div>
-                </GradientBlock>
-              </button>
-            );
-          })}
-        </div>
+                  </GradientBlock>
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Action Buy Button below cards */}
-        <button
-          onClick={() => {
-            triggerHaptic("medium");
-            if (selectedPlan) {
-              setLocalSelectedMethod(null);
-              setIsPaymentSheetOpen(true);
-            } else {
-              const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
-              onSelectPlan(yearlyPlan);
-              setLocalSelectedMethod(null);
-              setTimeout(() => setIsPaymentSheetOpen(true), 100);
-            }
-          }}
-          style={{
-            padding: "10px 15px",
-            borderRadius: "14px",
-            background: selectedPlan ? "#FFFFFF" : "transparent",
-            border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
-            color: selectedPlan ? "#000000" : "#FFFFFF",
-            fontSize: "14px",
-            alignSelf: "center",
-            cursor: "pointer",
-            outline: "none",
-            textTransform: "uppercase",
-            fontFamily: "JetBrains Mono, monospace",
-            transition: "all 0.25s ease",
-          }}
-        >
-          {selectedPlan
-            ? t.home.buyFor(
-              `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-              selectedPlan.starsPrice
-            )
-            : t.onboarding.selectAndBuy.toUpperCase()}
-        </button>
-      </div>
+          {/* Action Buy Button below cards */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+            <button
+              className={user.paymentMethodSaved ? "" : (selectedPlan ? "hover-scale-btn" : "")}
+              disabled={!user.paymentMethodSaved && !selectedPlan}
+              onClick={() => {
+                if (user.paymentMethodSaved) {
+                  triggerHaptic("warning");
+                  return;
+                }
+                if (!selectedPlan) {
+                  triggerHaptic("warning");
+                  return;
+                }
+                triggerHaptic("medium");
+                setLocalSelectedMethod(null);
+                setIsPaymentSheetOpen(true);
+              }}
+              style={{
+                padding: "10px 15px",
+                borderRadius: "14px",
+                background: user.paymentMethodSaved ? "transparent" : (selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)"),
+                border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : (selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)"),
+                color: user.paymentMethodSaved ? "rgba(255, 255, 255, 0.35)" : (selectedPlan ? "#000000" : "rgba(255, 255, 255, 0.3)"),
+                fontSize: "14px",
+                cursor: (user.paymentMethodSaved || !selectedPlan) ? "default" : "pointer",
+                outline: "none",
+                textTransform: "uppercase",
+                fontFamily: "JetBrains Mono, monospace",
+                transition: "all 0.25s ease",
+                opacity: user.paymentMethodSaved ? 0.5 : 1,
+              }}
+            >
+              {user.paymentMethodSaved
+                ? t.home.autoRenewalActive.toUpperCase()
+                : (selectedPlan
+                    ? t.home.buyFor(
+                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                      selectedPlan.starsPrice
+                    )
+                    : t.onboarding.selectAndBuy.toUpperCase())}
+            </button>
+            {!user.paymentMethodSaved && !selectedPlan && (
+              <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Servers with continuous marquee horizontal ticker */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "40px" }}>
@@ -688,7 +799,7 @@ export default function HomeScreen({
           {/* Row 1: Left to Right */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "home-marquee-ltr 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
+              {[...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
                 <span
                   key={`r1-${idx}`}
                   style={{
@@ -712,7 +823,7 @@ export default function HomeScreen({
           {/* Row 2: Right to Left */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "home-marquee-rtl 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
+              {[...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
                 <span
                   key={`r2-${idx}`}
                   style={{
@@ -736,7 +847,7 @@ export default function HomeScreen({
           {/* Row 3: Left to Right */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "home-marquee-ltr 22s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
+              {[...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
                 <span
                   key={`r3-${idx}`}
                   style={{
@@ -849,18 +960,40 @@ export default function HomeScreen({
                         enableHoverScale={false}
                         absoluteChildren={true}
                       >
-                        {/* White Border Overlay when Selected */}
+                        {/* Border and Checkmark Icon Overlay when Selected */}
                         {isActive && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              inset: 0,
-                              border: "1px solid #FFFFFF",
-                              borderRadius: "36px",
-                              pointerEvents: "none",
-                              zIndex: 30,
-                            }}
-                          />
+                          <>
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                border: "2px solid #6C63FF",
+                                borderRadius: "36px",
+                                pointerEvents: "none",
+                                zIndex: 30,
+                              }}
+                            />
+                            <div
+                              style={{
+                                position: "absolute",
+                                top: "16px",
+                                right: "16px",
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "50%",
+                                background: "#6C63FF",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                pointerEvents: "none",
+                                zIndex: 30,
+                              }}
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          </>
                         )}
 
                         {/* Overlay Content */}
@@ -914,47 +1047,45 @@ export default function HomeScreen({
                 })}
               </div>
 
-              <button
-                onClick={() => {
-                  triggerHaptic("medium");
-                  if (selectedPlan) {
-                    trackEvent("select_and_continue_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
-                    setIsPlanSheetOpen(false);
-                    setLocalSelectedMethod(null);
-                    setIsPaymentSheetOpen(true);
-                  } else {
-                    const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
-                    trackEvent("select_and_continue_tapped", { plan: yearlyPlan.periodMonths === 1 ? "30_days" : "1_year", price: yearlyPlan.starsPrice || yearlyPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
-                    onSelectPlan(yearlyPlan);
-                    setLocalSelectedMethod(null);
-                    setTimeout(() => {
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+                <button
+                  disabled={!selectedPlan}
+                  onClick={() => {
+                    triggerHaptic("medium");
+                    if (selectedPlan) {
+                      trackEvent("select_and_continue_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
                       setIsPlanSheetOpen(false);
+                      setLocalSelectedMethod(null);
                       setIsPaymentSheetOpen(true);
-                    }, 100);
-                  }
-                }}
-                style={{
-                  width: "280px",
-                  padding: "10px 15px",
-                  borderRadius: "14px",
-                  background: selectedPlan ? "#FFFFFF" : "transparent",
-                  border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
-                  color: selectedPlan ? "#000000" : "#FFFFFF",
-                  fontSize: "12px",
-                  alignSelf: "center",
-                  cursor: "pointer",
-                  outline: "none",
-                  fontFamily: "var(--font-mono), monospace",
-                  transition: "all 0.25s ease",
-                }}
-              >
-                {selectedPlan
-                  ? t.home.buyFor(
-                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                    selectedPlan.starsPrice
-                  )
-                  : t.onboarding.selectAndBuy.toUpperCase()}
-              </button>
+                    }
+                  }}
+                  style={{
+                    width: "280px",
+                    padding: "10px 15px",
+                    borderRadius: "14px",
+                    background: selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)",
+                    border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+                    color: selectedPlan ? "#000000" : "rgba(255, 255, 255, 0.3)",
+                    fontSize: "12px",
+                    cursor: selectedPlan ? "pointer" : "default",
+                    outline: "none",
+                    fontFamily: "var(--font-mono), monospace",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  {selectedPlan
+                    ? t.home.buyFor(
+                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                      selectedPlan.starsPrice
+                    ).toUpperCase()
+                    : t.onboarding.selectAndBuy.toUpperCase()}
+                </button>
+                {!selectedPlan && (
+                  <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </>,
@@ -1225,7 +1356,7 @@ export default function HomeScreen({
             {!billingRegion ? (
               <>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", fontWeight: 700 }}>
+                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", }}>
                     {t.payment.confirmBillingFirst}
                   </h2>
                 </div>
@@ -1273,7 +1404,7 @@ export default function HomeScreen({
                             <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
                               {t.payment.billingRegion}
                             </span>
-                            <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                            <span style={{ display: "block", fontSize: "15px",  color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
                               {getRegionLabel(tempRegion)}
                             </span>
                           </div>
@@ -1329,7 +1460,7 @@ export default function HomeScreen({
                             <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
                               {t.payment.billingRegion}
                             </span>
-                            <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
+                            <span style={{ display: "block", fontSize: "15px", color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
                               {getRegionLabel(tempRegion)}
                             </span>
                           </div>
@@ -1364,7 +1495,6 @@ export default function HomeScreen({
                                   outline: "none",
                                   cursor: "pointer",
                                   fontSize: "15px",
-                                  fontWeight: isActive ? 700 : 500,
                                   color: isActive ? "#40D1FD" : "#fff",
                                   transition: "color 0.2s ease",
                                   fontFamily: "var(--font-onest), sans-serif",
@@ -1398,7 +1528,6 @@ export default function HomeScreen({
                     cursor: "pointer",
                     outline: "none",
                     fontFamily: "var(--font-mono), monospace",
-                    fontWeight: 700,
                     marginTop: "10px",
                     display: "flex",
                     alignItems: "center",
@@ -1411,7 +1540,7 @@ export default function HomeScreen({
             ) : (
               <>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", fontWeight: 700 }}>
+                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif" }}>
                     {t.payment.selectMethod}
                   </h2>
                 </div>

@@ -68,6 +68,7 @@ const DICT: Record<string, {
   step2Text: string;
   needHelp: string;
   swipeToStart: string;
+  startBtn: string;
 }> = {
   en: {
     googlePlay: "Download Happ from Play Store",
@@ -84,6 +85,7 @@ const DICT: Record<string, {
     step2Text: "Pick a plan, pay with card, crypto or Stars",
     needHelp: "Need help? Check the Guide tab or contact support",
     swipeToStart: "SWIPE TO START",
+    startBtn: "START",
   },
   ru: {
     googlePlay: "Скачайте Happ в Google Play",
@@ -100,6 +102,7 @@ const DICT: Record<string, {
     step2Text: "Выберите тариф, оплатите картой, криптовалютой или Stars",
     needHelp: "Нужна помощь? Загляните в руководство или напишите в поддержку",
     swipeToStart: "ПРОВЕДИТЕ ДЛЯ СТАРТА",
+    startBtn: "НАЧАТЬ",
   },
   uz: {
     googlePlay: "Google Play'dan Happ ilovasini yuklab oling",
@@ -116,6 +119,7 @@ const DICT: Record<string, {
     step2Text: "Tarifni tanlang, karta, kriptovalyuta yoki Stars orqali to'lang",
     needHelp: "Yordam kerakmi? Qo'llanmaga qarang yoki yordam xizmatiga yozing",
     swipeToStart: "BOSHLASH UCHUN SURING",
+    startBtn: "BOSHLASH",
   },
   by: {
     googlePlay: "Спампуйце Happ у Google Play",
@@ -132,6 +136,7 @@ const DICT: Record<string, {
     step2Text: "Абярыце тарыф, аплаціце картай, крыптавалютай або Stars",
     needHelp: "Патрэбна дапамога? Зазірніце ў кіраўніцтва або напішыце ў падтрымку",
     swipeToStart: "ПРАВЯДЗІЦЕ ДЛЯ СТАРТУ",
+    startBtn: "ПАЧАЦЬ",
   }
 };
 
@@ -314,7 +319,7 @@ export default function SetupStep({
 
             <SwipeSlider
               onComplete={onComplete}
-              text={currentDict.swipeToStart}
+              text={currentDict.startBtn.toUpperCase()}
               triggerHaptic={triggerHaptic}
             />
           </div>
@@ -349,11 +354,19 @@ export default function SetupStep({
                       <div
                         key={plan.id}
                         onClick={() => {
-                          triggerHaptic("light");
-                          setTempSelectedPlanId(plan.id);
-                          const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
-                          const priceVal = plan.usdTotal ?? 0;
-                          trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
+                          if (tempSelectedPlanId === plan.id) {
+                            triggerHaptic("medium");
+                            trackEvent("onboarding_plans_cta_clicked", { trigger: "double_click" });
+                            if (onSelectPlanForPayment) {
+                              onSelectPlanForPayment(plan.id);
+                            }
+                          } else {
+                            triggerHaptic("light");
+                            setTempSelectedPlanId(plan.id);
+                            const planType = plan.periodMonths === 12 ? "1_year" : plan.periodMonths === 1 ? "30_days" : `${plan.periodMonths}_months`;
+                            const priceVal = plan.usdTotal ?? 0;
+                            trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
+                          }
                         }}
                         className="w-full h-[170px] rounded-[45px] relative cursor-pointer overflow-hidden select-none"
                       >
@@ -552,7 +565,7 @@ export default function SetupStep({
 
               <SwipeSlider
                 onComplete={onComplete}
-                text={currentDict.swipeToStart}
+                text={currentDict.startBtn.toUpperCase()}
                 triggerHaptic={triggerHaptic}
               />
             </div>

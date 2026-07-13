@@ -61,30 +61,24 @@ function getBilledFrequencyText(periodMonths: number, lang: string, t: any): str
 }
 
 const SERVERS_ROW1 = [
-  { name: "Russia", flag: "🇷🇺" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Austria", flag: "🇦🇹" },
-  { name: "Cheh Republic", flag: "🇨🇿" },
-  { name: "Kazahstan", flag: "🇰🇿" },
   { name: "Albania", flag: "🇦🇱" },
+  { name: "Austria", flag: "🇦🇹" },
+  { name: "Canada", flag: "🇨🇦" },
+  { name: "France", flag: "🇫🇷" },
 ];
 
 const SERVERS_ROW2 = [
-  { name: "Georgia", flag: "🇬🇪" },
-  { name: "Netherlands", flag: "🇳🇱" },
-  { name: "Singapore", flag: "🇸🇬" },
-  { name: "Armenia", flag: "🇦🇲" },
-  { name: "France", flag: "🇫🇷" },
   { name: "Germany", flag: "🇩🇪" },
+  { name: "Italy", flag: "🇮🇹" },
+  { name: "Singapore", flag: "🇸🇬" },
+  { name: "Spain", flag: "🇪🇸" },
 ];
 
 const SERVERS_ROW3 = [
-  { name: "Armenia", flag: "🇦🇲" },
-  { name: "USA", flag: "🇺🇸" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "Sweden", flag: "🇸🇪" },
+  { name: "Thailand", flag: "🇹🇭" },
   { name: "Turkey", flag: "🇹🇷" },
-  { name: "Albania", flag: "🇦🇱" },
-  { name: "Germany", flag: "🇩🇪" },
+  { name: "United States", flag: "🇺🇸" },
 ];
 interface GuideScreenProps {
   t: Translations;
@@ -100,6 +94,7 @@ interface GuideScreenProps {
   onBillingRegionChange: (region: string) => void;
   paymentMethods?: any[];
   expiration?: string;
+  paymentMethodSaved?: boolean;
 }
 
 const REGION_OPTIONS = [
@@ -192,6 +187,7 @@ export default function GuideScreen({
   onBillingRegionChange,
   paymentMethods = [],
   expiration,
+  paymentMethodSaved = false,
 }: GuideScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [copied, setCopied] = useState(false);
@@ -453,7 +449,7 @@ export default function GuideScreen({
   return (
     <div
       style={{
-        padding: "50px 16px 40px",
+        padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 40px",
         display: "flex",
         flexDirection: "column",
         gap: "24px",
@@ -637,8 +633,48 @@ export default function GuideScreen({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }} ref={step2Ref}>
-            {/* Interactive plan selection */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", width: "100%" }}>
+            {paymentMethodSaved ? (
+              <div
+                style={{
+                  width: "100%",
+                  borderRadius: "24px",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  background: "rgba(255, 255, 255, 0.02)",
+                  padding: "24px",
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "12px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "24px",
+                    background: "rgba(0, 209, 255, 0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="#00D1FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span style={{ fontSize: "16px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-mono), monospace" }}>
+                  {t.home.autoRenewalActive}
+                </span>
+                <span style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.4 }}>
+                  {t.home.autoRenewalDesc}
+                </span>
+              </div>
+            ) : (
+              <>
+                {/* Interactive plan selection */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", width: "100%" }}>
               {plans.map((plan) => {
                 const isYearly = plan.periodMonths === 12;
                 const isActive = selectedPlan?.id === plan.id;
@@ -679,18 +715,40 @@ export default function GuideScreen({
                       absoluteChildren={true}
                       enableHoverScale={false}
                     >
-                      {/* White Border Overlay when Selected */}
+                      {/* Border and Checkmark Icon Overlay when Selected */}
                       {isActive && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            border: "1px solid #FFFFFF",
-                            borderRadius: "45px",
-                            pointerEvents: "none",
-                            zIndex: 30,
-                          }}
-                        />
+                        <>
+                          <div
+                            style={{
+                              position: "absolute",
+                              inset: 0,
+                              border: "2px solid #6C63FF",
+                              borderRadius: "45px",
+                              pointerEvents: "none",
+                              zIndex: 30,
+                            }}
+                          />
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "16px",
+                              right: "16px",
+                              width: "20px",
+                              height: "20px",
+                              borderRadius: "50%",
+                              background: "#6C63FF",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              pointerEvents: "none",
+                              zIndex: 30,
+                            }}
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        </>
                       )}
 
                       {/* Overlay Content */}
@@ -747,46 +805,49 @@ export default function GuideScreen({
               })}
             </div>
 
-            <button
-              className="hover-scale-btn"
-              onClick={() => {
-                triggerHaptic("medium");
-                if (selectedPlan) {
-                  trackEvent("guide_select_and_buy_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal });
-                  setLocalSelectedMethod(null);
-                  setIsPaymentSheetOpen(true);
-                } else {
-                  const yearlyPlan = plans.find(p => p.periodMonths === 12) || plans[0];
-                  trackEvent("guide_select_and_buy_tapped", { plan: yearlyPlan.periodMonths === 1 ? "30_days" : "1_year", price: yearlyPlan.starsPrice || yearlyPlan.usdTotal });
-                  onSelectPlan(yearlyPlan);
-                  setLocalSelectedMethod(null);
-                  setTimeout(() => setIsPaymentSheetOpen(true), 100);
-                }
-              }}
-              style={{
-                width: "280px",
-                padding: "10px 14px",
-                borderRadius: "14px",
-                background: selectedPlan ? "#FFFFFF" : "transparent",
-                border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.25)",
-                color: selectedPlan ? "#000000" : "#FFFFFF",
-                fontSize: "12px",
-                letterSpacing: "0.05em",
-                alignSelf: "center",
-                cursor: "pointer",
-                outline: "none",
-                fontFamily: "var(--font-mono), monospace",
-                transition: "all 0.25s ease",
-              }}
-            >
-              {selectedPlan
-                ? t.home.buyFor(
-                  `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                  selectedPlan.starsPrice
-                )
-                : t.onboarding.selectAndBuy.toUpperCase()}
-            </button>
-          </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+              <button
+                className={selectedPlan ? "hover-scale-btn" : ""}
+                disabled={!selectedPlan}
+                onClick={() => {
+                  triggerHaptic("medium");
+                  if (selectedPlan) {
+                    trackEvent("guide_select_and_buy_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal });
+                    setLocalSelectedMethod(null);
+                    setIsPaymentSheetOpen(true);
+                  }
+                }}
+                style={{
+                  width: "280px",
+                  padding: "10px 14px",
+                  borderRadius: "14px",
+                  background: selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)",
+                  border: selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+                  color: selectedPlan ? "#000000" : "rgba(255, 255, 255, 0.3)",
+                  fontSize: "12px",
+                  letterSpacing: "0.05em",
+                  cursor: selectedPlan ? "pointer" : "default",
+                  outline: "none",
+                  fontFamily: "var(--font-mono), monospace",
+                  transition: "all 0.25s ease",
+                }}
+              >
+                {selectedPlan
+                  ? t.home.buyFor(
+                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
+                    selectedPlan.starsPrice
+                  )
+                  : t.onboarding.selectAndBuy.toUpperCase()}
+              </button>
+              {!selectedPlan && (
+                <div className="absolute bottom-full mb-2 bg-[#1A1A1A] border border-white/10 text-white text-[12px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  {language === "ru" ? "Выберите план" : language === "uz" ? "Rejani tanlang" : language === "by" ? "Абярыце тарыф" : "Select a plan"}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
         </div>
 
         {/* Separator dots */}
@@ -1008,7 +1069,7 @@ export default function GuideScreen({
           {/* Row 1: Left to Right */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "guide-marquee-ltr 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
+              {[...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
                 <span
                   key={`r1-${idx}`}
                   style={{
@@ -1032,7 +1093,7 @@ export default function GuideScreen({
           {/* Row 2: Right to Left */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "guide-marquee-rtl 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
+              {[...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
                 <span
                   key={`r2-${idx}`}
                   style={{
@@ -1056,7 +1117,7 @@ export default function GuideScreen({
           {/* Row 3: Left to Right */}
           <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
             <div style={{ display: "flex", gap: "8px", animation: "guide-marquee-ltr 22s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
+              {[...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
                 <span
                   key={`r3-${idx}`}
                   style={{
