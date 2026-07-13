@@ -435,14 +435,7 @@ export default function TMA() {
       runAuth(rawInitData);
     } else {
       console.warn("[IGuard] App is running outside Telegram or initData is missing.");
-      // setAuthError("Please open this app inside Telegram");
-       setUser({
-        id: 1 ,
-        firstName: "kerim",
-        username: "kerim",
-        photoUrl: "",
-        isPremium: false,
-      });
+      setAuthError("Please open this app inside Telegram");
       setIsLoadingAuth(false);
     }
   };
@@ -454,10 +447,10 @@ export default function TMA() {
     const detected = detectCampaign();
     setCampaign(detected);
 
-    const completed = safeStorage.getItem("iguard_onboarding_completed");
-    if (completed !== "true") {
-      setShowOnboarding(true);
-    }
+    // const completed = safeStorage.getItem("iguard_onboarding_completed");
+    // if (completed !== "true") {
+    //   setShowOnboarding(true);
+    // }
   }, []);
 
 
@@ -942,8 +935,8 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               onDropdownOpenChange={setIsDropdownOpen}
               onResetOnboarding={() => {
-                safeStorage.removeItem("iguard_onboarding_completed");
-                setShowOnboarding(true);
+                // safeStorage.removeItem("iguard_onboarding_completed");
+                // setShowOnboarding(true);
               }}
             />
           </div>
@@ -967,8 +960,8 @@ export default function TMA() {
         currentTab={currentTab}
         isVisible={isNavbarVisible && !isDropdownOpen}
         onResetOnboarding={() => {
-          safeStorage.removeItem("iguard_onboarding_completed");
-          setShowOnboarding(true);
+          // safeStorage.removeItem("iguard_onboarding_completed");
+          // setShowOnboarding(true);
         }}
         triggerHaptic={triggerHaptic}
         onTabChange={(tab) => {
