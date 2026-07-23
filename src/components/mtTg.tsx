@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import Intercom from "@intercom/messenger-js-sdk";
 
@@ -182,7 +182,11 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
 }
 
 export default function TMA() {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    const stored = safeStorage.getItem("iguard_language") as Language | null;
+    if (stored && ["en", "ru", "uz", "by"].includes(stored)) return stored;
+    return getDefaultLanguage();
+  });
   const [billingRegion, setBillingRegion] = useState<string>(() => {
     const stored = safeStorage.getItem("iguard_billing_region") || "";
     if (stored === "RU") {
@@ -191,6 +195,22 @@ export default function TMA() {
     }
     return stored;
   });
+
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    safeStorage.setItem("iguard_language", lang);
+    apiCall("/users/locale", "PATCH", { language: lang }).catch((err) => {
+      console.error("[IGuard] Failed to update language locale:", err);
+    });
+  };
+
+  const handleBillingRegionChange = (region: string) => {
+    setBillingRegion(region);
+    safeStorage.setItem("iguard_billing_region", region);
+    apiCall("/users/locale", "PATCH", { billing_region: region }).catch((err) => {
+      console.error("[IGuard] Failed to update billing_region locale:", err);
+    });
+  };
 
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [isLoadingMethods, setIsLoadingMethods] = useState(false);
@@ -217,11 +237,6 @@ export default function TMA() {
         setIsLoadingMethods(false);
       });
   }, [billingRegion]);
-
-  const handleBillingRegionChange = (region: string) => {
-    setBillingRegion(region);
-    safeStorage.setItem("iguard_billing_region", region);
-  };
 
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
@@ -254,9 +269,7 @@ export default function TMA() {
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
 
   // Navbar dynamic scroll visibility state
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const lastScrollTopRef = useRef(0);
 
   // Plans
   const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
@@ -314,6 +327,16 @@ export default function TMA() {
           safeStorage.setItem("iguard_onboarding_completed", "true");
           setShowOnboarding(false);
         }
+
+        if (profile.language && ["en", "ru", "uz", "by"].includes(profile.language)) {
+          setLanguage(profile.language as Language);
+          safeStorage.setItem("iguard_language", profile.language);
+        }
+        if (profile.billing_region || profile.billingRegion) {
+          const reg = profile.billing_region || profile.billingRegion;
+          setBillingRegion(reg);
+          safeStorage.setItem("iguard_billing_region", reg);
+        }
       }
     } catch (err) {
       console.error("[IGuard] Profile fetch error:", err);
@@ -360,14 +383,13 @@ export default function TMA() {
     }
   };
 
-  // Reset scroll on tab change and ensure navbar is visible
+  // Reset scroll on tab change
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mainEl = document.querySelector("main");
     if (mainEl) {
       mainEl.scrollTop = 0;
     }
-    setIsNavbarVisible(true);
   }, [currentTab]);
 
   // ─── Init: auth + language ─────────────────────────────────────────────────
@@ -459,14 +481,7 @@ export default function TMA() {
       runAuth(rawInitData);
     } else {
       console.warn("[IGuard] App is running outside Telegram or initData is missing.");
-      // setAuthError("Please open this app inside Telegram");
-      setUser({
-        id: 485198646,
-        firstName: "Kerim",
-        username: "Kerim361",
-        photoUrl: "https://t3.ftcdn.net/jpg/03/32/59/62/360_F_332596202_l8e1Jq9z3YlF9wU2tG66dY4P2w6e3Dnf.jpg",
-        isPremium: false,
-      });
+      setAuthError("Please open this app inside Telegram");
       setIsLoadingAuth(false);
     }
   };
@@ -478,10 +493,10 @@ export default function TMA() {
     const detected = detectCampaign();
     setCampaign(detected);
 
-    // const completed = safeStorage.getItem("iguard_onboarding_completed");
-    // if (completed !== "true") {
-    //   setShowOnboarding(true);
-    // }
+    const completed = safeStorage.getItem("iguard_onboarding_completed");
+    if (completed !== "true") {
+      setShowOnboarding(true);
+    }
   }, []);
 
 
@@ -824,7 +839,7 @@ export default function TMA() {
       />
     );
   }
-  if (false && showOnboarding) {
+  if (showOnboarding) {
     return (
       <>
         <OnboardingScreen
@@ -898,15 +913,6 @@ export default function TMA() {
         `,
       }} />
       <main
-        onScroll={(e) => {
-          const scrollTop = e.currentTarget.scrollTop;
-          if (scrollTop > lastScrollTopRef.current && scrollTop > 60) {
-            setIsNavbarVisible(false);
-          } else if (scrollTop < lastScrollTopRef.current) {
-            setIsNavbarVisible(true);
-          }
-          lastScrollTopRef.current = scrollTop;
-        }}
         style={{ flex: 1, overflowY: "auto", position: "relative", paddingBottom: "110px" }}
       >
         {currentTab === "home" && (
@@ -957,7 +963,7 @@ export default function TMA() {
               t={t}
               user={user}
               language={language}
-              onLanguageChange={setLanguage}
+              onLanguageChange={handleLanguageChange}
               notifs={notifs}
               onNotifsChange={handleNotifsChange}
               referralInfo={referralInfo}
@@ -966,8 +972,8 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               onDropdownOpenChange={setIsDropdownOpen}
               onResetOnboarding={() => {
-                // safeStorage.removeItem("iguard_onboarding_completed");
-                // setShowOnboarding(true);
+                safeStorage.removeItem("iguard_onboarding_completed");
+                setShowOnboarding(true);
               }}
             />
           </div>
@@ -989,16 +995,15 @@ export default function TMA() {
       <NavBar
         t={t}
         currentTab={currentTab}
-        isVisible={isNavbarVisible && !isDropdownOpen}
+        isVisible={!isDropdownOpen}
         onResetOnboarding={() => {
-          // safeStorage.removeItem("iguard_onboarding_completed");
-          // setShowOnboarding(true);
+          safeStorage.removeItem("iguard_onboarding_completed");
+          setShowOnboarding(true);
         }}
         triggerHaptic={triggerHaptic}
         onTabChange={(tab) => {
           triggerHaptic("light");
           setCurrentTab(tab);
-          setIsNavbarVisible(true);
         }}
       />
 
@@ -1009,7 +1014,7 @@ export default function TMA() {
           <PaymentScreen
             t={t}
             language={language}
-            plan={selectedPlan}
+            plan={selectedPlan!}
             selectedMethod={selectedMethod}
             onSelectMethod={setSelectedMethod}
             onProceed={handlePayment}

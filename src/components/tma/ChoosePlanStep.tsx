@@ -189,17 +189,25 @@ export default function ChoosePlanStep({
 
                   <div>
                     <span
-                      className={`block text-[28px] text-white leading-none font-sans ${language === "ru" ? "text-[24px]" : ""
+                      className={`block text-[24px] text-white leading-none font-sans ${language === "ru" || language === "by" || language === "uz" ? "text-[20px]" : ""
                         }`}
                     >
-                      {`$ ${plan.usdPerMonth.toFixed(2)}`}
+                      {isYearly ? (
+                        language === "uz" ? "$48 / yil" :
+                        language === "by" ? "$48 / год" :
+                        language === "ru" ? "$48 / год" : "$48 / year"
+                      ) : (
+                        `$ ${plan.usdPerMonth.toFixed(2)}`
+                      )}
                     </span>
-                    <span
-                      className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"
-                        }`}
-                    >
-                      {t.home.perMonth}
-                    </span>
+                    {!isYearly && (
+                      <span
+                        className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"
+                          }`}
+                      >
+                        {t.home.perMonth}
+                      </span>
+                    )}
                   </div>
 
                   <span

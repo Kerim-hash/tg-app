@@ -15,6 +15,7 @@ interface SetupStepProps {
   copied: boolean;
   onCopy: () => void;
   onComplete: () => void;
+  onPrev?: () => void;
   onSelectPlanForPayment?: (id: string) => void;
   onboardingPlans: any[];
   tempSelectedPlanId: string;
@@ -150,6 +151,7 @@ export default function SetupStep({
   copied,
   onCopy,
   onComplete,
+  onPrev,
   onSelectPlanForPayment,
   onboardingPlans,
   tempSelectedPlanId,
@@ -311,17 +313,109 @@ export default function SetupStep({
             </div>
           </div>
 
-          {/* Bottom slider area */}
+          {/* Bottom buttons area */}
           <div className="flex flex-col gap-5 w-full mt-auto pb-2.5 ">
-            <p className="text-[14px] max-w-[280px] mx-auto text-white/40 text-center m-0 leading-relaxed font-sans">
+            <p
+              style={{
+                fontFamily: "'Onest', sans-serif",
+                fontStyle: "normal",
+                fontWeight: 400,
+                fontSize: "14px",
+                lineHeight: "18px",
+                textAlign: "center",
+                color: "rgba(255, 255, 255, 0.4)",
+                maxWidth: campaign === "adults" ? "303px" : "274px",
+                margin: "0 auto",
+              }}
+            >
               {setupTexts.bottomNote}
             </p>
 
-            <SwipeSlider
-              onComplete={onComplete}
-              text={currentDict.startBtn.toUpperCase()}
-              triggerHaptic={triggerHaptic}
-            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "12px",
+                width: "100%",
+              }}
+            >
+              <button
+                onClick={() => {
+                  triggerHaptic("light");
+                  if (onPrev) onPrev();
+                }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "10px 15px",
+                  gap: "5px",
+                  width: "62px",
+                  height: "40px",
+                  background: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "12px",
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+                className="active:scale-[0.97] transition-transform duration-100 ease"
+              >
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontStyle: "normal",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    lineHeight: "100%",
+                    textAlign: "center",
+                    letterSpacing: "-0.06em",
+                    textTransform: "uppercase",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  BACK
+                </span>
+              </button>
+
+              <button
+                onClick={onComplete}
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: "10px 15px",
+                  gap: "5px",
+                  width: "150px",
+                  height: "52px",
+                  background: "#FFFFFF",
+                  borderRadius: "12px",
+                  border: "none",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+                className="active:scale-[0.97] transition-transform duration-100 ease"
+              >
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontStyle: "normal",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    lineHeight: "100%",
+                    textAlign: "center",
+                    letterSpacing: "-0.06em",
+                    textTransform: "uppercase",
+                    color: "#000000",
+                  }}
+                >
+                  START NOW
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -399,14 +493,22 @@ export default function SetupStep({
                             </span>
 
                             <div>
-                              <span className={`block text-[28px] text-white leading-none font-sans ${
-                                language === "ru" || language === "by" ? "text-[24px]" : ""
+                              <span className={`block text-[24px] text-white leading-none font-sans ${
+                                language === "ru" || language === "by" || language === "uz" ? "text-[20px]" : ""
                               }`}>
-                                {`$ ${plan.usdPerMonth.toFixed(2)}`}
+                                {isYearly ? (
+                                  language === "uz" ? "$48 / yil" :
+                                  language === "by" ? "$48 / год" :
+                                  language === "ru" ? "$48 / год" : "$48 / year"
+                                ) : (
+                                  `$ ${plan.usdPerMonth.toFixed(2)}`
+                                )}
                               </span>
-                              <span className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"}`}>
-                                {t.home.perMonth}
-                              </span>
+                              {!isYearly && (
+                                <span className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"}`}>
+                                  {t.home.perMonth}
+                                </span>
+                              )}
                             </div>
 
                             <span className={`block text-[11px] font-sans ${isYearly ? "text-[#E0F2FE] opacity-90" : "text-[#8A94A6]"}`}>
