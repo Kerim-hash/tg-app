@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import Intercom from "@intercom/messenger-js-sdk";
 
@@ -56,19 +56,44 @@ function getRawStartParam(): string | null {
   if (typeof window === "undefined") return null;
 
   // 1. Try Telegram WebApp SDK
-  const tgStartParam = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.start_param;
-  if (tgStartParam) return tgStartParam;
+  try {
+    const tg = (window as any)?.Telegram?.WebApp || WebApp;
+    if (tg?.initDataUnsafe?.start_param) {
+      return tg.initDataUnsafe.start_param;
+    }
+    if (tg?.initData) {
+      const params = new URLSearchParams(tg.initData);
+      const sp = params.get("start_param");
+      if (sp) return sp;
+    }
+  } catch (e) {
+    console.error("Error reading SDK start_param:", e);
+  }
 
   // 2. Try URL Search Params
-  const searchParams = new URLSearchParams(window.location.search);
-  const startParam = searchParams.get("tgWebAppStartParam") || searchParams.get("startapp") || searchParams.get("campaign");
-  if (startParam) return startParam;
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    const startParam =
+      searchParams.get("tgWebAppStartParam") ||
+      searchParams.get("startapp") ||
+      searchParams.get("start_param") ||
+      searchParams.get("campaign");
+    if (startParam) return startParam;
+  } catch (e) {
+    console.error("Error reading URL searchParams:", e);
+  }
 
   // 3. Try hash parameters
   try {
     const hash = window.location.hash;
     if (hash) {
       const hashParams = new URLSearchParams(hash.substring(1));
+      const directStart =
+        hashParams.get("tgWebAppStartParam") ||
+        hashParams.get("startapp") ||
+        hashParams.get("start_param");
+      if (directStart) return directStart;
+
       const tgWebAppData = hashParams.get("tgWebAppData");
       if (tgWebAppData) {
         const decodedData = new URLSearchParams(decodeURIComponent(tgWebAppData));
@@ -83,8 +108,52 @@ function getRawStartParam(): string | null {
   return null;
 }
 
+interface LocaleFromParam {
+  language?: Language;
+  billing_region?: string;
+}
+
+function parseLocaleStartParam(startParam: string | null | undefined): LocaleFromParam | null {
+  if (!startParam || !startParam.startsWith("l-")) return null;
+
+  const content = startParam.substring(2);
+  const parts = content.split(/[-_]/).filter(Boolean);
+  if (parts.length === 0) return null;
+
+  const result: LocaleFromParam = {};
+
+  const rawLang = parts[0]?.toLowerCase();
+  let mappedLang: Language | undefined;
+  if (rawLang === "en" || rawLang === "ru" || rawLang === "uz" || rawLang === "by") {
+    mappedLang = rawLang;
+  } else if (rawLang === "be") {
+    mappedLang = "by";
+  }
+
+  if (mappedLang) {
+    result.language = mappedLang;
+  }
+
+  if (parts.length >= 2 && parts[1]) {
+    const rawReg = parts[1].toUpperCase();
+    if (rawReg === "UZ" || rawReg === "RU" || rawReg === "UZB") {
+      result.billing_region = "UZB";
+    } else {
+      result.billing_region = rawReg;
+    }
+  }
+
+  if (!result.language && !result.billing_region) return null;
+
+  return result;
+}
+
 function parseStartParam(startParam: string | null | undefined): ParsedStartParam {
   if (!startParam) {
+    return { campaign: "default", referral: null, clickId: null };
+  }
+
+  if (startParam.startsWith("l-")) {
     return { campaign: "default", referral: null, clickId: null };
   }
 
@@ -163,7 +232,7 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
     if (originalLink.includes("startapp=")) {
       const url = new URL(originalLink);
       const startapp = url.searchParams.get("startapp");
-      if (startapp && !startapp.startsWith("c-")) {
+      if (startapp && !startapp.startsWith("c-") && !startapp.startsWith("l-")) {
         url.searchParams.set("startapp", `c-${currentCampaign}_${startapp}`);
         return url.toString();
       }
@@ -173,7 +242,7 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
     if (originalLink.includes("startapp=")) {
       const parts = originalLink.split("startapp=");
       const paramVal = parts[1];
-      if (paramVal && !paramVal.startsWith("c-")) {
+      if (paramVal && !paramVal.startsWith("c-") && !paramVal.startsWith("l-")) {
         return `${parts[0]}startapp=c-${currentCampaign}_${paramVal}`;
       }
     }
@@ -182,8 +251,22 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
 }
 
 export default function TMA() {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    const fromParam = parseLocaleStartParam(getRawStartParam());
+    if (fromParam?.language) {
+      safeStorage.setItem("iguard_language", fromParam.language);
+      return fromParam.language;
+    }
+    const stored = safeStorage.getItem("iguard_language") as Language | null;
+    if (stored && ["en", "ru", "uz", "by"].includes(stored)) return stored;
+    return getDefaultLanguage();
+  });
   const [billingRegion, setBillingRegion] = useState<string>(() => {
+    const fromParam = parseLocaleStartParam(getRawStartParam());
+    if (fromParam?.billing_region) {
+      safeStorage.setItem("iguard_billing_region", fromParam.billing_region);
+      return fromParam.billing_region;
+    }
     const stored = safeStorage.getItem("iguard_billing_region") || "";
     if (stored === "RU") {
       safeStorage.setItem("iguard_billing_region", "UZB");
@@ -191,6 +274,22 @@ export default function TMA() {
     }
     return stored;
   });
+
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    safeStorage.setItem("iguard_language", lang);
+    apiCall("/users/locale", "PATCH", { language: lang }).catch((err) => {
+      console.error("[IGuard] Failed to update language locale:", err);
+    });
+  };
+
+  const handleBillingRegionChange = (region: string) => {
+    setBillingRegion(region);
+    safeStorage.setItem("iguard_billing_region", region);
+    apiCall("/users/locale", "PATCH", { billing_region: region }).catch((err) => {
+      console.error("[IGuard] Failed to update billing_region locale:", err);
+    });
+  };
 
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [isLoadingMethods, setIsLoadingMethods] = useState(false);
@@ -217,11 +316,6 @@ export default function TMA() {
         setIsLoadingMethods(false);
       });
   }, [billingRegion]);
-
-  const handleBillingRegionChange = (region: string) => {
-    setBillingRegion(region);
-    safeStorage.setItem("iguard_billing_region", region);
-  };
 
   const [currentTab, setCurrentTab] = useState<Tab>("home");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
@@ -254,9 +348,7 @@ export default function TMA() {
   const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
 
   // Navbar dynamic scroll visibility state
-  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const lastScrollTopRef = useRef(0);
 
   // Plans
   const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
@@ -314,6 +406,19 @@ export default function TMA() {
           safeStorage.setItem("iguard_onboarding_completed", "true");
           setShowOnboarding(false);
         }
+
+        const rawParam = getRawStartParam();
+        const localeFromParam = parseLocaleStartParam(rawParam);
+
+        if (!localeFromParam?.language && profile.language && ["en", "ru", "uz", "by"].includes(profile.language)) {
+          setLanguage(profile.language as Language);
+          safeStorage.setItem("iguard_language", profile.language);
+        }
+        if (!localeFromParam?.billing_region && (profile.billing_region || profile.billingRegion)) {
+          const reg = profile.billing_region || profile.billingRegion;
+          setBillingRegion(reg);
+          safeStorage.setItem("iguard_billing_region", reg);
+        }
       }
     } catch (err) {
       console.error("[IGuard] Profile fetch error:", err);
@@ -360,14 +465,13 @@ export default function TMA() {
     }
   };
 
-  // Reset scroll on tab change and ensure navbar is visible
+  // Reset scroll on tab change
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mainEl = document.querySelector("main");
     if (mainEl) {
       mainEl.scrollTop = 0;
     }
-    setIsNavbarVisible(true);
   }, [currentTab]);
 
   // ─── Init: auth + language ─────────────────────────────────────────────────
@@ -410,7 +514,24 @@ export default function TMA() {
       } catch (err) {
         console.warn("Failed to set WebApp colors:", err);
       }
-      setLanguage(getDefaultLanguage());
+      const localeFromParam = parseLocaleStartParam(getRawStartParam());
+      if (localeFromParam) {
+        if (localeFromParam.language) {
+          setLanguage(localeFromParam.language);
+          safeStorage.setItem("iguard_language", localeFromParam.language);
+        }
+        if (localeFromParam.billing_region) {
+          setBillingRegion(localeFromParam.billing_region);
+          safeStorage.setItem("iguard_billing_region", localeFromParam.billing_region);
+        }
+      } else {
+        const stored = safeStorage.getItem("iguard_language") as Language | null;
+        if (stored && ["en", "ru", "uz", "by"].includes(stored)) {
+          setLanguage(stored);
+        } else {
+          setLanguage(getDefaultLanguage());
+        }
+      }
       tgUser = WebApp.initDataUnsafe?.user;
       rawInitData = WebApp.initData;
     } catch (e) {
@@ -443,6 +564,21 @@ export default function TMA() {
         .then(async (data) => {
           if (data?.access_token) {
             safeStorage.setItem("iguard_jwt_token", data.access_token);
+
+            const localeFromParam = parseLocaleStartParam(getRawStartParam());
+            if (localeFromParam) {
+              const body: Record<string, string> = {};
+              if (localeFromParam.language) body.language = localeFromParam.language;
+              if (localeFromParam.billing_region) body.billing_region = localeFromParam.billing_region;
+              if (Object.keys(body).length > 0) {
+                try {
+                  await apiCall("/users/locale", "PATCH", body);
+                } catch (err) {
+                  console.error("[IGuard] Failed to save locale from start_param to profile:", err);
+                }
+              }
+            }
+
             await refreshUserData();
           } else {
             throw new Error("No access token returned");
@@ -459,14 +595,7 @@ export default function TMA() {
       runAuth(rawInitData);
     } else {
       console.warn("[IGuard] App is running outside Telegram or initData is missing.");
-      // setAuthError("Please open this app inside Telegram");
-      setUser({
-        id: 485198646,
-        firstName: "Kerim",
-        username: "Kerim361",
-        photoUrl: "https://t3.ftcdn.net/jpg/03/32/59/62/360_F_332596202_l8e1Jq9z3YlF9wU2tG66dY4P2w6e3Dnf.jpg",
-        isPremium: false,
-      });
+      setAuthError("Please open this app inside Telegram");
       setIsLoadingAuth(false);
     }
   };
@@ -478,10 +607,10 @@ export default function TMA() {
     const detected = detectCampaign();
     setCampaign(detected);
 
-    // const completed = safeStorage.getItem("iguard_onboarding_completed");
-    // if (completed !== "true") {
-    //   setShowOnboarding(true);
-    // }
+    const completed = safeStorage.getItem("iguard_onboarding_completed");
+    if (completed !== "true") {
+      setShowOnboarding(true);
+    }
   }, []);
 
 
@@ -824,7 +953,7 @@ export default function TMA() {
       />
     );
   }
-  if (false && showOnboarding) {
+  if (showOnboarding) {
     return (
       <>
         <OnboardingScreen
@@ -898,15 +1027,6 @@ export default function TMA() {
         `,
       }} />
       <main
-        onScroll={(e) => {
-          const scrollTop = e.currentTarget.scrollTop;
-          if (scrollTop > lastScrollTopRef.current && scrollTop > 60) {
-            setIsNavbarVisible(false);
-          } else if (scrollTop < lastScrollTopRef.current) {
-            setIsNavbarVisible(true);
-          }
-          lastScrollTopRef.current = scrollTop;
-        }}
         style={{ flex: 1, overflowY: "auto", position: "relative", paddingBottom: "110px" }}
       >
         {currentTab === "home" && (
@@ -957,7 +1077,7 @@ export default function TMA() {
               t={t}
               user={user}
               language={language}
-              onLanguageChange={setLanguage}
+              onLanguageChange={handleLanguageChange}
               notifs={notifs}
               onNotifsChange={handleNotifsChange}
               referralInfo={referralInfo}
@@ -966,8 +1086,8 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               onDropdownOpenChange={setIsDropdownOpen}
               onResetOnboarding={() => {
-                // safeStorage.removeItem("iguard_onboarding_completed");
-                // setShowOnboarding(true);
+                safeStorage.removeItem("iguard_onboarding_completed");
+                setShowOnboarding(true);
               }}
             />
           </div>
@@ -989,16 +1109,15 @@ export default function TMA() {
       <NavBar
         t={t}
         currentTab={currentTab}
-        isVisible={isNavbarVisible && !isDropdownOpen}
+        isVisible={!isDropdownOpen}
         onResetOnboarding={() => {
-          // safeStorage.removeItem("iguard_onboarding_completed");
-          // setShowOnboarding(true);
+          safeStorage.removeItem("iguard_onboarding_completed");
+          setShowOnboarding(true);
         }}
         triggerHaptic={triggerHaptic}
         onTabChange={(tab) => {
           triggerHaptic("light");
           setCurrentTab(tab);
-          setIsNavbarVisible(true);
         }}
       />
 
@@ -1009,7 +1128,7 @@ export default function TMA() {
           <PaymentScreen
             t={t}
             language={language}
-            plan={selectedPlan}
+            plan={selectedPlan!}
             selectedMethod={selectedMethod}
             onSelectMethod={setSelectedMethod}
             onProceed={handlePayment}

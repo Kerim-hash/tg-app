@@ -9,39 +9,44 @@ import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
+  if (periodMonths === 12) {
+    if (lang === "uz") return "60% chegirma";
+    if (lang === "by") return "Зніжка 60%";
+    if (lang === "ru") return "Скидка 60%";
+    return "Save 60%";
+  }
   if (lang === "ru") {
     if (periodMonths === 1) return "30 дней";
     if (periodMonths === 3) return "3 месяца";
     if (periodMonths === 6) return "6 месяцев";
-    if (periodMonths === 12) return "1 год";
     return `${periodMonths} мес.`;
   } else if (lang === "uz") {
     if (periodMonths === 1) return "30 kun";
     if (periodMonths === 3) return "3 oy";
     if (periodMonths === 6) return "6 oy";
-    if (periodMonths === 12) return "1 yil";
     return `${periodMonths} oy`;
   } else if (lang === "by") {
     if (periodMonths === 1) return "30 дзён";
     if (periodMonths === 3) return "3 месяцы";
     if (periodMonths === 6) return "6 месяцаў";
-    if (periodMonths === 12) return "1 год";
     return `${periodMonths} мес.`;
   } else {
     if (periodMonths === 1) return "30 Days";
     if (periodMonths === 3) return "3 Months";
     if (periodMonths === 6) return "6 Months";
-    if (periodMonths === 12) return "1 Year";
     return `${periodMonths} Months`;
   }
 }
 
 function getBilledFrequencyText(periodMonths: number, lang: string, t: any): string {
+  if (periodMonths === 12) {
+    if (lang === "uz") return "Oyiga $4";
+    if (lang === "by") return "$4 у месяц";
+    if (lang === "ru") return "$4 в месяц";
+    return "$4 per month";
+  }
   if (periodMonths === 1) {
     return t.home.billedMonthly;
-  }
-  if (periodMonths === 12) {
-    return t.home.billedYearly;
   }
   if (lang === "ru") {
     if (periodMonths === 3) return "Оплата каждые 3 месяца";
@@ -784,16 +789,24 @@ export default function GuideScreen({
                         <div>
                           <span style={{
                             display: "block",
-                            fontSize: language === "ru" || language === "by" ? "20px" : "24px",
+                            fontSize: language === "ru" || language === "by" || language === "uz" ? "18px" : "22px",
                             color: "#fff",
                             lineHeight: 1.1,
                             letterSpacing: "-0.02em"
                           }}>
-                            {`$ ${plan.usdPerMonth.toFixed(2)}`}
+                            {isYearly ? (
+                              language === "uz" ? "$48 / yil" :
+                              language === "by" ? "$48 / год" :
+                              language === "ru" ? "$48 / год" : "$48 / year"
+                            ) : (
+                              `$ ${plan.usdPerMonth.toFixed(2)}`
+                            )}
                           </span>
-                          <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
-                            {t.home.perMonth}
-                          </span>
+                          {!isYearly && (
+                            <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
+                              {t.home.perMonth}
+                            </span>
+                          )}
                         </div>
                         <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
                           {getBilledFrequencyText(plan.periodMonths, language, t)}
