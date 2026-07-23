@@ -83,8 +83,47 @@ function getRawStartParam(): string | null {
   return null;
 }
 
+interface LocaleFromParam {
+  language?: Language;
+  billing_region?: string;
+}
+
+function parseLocaleStartParam(startParam: string | null | undefined): LocaleFromParam | null {
+  if (!startParam || !startParam.startsWith("l-")) return null;
+
+  const content = startParam.substring(2);
+  const parts = content.split(/[-_]/).filter(Boolean);
+  if (parts.length === 0) return null;
+
+  const result: LocaleFromParam = {};
+
+  const rawLang = parts[0]?.toLowerCase();
+  let mappedLang: Language | undefined;
+  if (rawLang === "en" || rawLang === "ru" || rawLang === "uz" || rawLang === "by") {
+    mappedLang = rawLang;
+  } else if (rawLang === "be") {
+    mappedLang = "by";
+  }
+
+  if (mappedLang) {
+    result.language = mappedLang;
+  }
+
+  if (parts.length >= 2 && parts[1]) {
+    result.billing_region = parts[1].toUpperCase();
+  }
+
+  if (!result.language && !result.billing_region) return null;
+
+  return result;
+}
+
 function parseStartParam(startParam: string | null | undefined): ParsedStartParam {
   if (!startParam) {
+    return { campaign: "default", referral: null, clickId: null };
+  }
+
+  if (startParam.startsWith("l-")) {
     return { campaign: "default", referral: null, clickId: null };
   }
 
@@ -183,11 +222,21 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
 
 export default function TMA() {
   const [language, setLanguage] = useState<Language>(() => {
+    const fromParam = parseLocaleStartParam(getRawStartParam());
+    if (fromParam?.language) {
+      safeStorage.setItem("iguard_language", fromParam.language);
+      return fromParam.language;
+    }
     const stored = safeStorage.getItem("iguard_language") as Language | null;
     if (stored && ["en", "ru", "uz", "by"].includes(stored)) return stored;
     return getDefaultLanguage();
   });
   const [billingRegion, setBillingRegion] = useState<string>(() => {
+    const fromParam = parseLocaleStartParam(getRawStartParam());
+    if (fromParam?.billing_region) {
+      safeStorage.setItem("iguard_billing_region", fromParam.billing_region);
+      return fromParam.billing_region;
+    }
     const stored = safeStorage.getItem("iguard_billing_region") || "";
     if (stored === "RU") {
       safeStorage.setItem("iguard_billing_region", "UZB");
@@ -432,7 +481,24 @@ export default function TMA() {
       } catch (err) {
         console.warn("Failed to set WebApp colors:", err);
       }
-      setLanguage(getDefaultLanguage());
+      const localeFromParam = parseLocaleStartParam(getRawStartParam());
+      if (localeFromParam) {
+        if (localeFromParam.language) {
+          setLanguage(localeFromParam.language);
+          safeStorage.setItem("iguard_language", localeFromParam.language);
+        }
+        if (localeFromParam.billing_region) {
+          setBillingRegion(localeFromParam.billing_region);
+          safeStorage.setItem("iguard_billing_region", localeFromParam.billing_region);
+        }
+      } else {
+        const stored = safeStorage.getItem("iguard_language") as Language | null;
+        if (stored && ["en", "ru", "uz", "by"].includes(stored)) {
+          setLanguage(stored);
+        } else {
+          setLanguage(getDefaultLanguage());
+        }
+      }
       tgUser = WebApp.initDataUnsafe?.user;
       rawInitData = WebApp.initData;
     } catch (e) {
@@ -465,6 +531,21 @@ export default function TMA() {
         .then(async (data) => {
           if (data?.access_token) {
             safeStorage.setItem("iguard_jwt_token", data.access_token);
+
+            const localeFromParam = parseLocaleStartParam(getRawStartParam());
+            if (localeFromParam) {
+              const body: Record<string, string> = {};
+              if (localeFromParam.language) body.language = localeFromParam.language;
+              if (localeFromParam.billing_region) body.billing_region = localeFromParam.billing_region;
+              if (Object.keys(body).length > 0) {
+                try {
+                  await apiCall("/users/locale", "PATCH", body);
+                } catch (err) {
+                  console.error("[IGuard] Failed to save locale from start_param to profile:", err);
+                }
+              }
+            }
+
             await refreshUserData();
           } else {
             throw new Error("No access token returned");
