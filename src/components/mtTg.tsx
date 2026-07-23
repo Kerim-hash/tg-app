@@ -56,19 +56,44 @@ function getRawStartParam(): string | null {
   if (typeof window === "undefined") return null;
 
   // 1. Try Telegram WebApp SDK
-  const tgStartParam = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.start_param;
-  if (tgStartParam) return tgStartParam;
+  try {
+    const tg = (window as any)?.Telegram?.WebApp || WebApp;
+    if (tg?.initDataUnsafe?.start_param) {
+      return tg.initDataUnsafe.start_param;
+    }
+    if (tg?.initData) {
+      const params = new URLSearchParams(tg.initData);
+      const sp = params.get("start_param");
+      if (sp) return sp;
+    }
+  } catch (e) {
+    console.error("Error reading SDK start_param:", e);
+  }
 
   // 2. Try URL Search Params
-  const searchParams = new URLSearchParams(window.location.search);
-  const startParam = searchParams.get("tgWebAppStartParam") || searchParams.get("startapp") || searchParams.get("campaign");
-  if (startParam) return startParam;
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    const startParam =
+      searchParams.get("tgWebAppStartParam") ||
+      searchParams.get("startapp") ||
+      searchParams.get("start_param") ||
+      searchParams.get("campaign");
+    if (startParam) return startParam;
+  } catch (e) {
+    console.error("Error reading URL searchParams:", e);
+  }
 
   // 3. Try hash parameters
   try {
     const hash = window.location.hash;
     if (hash) {
       const hashParams = new URLSearchParams(hash.substring(1));
+      const directStart =
+        hashParams.get("tgWebAppStartParam") ||
+        hashParams.get("startapp") ||
+        hashParams.get("start_param");
+      if (directStart) return directStart;
+
       const tgWebAppData = hashParams.get("tgWebAppData");
       if (tgWebAppData) {
         const decodedData = new URLSearchParams(decodeURIComponent(tgWebAppData));
@@ -110,7 +135,12 @@ function parseLocaleStartParam(startParam: string | null | undefined): LocaleFro
   }
 
   if (parts.length >= 2 && parts[1]) {
-    result.billing_region = parts[1].toUpperCase();
+    const rawReg = parts[1].toUpperCase();
+    if (rawReg === "UZ" || rawReg === "RU" || rawReg === "UZB") {
+      result.billing_region = "UZB";
+    } else {
+      result.billing_region = rawReg;
+    }
   }
 
   if (!result.language && !result.billing_region) return null;
@@ -202,7 +232,7 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
     if (originalLink.includes("startapp=")) {
       const url = new URL(originalLink);
       const startapp = url.searchParams.get("startapp");
-      if (startapp && !startapp.startsWith("c-")) {
+      if (startapp && !startapp.startsWith("c-") && !startapp.startsWith("l-")) {
         url.searchParams.set("startapp", `c-${currentCampaign}_${startapp}`);
         return url.toString();
       }
@@ -212,7 +242,7 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
     if (originalLink.includes("startapp=")) {
       const parts = originalLink.split("startapp=");
       const paramVal = parts[1];
-      if (paramVal && !paramVal.startsWith("c-")) {
+      if (paramVal && !paramVal.startsWith("c-") && !paramVal.startsWith("l-")) {
         return `${parts[0]}startapp=c-${currentCampaign}_${paramVal}`;
       }
     }
@@ -377,11 +407,14 @@ export default function TMA() {
           setShowOnboarding(false);
         }
 
-        if (profile.language && ["en", "ru", "uz", "by"].includes(profile.language)) {
+        const rawParam = getRawStartParam();
+        const localeFromParam = parseLocaleStartParam(rawParam);
+
+        if (!localeFromParam?.language && profile.language && ["en", "ru", "uz", "by"].includes(profile.language)) {
           setLanguage(profile.language as Language);
           safeStorage.setItem("iguard_language", profile.language);
         }
-        if (profile.billing_region || profile.billingRegion) {
+        if (!localeFromParam?.billing_region && (profile.billing_region || profile.billingRegion)) {
           const reg = profile.billing_region || profile.billingRegion;
           setBillingRegion(reg);
           safeStorage.setItem("iguard_billing_region", reg);
