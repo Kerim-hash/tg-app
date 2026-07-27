@@ -486,25 +486,12 @@ export default function TMA() {
       const tg = WebApp as any;
       const chatType = tg.initDataUnsafe?.chat_type;
 
-      if (chatType) {
-        if (typeof tg.requestFullscreen === "function") {
-          try {
-            tg.requestFullscreen();
-          } catch (err) {
-            console.warn("Failed to request fullscreen:", err);
-            tg.expand();
-          }
-        } else {
-          tg.expand();
-        }
-      } else {
-        tg.expand();
-        if (typeof tg.enableVerticalSwipes === "function") {
-          try {
-            tg.enableVerticalSwipes();
-          } catch (err) {
-            console.warn("Failed to enable vertical swipes:", err);
-          }
+      tg.expand();
+      if (typeof tg.enableVerticalSwipes === "function") {
+        try {
+          tg.enableVerticalSwipes();
+        } catch (err) {
+          console.warn("Failed to enable vertical swipes:", err);
         }
       }
 
