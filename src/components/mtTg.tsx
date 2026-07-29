@@ -24,7 +24,30 @@ import IntercomWidget from "@/lib/intercom";
 const DEFAULT_PLANS: Plan[] = [];
 
 
-function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
+function formatPlanNameFromSubType(subType?: string, daysLeft?: number): string {
+  if (!subType) {
+    return (daysLeft && daysLeft > 45) ? "1 Year" : "30 days";
+  }
+  const normalized = subType.toLowerCase();
+  if (normalized === "12-month" || normalized === "1-year" || normalized === "12-months" || normalized === "yearly") {
+    return "1 Year";
+  }
+  if (normalized === "1-month" || normalized === "30-day" || normalized === "monthly") {
+    return "30 days";
+  }
+  const match = normalized.match(/^(\d+)-(month|months|day|days|year|years)$/);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    const unit = match[2];
+    if (unit.startsWith("year") || (unit.startsWith("month") && num >= 12)) return "1 Year";
+    if (unit.startsWith("month") && num === 1) return "30 days";
+    if (unit.startsWith("month")) return `${num} Months`;
+    if (unit.startsWith("day")) return `${num} Days`;
+  }
+  return (daysLeft && daysLeft > 45) ? "1 Year" : "30 days";
+}
+
+function parseActivePlan(expirationStr?: string, isTrial?: boolean, subType?: string): ActivePlan | undefined {
   if (!expirationStr) return undefined;
   const expDate = new Date(expirationStr);
   const now = new Date();
@@ -41,9 +64,9 @@ function parseActivePlan(expirationStr?: string): ActivePlan | undefined {
   const year = expDate.getFullYear();
   const nextBilling = `${day} ${month}, ${year}`;
 
-  const name = daysLeft > 45 ? "1 Year" : "30 days";
+  const name = isTrial ? "Free Trial" : formatPlanNameFromSubType(subType, daysLeft);
 
-  return { name, daysLeft, nextBilling };
+  return { name, daysLeft, nextBilling, isTrial };
 }
 
 interface ParsedStartParam {
@@ -390,15 +413,49 @@ export default function TMA() {
     try {
       const profile = await apiCall("/auth/profile", "GET");
       if (profile) {
+        const rawSubType = (profile.subscription_type ?? profile.subscriptionType ?? "").toString().trim();
+        const normalizedSubType = rawSubType.toLowerCase();
+
+        let isTrial = profile.is_trial ?? profile.isTrial ?? profile.is_trial_active ?? profile.isTrialActive ?? (normalizedSubType === "trial");
+        let hasUsedTrial = profile.has_used_trial ?? profile.hasUsedTrial ?? profile.trial_used ?? profile.trialUsed ?? (normalizedSubType === "trial" || normalizedSubType === "expired" || normalizedSubType.includes("month") || normalizedSubType.includes("year"));
+        const trialDuration = profile.trial_duration ?? profile.trialDuration ?? profile.trial_days ?? profile.trialDays ?? 3;
+        let hasPaid = profile.has_paid ?? profile.hasPaid ?? profile.is_paid ?? profile.isPaid ?? (normalizedSubType !== "trial" && normalizedSubType !== "trial_available" && normalizedSubType !== "expired" && normalizedSubType !== "");
+
+        if (normalizedSubType === "trial_available") {
+          isTrial = false;
+          hasUsedTrial = false;
+          hasPaid = false;
+        } else if (normalizedSubType === "trial") {
+          isTrial = true;
+          hasUsedTrial = true;
+        } else if (normalizedSubType === "expired") {
+          isTrial = false;
+          hasUsedTrial = true;
+        }
+
+        let activePlanObj = profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration, isTrial, rawSubType);
+        if (activePlanObj && isTrial) {
+          activePlanObj = {
+            ...activePlanObj,
+            name: "Free Trial",
+            isTrial: true,
+          };
+        }
+
         setUser({
           id: profile.id || profile.user_id || tgUser?.id || 0,
           firstName: profile.first_name || profile.firstName || tgUser?.first_name || "User",
           username: profile.username || tgUser?.username,
           photoUrl: profile.photo_url || profile.photoUrl || tgUser?.photo_url,
           isPremium: profile.is_premium || profile.isPremium || false,
-          activePlan: profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration),
+          activePlan: activePlanObj,
           expiration: profile.expiration,
           paymentMethodSaved: profile.payment_method_saved || profile.paymentMethodSaved || false,
+          isTrial,
+          hasUsedTrial,
+          trialDuration,
+          hasPaid,
+          subscriptionType: rawSubType || (isTrial ? "trial" : hasUsedTrial ? "expired" : "trial_available"),
         });
 
         const hasActivePlan = profile.expiration && !isNaN(new Date(profile.expiration).getTime()) && new Date(profile.expiration) > new Date();

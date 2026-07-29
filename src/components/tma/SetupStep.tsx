@@ -595,7 +595,7 @@ export default function SetupStep({
               </span>
             </div>
 
-            {planPurchased && activeKey ? (
+            {activeKey ? (
               <div className="flex flex-col gap-3 w-full mt-1">
                 <GradientBlock
                   label=""

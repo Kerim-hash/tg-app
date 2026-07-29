@@ -28,6 +28,7 @@ export interface ActivePlan {
   name: string;
   daysLeft: number;
   nextBilling: string;
+  isTrial?: boolean;
 }
 
 export interface UserData {
@@ -39,6 +40,11 @@ export interface UserData {
   activePlan?: ActivePlan;
   expiration?: string;
   paymentMethodSaved?: boolean;
+  isTrial?: boolean;
+  hasUsedTrial?: boolean;
+  trialDuration?: number;
+  hasPaid?: boolean;
+  subscriptionType?: string;
 }
 
 export interface Notifications {
@@ -85,6 +91,11 @@ export interface Translations {
     unsubscribeBtn: string;
     unsubscribeConfirm: string;
     unsubscribeSuccess: string;
+    freeTrialAvailableTitle: (days: number) => string;
+    freeTrialAvailableSubtitle: string;
+    freeTrialPill: string;
+    freeTrialBadge: string;
+    trialPlanName: string;
   };
   payment: {
     selectMethod: string;

@@ -215,6 +215,10 @@ export default function HomeScreen({
     }
   };
 
+  const subTypeNorm = (user.subscriptionType || "").toLowerCase();
+  const isTrialAvailable = subTypeNorm === "trial_available" || (!hasActivePlan && !user.hasUsedTrial);
+  const isTrialActive = subTypeNorm === "trial" || (hasActivePlan && (user.activePlan?.isTrial || user.isTrial));
+
   return (
     <div
       style={{
@@ -323,14 +327,14 @@ export default function HomeScreen({
       >
         <GradientBlock
           label=""
-          primaryColor={hasActivePlan ? "#FF44DD" : "#567780"}
-          secondaryColor={hasActivePlan ? "#9500FF" : "#76BDD2"}
+          primaryColor={hasActivePlan ? (isTrialActive ? "#00D1FF" : "#FF44DD") : (isTrialAvailable ? "#00D1FF" : "#567780")}
+          secondaryColor={hasActivePlan ? "#9500FF" : (isTrialAvailable ? "#567780" : "#76BDD2")}
           baseColor="#000000ff"
           borderRadius="70px"
           height={240}
           animate={false}
           animationSpeed={10}
-          glowIntensity={hasActivePlan ? 1.2 : 1.7}
+          glowIntensity={hasActivePlan ? (isTrialActive ? 1.5 : 1.2) : (isTrialAvailable ? 1.5 : 1.7)}
           borderGlow={true}
           enableMouseTracking={false}
         />
@@ -355,12 +359,31 @@ export default function HomeScreen({
               fontSize: "12px",
               color: "#fff",
               background: "#1A1A1A",
-              padding: "6px 8px",
+              padding: "6px 12px",
               borderRadius: "12px",
               fontFamily: "var(--font-mono), monospace",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
           >
-            {t.home.activePlanLabel}
+            {hasActivePlan ? (
+              isTrialActive ? (
+                <>
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#40D1FD" }} />
+                  {t.home.freeTrialBadge}
+                </>
+              ) : (
+                t.home.activePlanLabel
+              )
+            ) : (isTrialAvailable ? (
+              <>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#40D1FD" }} />
+                {t.home.freeTrialPill}
+              </>
+            ) : (
+              t.home.activePlanLabel
+            ))}
           </span>
 
           {hasActivePlan ? (
@@ -372,13 +395,14 @@ export default function HomeScreen({
                   marginBottom: "4px",
                 }}
               >
-                {t.home.secureFor}
+                {isTrialActive ? t.home.trialPlanName : t.home.secureFor}
               </span>
               <span
                 style={{
                   fontSize: "24px",
                   color: "#fff",
                   lineHeight: 1.1,
+                  textAlign: "center",
                 }}
               >
                 {t.home.daysLeft(user.activePlan!.daysLeft)}
@@ -386,12 +410,38 @@ export default function HomeScreen({
               <span
                 style={{
                   fontSize: "12px",
-                  color: "rgba(255, 255, 255, 0.45)",
+                  color: isTrialActive ? "#40D1FD" : "rgba(255, 255, 255, 0.45)",
                 }}
               >
-                {t.home.nextBilling(user.activePlan!.nextBilling)}
+                {isTrialActive
+                  ? `(${t.home.freeTrialBadge}) • ${t.home.nextBilling(user.activePlan!.nextBilling)}`
+                  : t.home.nextBilling(user.activePlan!.nextBilling)}
               </span>
             </>
+          ) : (isTrialAvailable ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textAlign: "center" }}>
+              <span
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  lineHeight: 1.2,
+                  padding: "0 10px",
+                }}
+              >
+                {t.home.freeTrialAvailableTitle(user.trialDuration || 3)}
+              </span>
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: "rgba(255, 255, 255, 0.55)",
+                  lineHeight: 1.3,
+                  padding: "0 10px",
+                }}
+              >
+                {t.home.freeTrialAvailableSubtitle}
+              </span>
+            </div>
           ) : (
             <>
               <span
@@ -405,7 +455,7 @@ export default function HomeScreen({
               </span>
               <div style={{ height: "24px" }} />
             </>
-          )}
+          ))}
         </div>
       </div>
 
@@ -1163,7 +1213,7 @@ export default function HomeScreen({
             </div>
 
             {/* Key container */}
-            {user.expiration && !isNaN(new Date(user.expiration).getTime()) && new Date(user.expiration) > new Date() && personalKey ? (
+            {activeKey ? (
               <>
                 <GradientBlock
                   label=""
