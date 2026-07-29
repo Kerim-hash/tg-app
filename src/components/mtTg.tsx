@@ -442,6 +442,12 @@ export default function TMA() {
           };
         }
 
+        // Check if key is directly provided in profile
+        const keyInProfile = profile.key || profile.config_key || profile.configKey || profile.vless_key || profile.personal_key || profile.happ_key;
+        if (keyInProfile && typeof keyInProfile === "string") {
+          setPersonalKey(keyInProfile);
+        }
+
         setUser({
           id: profile.id || profile.user_id || tgUser?.id || 0,
           firstName: profile.first_name || profile.firstName || tgUser?.first_name || "User",
@@ -483,10 +489,26 @@ export default function TMA() {
 
     try {
       const keys = await apiCall("/users/config-keys", "GET");
-      if (Array.isArray(keys)) {
-        const happKeys = keys.filter((k: any) => k.app === "happ");
-        if (happKeys.length > 0) {
-          setPersonalKey(happKeys[happKeys.length - 1].key);
+      if (Array.isArray(keys) && keys.length > 0) {
+        const happKeys = keys.filter((k: any) => {
+          if (!k) return false;
+          if (typeof k === "string") return true;
+          const appVal = (k.app || k.app_name || k.client || k.type || "").toString().toLowerCase();
+          return appVal === "happ" || appVal === "";
+        });
+
+        const target = happKeys.length > 0 ? happKeys[happKeys.length - 1] : keys[keys.length - 1];
+        const extractedKey = typeof target === "string" ? target : (
+          target.key || target.config_key || target.configKey || target.vless_key || target.vlessKey || target.value || target.key_url || target.url || ""
+        );
+
+        if (extractedKey) {
+          setPersonalKey(extractedKey);
+        }
+      } else if (keys && typeof keys === "object") {
+        const extractedKey = keys.key || keys.config_key || keys.configKey || keys.vless_key || keys.vlessKey || keys.value || keys.url || "";
+        if (extractedKey) {
+          setPersonalKey(extractedKey);
         }
       }
     } catch (err) {
