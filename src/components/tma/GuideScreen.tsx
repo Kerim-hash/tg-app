@@ -903,7 +903,7 @@ export default function GuideScreen({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "4px" }}>
-            {expiration !== undefined && !isNaN(new Date(expiration).getTime()) && new Date(expiration) > new Date() && personalKey ? (
+            {activeKey ? (
               <>
                 {/* Access Key visualizer — Figma Glass Input Spec */}
                 <GradientBlock
