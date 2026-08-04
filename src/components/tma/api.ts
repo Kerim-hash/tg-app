@@ -52,3 +52,15 @@ export const apiCall = async (endpoint: string, method: "GET" | "POST" | "PATCH"
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
   return response.json();
 };
+
+// Records a push-campaign button click. Fire-and-forget, no auth - used to
+// track engagement with `p-<campaignId>_<action>` deep links from push-service.
+export const recordPushClick = (campaignId: number, action: string, telegramId: number | string): void => {
+  fetch(`${API_BASE}/public/clicks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ campaign_id: campaignId, action, telegram_id: String(telegramId) }),
+  }).catch((err) => {
+    console.error("[IGuard] Failed to record push click:", err);
+  });
+};

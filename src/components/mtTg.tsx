@@ -7,7 +7,7 @@ import Intercom from "@intercom/messenger-js-sdk";
 
 import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo, Campaign } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
-import { apiCall, safeStorage } from "./tma/api";
+import { apiCall, safeStorage, recordPushClick } from "./tma/api";
 import { trackEvent } from "../lib/mixpanel";
 
 import NavBar from "./tma/NavBar";
@@ -233,6 +233,35 @@ function parseStartParam(startParam: string | null | undefined): ParsedStartPara
     clickId: startParam.substring(underscore + 1) || null,
   };
 }
+
+interface ParsedPushParam {
+  campaignId: number;
+  action: string;
+}
+
+// Parses push-service deep links: `p-<campaignId>_<action>`, e.g. `p-42_plans`.
+function parsePushStartParam(startParam: string | null | undefined): ParsedPushParam | null {
+  if (!startParam || !startParam.startsWith("p-")) return null;
+
+  const content = startParam.substring(2);
+  const underscore = content.indexOf("_");
+  if (underscore === -1) return null;
+
+  const campaignIdStr = content.substring(0, underscore);
+  const action = content.substring(underscore + 1);
+  const campaignId = Number(campaignIdStr);
+  if (!campaignIdStr || !action || Number.isNaN(campaignId)) return null;
+
+  return { campaignId, action };
+}
+
+const PUSH_ACTION_TO_TAB: Record<string, Tab> = {
+  home: "home",
+  guide: "guide",
+  plans: "home",
+  profile: "profile",
+  support: "support",
+};
 
 function detectCampaign(): Campaign {
   if (typeof window === "undefined") return "default";
@@ -650,6 +679,24 @@ export default function TMA() {
     // Detect campaign from referral link or start param
     const detected = detectCampaign();
     setCampaign(detected);
+
+    // Push-service click tracking: `p-<campaignId>_<action>` deep links
+    const pushParam = parsePushStartParam(getRawStartParam());
+    if (pushParam) {
+      let tgUserId: number | undefined;
+      try {
+        tgUserId = WebApp.initDataUnsafe?.user?.id;
+      } catch { }
+      if (tgUserId) {
+        recordPushClick(pushParam.campaignId, pushParam.action, tgUserId);
+      }
+      trackEvent("push_link_opened", { campaign_id: pushParam.campaignId, action: pushParam.action });
+
+      const targetTab = PUSH_ACTION_TO_TAB[pushParam.action];
+      if (targetTab) {
+        setCurrentTab(targetTab);
+      }
+    }
 
     const completed = safeStorage.getItem("iguard_onboarding_completed");
     if (completed !== "true") {
