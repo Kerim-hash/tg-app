@@ -439,7 +439,7 @@ export default function SetupStep({
             {/* Plans card block */}
             {!planPurchased && (
               <div className="flex flex-col gap-4 w-full">
-                <div className="grid grid-cols-2 gap-3 w-full box-border">
+                <div className="flex justify-center gap-3 w-full box-border">
                   {onboardingPlans.map((plan) => {
                     const isYearly = plan.periodMonths === 12;
                     const isActive = tempSelectedPlanId === plan.id;
@@ -462,7 +462,7 @@ export default function SetupStep({
                             trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
                           }
                         }}
-                        className="w-full h-[170px] rounded-[45px] relative cursor-pointer overflow-hidden select-none"
+                        className="w-[170px] h-[170px] shrink-0 rounded-[45px] relative cursor-pointer overflow-hidden select-none"
                       >
                         <GradientBlock
                           label=""

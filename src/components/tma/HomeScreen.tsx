@@ -2,89 +2,38 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import WebApp from "@twa-dev/sdk";
 import GradientBlock from "../GradientBlock";
+import { ParticleGlobe } from "../ParticleGlobe";
+import { ScrambleText } from "../ScrambleText";
+import { PlanCard, getPlanLabelText, getBilledFrequencyText } from "./PlanCard";
 import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 
-function getPlanLabelText(periodMonths: number, lang: string): string {
-  if (periodMonths === 12) {
-    if (lang === "uz") return "60% chegirma";
-    if (lang === "by") return "Зніжка 60%";
-    if (lang === "ru") return "Скидка 60%";
-    return "Save 60%";
-  }
-  if (lang === "ru") {
-    if (periodMonths === 1) return "30 дней";
-    if (periodMonths === 3) return "3 месяца";
-    if (periodMonths === 6) return "6 месяцев";
-    return `${periodMonths} мес.`;
-  } else if (lang === "uz") {
-    if (periodMonths === 1) return "30 kun";
-    if (periodMonths === 3) return "3 oy";
-    if (periodMonths === 6) return "6 oy";
-    return `${periodMonths} oy`;
-  } else if (lang === "by") {
-    if (periodMonths === 1) return "30 дзён";
-    if (periodMonths === 3) return "3 месяцы";
-    if (periodMonths === 6) return "6 месяцаў";
-    return `${periodMonths} мес.`;
-  } else {
-    if (periodMonths === 1) return "30 Days";
-    if (periodMonths === 3) return "3 Months";
-    if (periodMonths === 6) return "6 Months";
-    return `${periodMonths} Months`;
-  }
+function FeatureBadge({ text, align = "left" }: { text: string; align?: "left" | "right" }) {
+  return (
+    <div
+      className="flex items-start gap-2"
+      style={{ flexDirection: align === "right" ? "row-reverse" : "row" }}
+    >
+      <div className="haptikos-bullet shrink-0 mt-1" />
+      <ScrambleText
+        text={text}
+        className="font-mono"
+        style={{
+          fontSize: "11px",
+          lineHeight: 1.35,
+          letterSpacing: "-0.02em",
+          color: "#40D1FD",
+          textTransform: "uppercase",
+          whiteSpace: "pre-line",
+          textAlign: align,
+        }}
+        delay={align === "right" ? 500 : 300}
+      />
+    </div>
+  );
 }
-
-function getBilledFrequencyText(periodMonths: number, lang: string, t: any): string {
-  if (periodMonths === 12) {
-    if (lang === "uz") return "Oyiga $4";
-    if (lang === "by") return "$4 у месяц";
-    if (lang === "ru") return "$4 в месяц";
-    return "$4 per month";
-  }
-  if (periodMonths === 1) {
-    return t.home.billedMonthly;
-  }
-  if (lang === "ru") {
-    if (periodMonths === 3) return "Оплата каждые 3 месяца";
-    if (periodMonths === 6) return "Оплата каждые 6 месяцев";
-    return `Оплата каждые ${periodMonths} мес.`;
-  } else if (lang === "uz") {
-    if (periodMonths === 3) return "Har 3 oyda to'lov";
-    if (periodMonths === 6) return "Har 6 oyda to'lov";
-    return `Har ${periodMonths} oyda to'lov`;
-  } else if (lang === "by") {
-    if (periodMonths === 3) return "Аплата кожныя 3 месяцы";
-    if (periodMonths === 6) return "Аплата кожныя 6 месяцаў";
-    return `Аплата кожныя ${periodMonths} мес.`;
-  } else {
-    return `Billed every ${periodMonths} months`;
-  }
-}
-
-const SERVERS_ROW1 = [
-  { name: "Albania", flag: "🇦🇱" },
-  { name: "Austria", flag: "🇦🇹" },
-  { name: "Canada", flag: "🇨🇦" },
-  { name: "France", flag: "🇫🇷" },
-];
-
-const SERVERS_ROW2 = [
-  { name: "Germany", flag: "🇩🇪" },
-  { name: "Italy", flag: "🇮🇹" },
-  { name: "Singapore", flag: "🇸🇬" },
-  { name: "Spain", flag: "🇪🇸" },
-];
-
-const SERVERS_ROW3 = [
-  { name: "Sweden", flag: "🇸🇪" },
-  { name: "Thailand", flag: "🇹🇭" },
-  { name: "Turkey", flag: "🇹🇷" },
-  { name: "United States", flag: "🇺🇸" },
-];
 
 interface HomeScreenProps {
   t: Translations;
@@ -127,7 +76,7 @@ export default function HomeScreen({
 }: HomeScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
   const [isPlanSheetOpen, setIsPlanSheetOpen] = useState(false);
-  const [isKeySheetOpen, setIsKeySheetOpen] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
   const [isUnsubscribing, setIsUnsubscribing] = useState(false);
@@ -190,7 +139,7 @@ export default function HomeScreen({
     if (typeof window === "undefined") return;
     const mainEl = document.querySelector("main");
     if (!mainEl) return;
-    const isAnySheetOpen = isPlanSheetOpen || isKeySheetOpen || isPaymentSheetOpen;
+    const isAnySheetOpen = isPlanSheetOpen || isPaymentSheetOpen;
     if (isAnySheetOpen) {
       mainEl.style.overflowY = "hidden";
     } else {
@@ -199,25 +148,30 @@ export default function HomeScreen({
     return () => {
       mainEl.style.overflowY = "auto";
     };
-  }, [isPlanSheetOpen, isKeySheetOpen, isPaymentSheetOpen]);
+  }, [isPlanSheetOpen, isPaymentSheetOpen]);
 
   const activeKey = personalKey || "";
 
-  const handleCopyAndClose = () => {
+  const handleCopyKey = () => {
+    if (!activeKey) return;
     navigator.clipboard.writeText(activeKey);
-    trackEvent("personal_key_copied", { source: "home_modal", trigger: "extend_flow" });
+    trackEvent("personal_key_copied", { source: "home_inline" });
     triggerHaptic("success");
-    setIsKeySheetOpen(false);
-    try {
-      WebApp.showAlert("Access key copied to clipboard!");
-    } catch {
-      alert("Access key copied to clipboard!");
-    }
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
   };
 
   const subTypeNorm = (user.subscriptionType || "").toLowerCase();
-  const isTrialAvailable = subTypeNorm === "trial_available" || (!hasActivePlan && !user.hasUsedTrial);
   const isTrialActive = subTypeNorm === "trial" || (hasActivePlan && (user.activePlan?.isTrial || user.isTrial));
+
+  // Pre-select the yearly plan so the BUY button is ready to go
+  useEffect(() => {
+    if (!selectedPlan && plans.length > 0) {
+      const yearly = plans.find((p) => p.periodMonths === 12);
+      onSelectPlan(yearly || plans[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plans, selectedPlan]);
 
   return (
     <div
@@ -225,7 +179,6 @@ export default function HomeScreen({
         padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 24px",
         display: "flex",
         flexDirection: "column",
-        gap: "20px",
         fontFamily: "var(--font-onest), sans-serif",
         position: "relative",
       }}
@@ -293,101 +246,86 @@ export default function HomeScreen({
         {t.nav.home}
       </p>
 
-      {/* Welcome heading */}
-      <h1
-        className="animate-fade-in-up"
-        style={{
-          fontSize: "22px",
-          textAlign: "center",
-          color: "#fff",
-          margin: 0,
-          lineHeight: 1.2,
-          animationDelay: "100ms",
-        }}
-      >
-        {t.home.welcome}
-      </h1>
-
-      {/* Active plan card — GradientBlock with overlay content */}
-      <div
-        className="animate-fade-in-up"
-        onClick={() => {
-          if (!hasActivePlan) {
-            triggerHaptic("light");
-            document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
-          }
-        }}
-        style={{
-          position: "relative",
-          borderRadius: "70px",
-          overflow: "hidden",
-          animationDelay: "200ms",
-          cursor: !hasActivePlan ? "pointer" : "default",
-        }}
-      >
-        <GradientBlock
-          label=""
-          primaryColor={hasActivePlan ? (isTrialActive ? "#00D1FF" : "#FF44DD") : (isTrialAvailable ? "#00D1FF" : "#567780")}
-          secondaryColor={hasActivePlan ? "#9500FF" : (isTrialAvailable ? "#567780" : "#76BDD2")}
-          baseColor="#000000ff"
-          borderRadius="70px"
-          height={240}
-          animate={false}
-          animationSpeed={10}
-          glowIntensity={hasActivePlan ? (isTrialActive ? 1.5 : 1.2) : (isTrialAvailable ? 1.5 : 1.7)}
-          borderGlow={true}
-          enableMouseTracking={false}
-        />
-        {/* Content overlay — positioned above GradientBlock layers */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "36px 24px",
-            zIndex: 20,
-            pointerEvents: "none",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* Top Capsule pill */}
-          <span
+      {hasActivePlan ? (
+        <>
+          {/* Welcome back heading */}
+          <h1
+            className="animate-fade-in-up"
             style={{
-              fontSize: "12px",
-              color: "#fff",
-              background: "#1A1A1A",
-              padding: "6px 12px",
-              borderRadius: "12px",
-              fontFamily: "var(--font-mono), monospace",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
+              fontSize: "24px",
+              fontWeight: 400,
+              textAlign: "center",
+              color: "#FFFFFF",
+              margin: "0 0 24px",
+              lineHeight: 1.2,
+              animationDelay: "100ms",
+              fontFamily: "var(--font-onest), sans-serif",
             }}
           >
-            {hasActivePlan ? (
-              isTrialActive ? (
-                <>
-                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#40D1FD" }} />
-                  {t.home.freeTrialBadge}
-                </>
-              ) : (
-                t.home.activePlanLabel
-              )
-            ) : (isTrialAvailable ? (
-              <>
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#40D1FD" }} />
-                {t.home.freeTrialPill}
-              </>
-            ) : (
-              t.home.activePlanLabel
-            ))}
-          </span>
+            {t.home.welcomeBack}
+          </h1>
 
-          {hasActivePlan ? (
-            <>
+          {/* Active plan card */}
+          <div
+            className="animate-fade-in-up"
+            style={{
+              position: "relative",
+              borderRadius: "70px",
+              overflow: "hidden",
+              animationDelay: "150ms",
+            }}
+          >
+            <GradientBlock
+              label=""
+              primaryColor={isTrialActive ? "#00D1FF" : "#FF44DD"}
+              secondaryColor="#9500FF"
+              baseColor="#000000ff"
+              borderRadius="70px"
+              height={240}
+              animate={false}
+              animationSpeed={10}
+              glowIntensity={isTrialActive ? 1.5 : 1.2}
+              borderGlow={true}
+              enableMouseTracking={false}
+            />
+            {/* Content overlay */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "36px 24px",
+                zIndex: 20,
+                pointerEvents: "none",
+                boxSizing: "border-box",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#fff",
+                  background: "#1A1A1A",
+                  padding: "6px 12px",
+                  borderRadius: "12px",
+                  fontFamily: "var(--font-mono), monospace",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                {isTrialActive ? (
+                  <>
+                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#40D1FD" }} />
+                    {t.home.freeTrialBadge}
+                  </>
+                ) : (
+                  t.home.activePlanLabel
+                )}
+              </span>
+
               <span
                 style={{
                   fontSize: "14px",
@@ -417,138 +355,169 @@ export default function HomeScreen({
                   ? `(${t.home.freeTrialBadge}) • ${t.home.nextBilling(user.activePlan!.nextBilling)}`
                   : t.home.nextBilling(user.activePlan!.nextBilling)}
               </span>
-            </>
-          ) : (isTrialAvailable ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textAlign: "center" }}>
-              <span
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  color: "#fff",
-                  lineHeight: 1.2,
-                  padding: "0 10px",
-                }}
-              >
-                {t.home.freeTrialAvailableTitle(user.trialDuration || 3)}
-              </span>
-              <span
-                style={{
-                  fontSize: "13px",
-                  color: "rgba(255, 255, 255, 0.55)",
-                  lineHeight: 1.3,
-                  padding: "0 10px",
-                }}
-              >
-                {t.home.freeTrialAvailableSubtitle}
-              </span>
             </div>
-          ) : (
-            <>
-              <span
-                style={{
-                  fontSize: "24px",
-                  color: "#666666",
-                  transform: "translateY(-12px)",
-                }}
-              >
-                {t.home.noActivePlan}
-              </span>
-              <div style={{ height: "24px" }} />
-            </>
-          ))}
+          </div>
+
+          {/* Extend plan button */}
+          <div
+            className="animate-fade-in-up"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "24px",
+              animationDelay: "200ms",
+            }}
+          >
+            <button
+              className={user.paymentMethodSaved ? "" : "hover-scale-btn"}
+              onClick={() => {
+                if (user.paymentMethodSaved) {
+                  triggerHaptic("warning");
+                  return;
+                }
+                triggerHaptic("medium");
+                const daysLeft = user.activePlan?.daysLeft || 0;
+                trackEvent("extend_plan_tapped", { days_left: daysLeft, current_plan: user.activePlan?.name.includes("Year") || user.activePlan?.name.includes("год") ? "1y" : "30d" });
+                apiCall("/api/track-event", "POST", { event: "buy_plan_tapped" }).catch((err) => {
+                  console.error("Failed to track buy_plan_tapped event on backend:", err);
+                });
+                setIsPlanSheetOpen(true);
+              }}
+              style={{
+                padding: "10px 24px",
+                borderRadius: "14px",
+                background: user.paymentMethodSaved ? "transparent" : "#fff",
+                border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
+                color: user.paymentMethodSaved ? "rgba(255, 255, 255, 0.35)" : "#000",
+                fontSize: "14px",
+                fontWeight: 400,
+                cursor: user.paymentMethodSaved ? "default" : "pointer",
+                whiteSpace: "nowrap",
+                fontFamily: "JetBrains Mono, monospace",
+                letterSpacing: "-0.06em",
+                textTransform: "uppercase",
+              }}
+            >
+              {user.paymentMethodSaved
+                ? t.home.autoRenewalActive
+                : t.home.extendPlan}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div style={{ position: "relative" }}>
+          {/* Particle globe background */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "calc(-150px - env(safe-area-inset-top, 0px))",
+              transform: "translateX(-50%)",
+              pointerEvents: "none",
+              zIndex: 0,
+              width: "100vw",
+              maxWidth: "600px",
+              aspectRatio: "1 / 1",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+            }}
+          >
+            <ParticleGlobe width={900} height={900} className="w-full h-full" />
+          </div>
+
+          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Feature badge — protection */}
+          <div
+            className="animate-fade-in-up"
+            style={{ display: "flex", justifyContent: "center", animationDelay: "100ms" }}
+          >
+            <FeatureBadge text={t.home.badgeProtection} />
+          </div>
+
+          {/* Welcome heading */}
+          <h1
+            className="animate-fade-in-up"
+            style={{
+              fontSize: "32px",
+              fontWeight: 400,
+              textAlign: "center",
+              color: "#FFFFFF",
+              margin: 0,
+              lineHeight: "41px",
+              animationDelay: "150ms",
+              fontFamily: "var(--font-onest), sans-serif",
+            }}
+          >
+            {t.home.welcome}
+          </h1>
+
+          {/* Welcome subtitle */}
+          <p
+            className="animate-fade-in-up"
+            style={{
+              fontSize: "16px",
+              fontWeight: 400,
+              textAlign: "center",
+              color: "rgba(255, 255, 255, 0.4)",
+              margin: "0 auto",
+              maxWidth: "280px",
+              lineHeight: "20px",
+              animationDelay: "200ms",
+              fontFamily: "var(--font-onest), sans-serif",
+            }}
+          >
+            {t.home.welcomeSubtitle}
+          </p>
+
+          {/* Activate button */}
+          <div
+            className="animate-fade-in-up"
+            style={{ display: "flex", justifyContent: "center", animationDelay: "250ms" }}
+          >
+            <button
+              className="hover-scale-btn"
+              onClick={() => {
+                triggerHaptic("medium");
+                trackEvent("activate_iguard_tapped", { source: "home_hero" });
+                document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              style={{
+                padding: "10px 24px",
+                borderRadius: "14px",
+                background: "#fff",
+                border: "none",
+                color: "#000",
+                fontSize: "14px",
+                fontWeight: 400,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                fontFamily: "JetBrains Mono, monospace",
+                letterSpacing: "-0.06em",
+                textTransform: "uppercase",
+              }}
+            >
+              {t.home.activateBtn}
+            </button>
+          </div>
+
+          {/* Feature badges — privacy / speed */}
+          <div
+            className="animate-fade-in-up"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              margin: "16px 0 24px",
+              animationDelay: "300ms",
+            }}
+          >
+            <FeatureBadge text={t.home.badgePrivacy} />
+            <FeatureBadge text={t.home.badgeSpeed} align="right" />
+          </div>
+          </div>
         </div>
-      </div>
-
-      {/* Action buttons */}
-      <div
-        className="animate-fade-in-up"
-        style={{
-          display: "flex",
-          gap: "10px",
-          margin: "auto",
-          width: "100%",
-          flexDirection: "column",
-          animationDelay: "300ms",
-          padding: "0 30px"
-        }}
-      >
-        <button
-          className="hover-scale-btn"
-          onClick={() => {
-            triggerHaptic("medium");
-            trackEvent("connect_device_tapped", { plan_status: hasActivePlan ? "active" : "none", source: "home" });
-            setIsKeySheetOpen(true);
-          }}
-          style={{
-            flex: 1.25,
-            padding: "10px 15px",
-            borderRadius: "14px",
-            background: "transparent",
-            border: "1px solid rgba(255, 255, 255, 0.25)",
-            color: "#fff",
-            fontSize: "14px",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-            fontFamily: "var(--font-mono), monospace",
-            display: "flex",
-            gap: "5px",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        ><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 10H15" stroke="white" strokeLinecap="square" strokeLinejoin="round" />
-            <path d="M10 15V5" stroke="white" strokeLinecap="square" strokeLinejoin="round" />
-          </svg>
-
-          {t.home.connectDevice.toUpperCase()}
-        </button>
-        <button
-          className={user.paymentMethodSaved ? "" : "hover-scale-btn"}
-          onClick={() => {
-            if (user.paymentMethodSaved) {
-              triggerHaptic("warning");
-              return;
-            }
-            triggerHaptic("medium");
-            if (user.activePlan) {
-              const daysLeft = user.activePlan.daysLeft || 0;
-              trackEvent("extend_plan_tapped", { days_left: daysLeft, current_plan: user.activePlan.name.includes("Year") || user.activePlan.name.includes("год") ? "1y" : "30d" });
-            } else {
-              trackEvent("buy_plan_tapped", { source: "home_cta" });
-            }
-            apiCall("/api/track-event", "POST", { event: "buy_plan_tapped" }).catch((err) => {
-              console.error("Failed to track buy_plan_tapped event on backend:", err);
-            });
-            setIsPlanSheetOpen(true);
-          }}
-          style={{
-            flex: 0.75,
-            padding: "10px 15px",
-            borderRadius: "14px",
-            background: user.paymentMethodSaved ? "transparent" : "#fff",
-            border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
-            color: user.paymentMethodSaved ? "rgba(255, 255, 255, 0.35)" : "#000",
-            fontSize: "14px",
-            cursor: user.paymentMethodSaved ? "default" : "pointer",
-            whiteSpace: "nowrap",
-            fontFamily: "var(--font-mono), monospace",
-          }}
-        >
-          {user.paymentMethodSaved
-            ? t.home.autoRenewalActive.toUpperCase()
-            : (hasActivePlan ? t.home.extendPlan : t.home.buyPlan).toUpperCase()}
-        </button>
-      </div>
-
-      <div
-        className="animate-fade-in-up"
-        style={{
-          height: "1px",
-          backgroundImage: "repeating-linear-gradient(to right, #999999 0px, #999999 1px, transparent 1px, transparent 8px)",
-          margin: "16px 0",
-          animationDelay: "350ms",
-        }}
-      />
+      )}
 
       {/* Choose a plan (HomeScreen embedded preview) or Unsubscribe Interface */}
       {user.paymentMethodSaved ? (
@@ -605,10 +574,10 @@ export default function HomeScreen({
             )}
           </button>
         </div>
-      ) : (
+      ) : !hasActivePlan ? (
         <div
           id="plans-section"
-          className="animate-fade-in-up"
+          className="animate-fade-in-up mt-5"
           style={{
             display: "flex",
             flexDirection: "column",
@@ -626,9 +595,8 @@ export default function HomeScreen({
 
 
           {/* Plan cards selector inside Main Screen — GradientBlock Figma Spec */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", width: "100%" }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: "12px", width: "100%" }}>
             {plans.map((plan) => {
-              const isYearly = plan.periodMonths === 12;
               const isActive = selectedPlan?.id === plan.id;
 
               return (
@@ -650,8 +618,9 @@ export default function HomeScreen({
                     }
                   }}
                   style={{
-                    width: "100%",
+                    width: "170px",
                     height: "170px",
+                    flexShrink: 0,
                     borderRadius: "45px",
                     position: "relative",
                     cursor: user.paymentMethodSaved ? "default" : "pointer",
@@ -664,120 +633,21 @@ export default function HomeScreen({
                     transition: "opacity 0.2s ease",
                   }}
                 >
-
-                  <GradientBlock
-                    label=""
-                    primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
-                    secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                    baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                  <PlanCard
+                    plan={plan}
+                    plans={plans}
+                    isActive={isActive}
+                    language={language}
+                    t={t}
                     borderRadius="45px"
-                    height="100%"
-                    animate={isYearly}
-                    glowIntensity={isYearly ? .3 : 0.5}
-                    borderGlow={true}
-                    solidGradient={isYearly ? "#5B1B85" : undefined}
-                    solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
-                    absoluteChildren={true}
-                    enableHoverScale={false}
-                  >
-                    {/* Border and Checkmark Icon Overlay when Selected */}
-                    {isActive && (
-                      <>
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            border: "2px solid #6C63FF",
-                            borderRadius: "45px",
-                            pointerEvents: "none",
-                            zIndex: 30,
-                          }}
-                        />
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "16px",
-                            right: "16px",
-                            width: "20px",
-                            height: "20px",
-                            borderRadius: "50%",
-                            background: "#6C63FF",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            pointerEvents: "none",
-                            zIndex: 30,
-                          }}
-                        >
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Overlay Content */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        padding: "15px 12px 22px",
-                        pointerEvents: "none",
-                        boxSizing: "border-box",
-                        textAlign: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "inline-block",
-                          fontSize: "12px",
-                          padding: "6px 8px",
-                          borderRadius: "20px",
-                          background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
-                          color: "#fff",
-                          fontFamily: "JetBrains Mono, monospace",
-                          textTransform: "capitalize"
-                        }}
-                      >
-                        {getPlanLabelText(plan.periodMonths, language)}
-                      </span>
-                      <div>
-                        <span style={{
-                          display: "block",
-                          fontSize: language === "ru" || language === "by" || language === "uz" ? "18px" : "22px",
-                          color: "#fff",
-                          lineHeight: 1.1,
-                        }}>
-                          {isYearly ? (
-                            language === "uz" ? "$48 / yil" :
-                            language === "by" ? "$48 / год" :
-                            language === "ru" ? "$48 / год" : "$48 / year"
-                          ) : (
-                            `$ ${plan.usdPerMonth.toFixed(2)}`
-                          )}
-                        </span>
-                        {!isYearly && (
-                          <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
-                            {t.home.perMonth}
-                          </span>
-                        )}
-                      </div>
-                      <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
-                        {getBilledFrequencyText(plan.periodMonths, language, t)}
-                      </span>
-                    </div>
-                  </GradientBlock>
+                  />
                 </button>
               );
             })}
           </div>
 
           {/* Action Buy Button below cards */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group">
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group w-[150px]">
             <button
               className={user.paymentMethodSaved ? "" : (selectedPlan ? "hover-scale-btn" : "")}
               disabled={!user.paymentMethodSaved && !selectedPlan}
@@ -807,15 +677,13 @@ export default function HomeScreen({
                 fontFamily: "JetBrains Mono, monospace",
                 transition: "all 0.25s ease",
                 opacity: user.paymentMethodSaved ? 0.5 : 1,
+                width: "100%",
               }}
             >
               {user.paymentMethodSaved
                 ? t.home.autoRenewalActive.toUpperCase()
                 : (selectedPlan
-                    ? t.home.buyFor(
-                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                      selectedPlan.starsPrice
-                    )
+                    ? t.home.buyBtn.toUpperCase()
                     : t.onboarding.selectAndBuy.toUpperCase())}
             </button>
             {!user.paymentMethodSaved && !selectedPlan && (
@@ -825,113 +693,172 @@ export default function HomeScreen({
             )}
           </div>
         </div>
+      ) : null}
+
+      {hasActivePlan && (
+        <>
+          {/* Server Key section */}
+          <div
+            className="animate-fade-in-up"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: "50px",
+              animationDelay: "250ms",
+            }}
+          >
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "6px 8px",
+                gap: "8px",
+                fontSize: "12px",
+                fontWeight: 400,
+                color: "#fff",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "12px",
+                fontFamily: "JetBrains Mono, monospace",
+                letterSpacing: "-0.06em",
+                lineHeight: 1,
+              }}
+            >
+              {t.home.serverKeyPill}
+            </span>
+
+            <h2 style={{ fontSize: "24px", fontWeight: 400, color: "#fff", margin: "24px 0 0", textAlign: "center", lineHeight: "31px", fontFamily: "var(--font-onest), sans-serif" }}>
+              {t.home.serverKeyTitle}
+            </h2>
+
+            <p style={{ fontSize: "16px", fontWeight: 400, color: "rgba(255, 255, 255, 0.4)", margin: "8px 0 0", textAlign: "center", lineHeight: "20px", maxWidth: "350px", fontFamily: "var(--font-onest), sans-serif" }}>
+              {t.home.serverKeyDesc}
+            </p>
+
+            {/* Key container */}
+            <div style={{ width: "100%", borderRadius: "24px", overflow: "hidden", marginTop: "24px" }}>
+              <GradientBlock
+                label=""
+                primaryColor={"#cfdfe5"}
+                secondaryColor={"#686F70"}
+                baseColor="#1D1C1B"
+                borderRadius="24px"
+                height="auto"
+                animate={false}
+                glowIntensity={0.6}
+                borderGlow={true}
+                enableMouseTracking={false}
+                enableHoverScale={false}
+                contentAlign={"start"}
+                padding="14px 24px"
+              >
+                <span style={{ fontSize: "12px", color: "#40D1FD", fontFamily: "var(--font-mono), monospace" }}>
+                  {t.home.copyMe}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    fontSize: "15px",
+                    color: activeKey ? "#fff" : "rgba(255, 255, 255, 0.6)",
+                    fontFamily: "var(--font-onest), sans-serif",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {activeKey || t.guide.personalKeyEmptyState}
+                </span>
+              </GradientBlock>
+            </div>
+
+            <button
+              className="hover-scale-btn"
+              onClick={handleCopyKey}
+              disabled={!activeKey}
+              style={{
+                padding: "10px 32px",
+                borderRadius: "14px",
+                background: activeKey ? "#fff" : "rgba(255, 255, 255, 0.05)",
+                border: activeKey ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
+                color: activeKey ? "#000" : "rgba(255, 255, 255, 0.3)",
+                fontSize: "14px",
+                cursor: activeKey ? "pointer" : "default",
+                fontFamily: "var(--font-mono), monospace",
+                marginTop: "24px",
+              }}
+            >
+              {(copiedKey ? t.success.copied : t.home.copyBtn).toUpperCase()}
+            </button>
+          </div>
+
+          {/* Guide section */}
+          <div
+            className="animate-fade-in-up"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: "50px",
+              animationDelay: "300ms",
+            }}
+          >
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "6px 8px",
+                gap: "8px",
+                fontSize: "12px",
+                fontWeight: 400,
+                color: "#fff",
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "12px",
+                fontFamily: "JetBrains Mono, monospace",
+                letterSpacing: "-0.06em",
+                lineHeight: 1,
+              }}
+            >
+              {t.home.guidePill}
+            </span>
+
+            <h2 style={{ fontSize: "24px", fontWeight: 400, color: "#fff", margin: "24px 0 0", textAlign: "center", lineHeight: "31px", fontFamily: "var(--font-onest), sans-serif" }}>
+              {t.home.needHelpTitle}
+            </h2>
+
+            <p style={{ fontSize: "16px", fontWeight: 400, color: "rgba(255, 255, 255, 0.4)", margin: "8px 0 0", textAlign: "center", lineHeight: "20px", maxWidth: "312px", fontFamily: "var(--font-onest), sans-serif" }}>
+              {t.home.needHelpDesc}
+            </p>
+
+            <button
+              className="hover-scale-btn"
+              onClick={() => {
+                trackEvent("read_guide_tapped", { source: "home_inline" });
+                triggerHaptic("light");
+                onTabChange("guide");
+              }}
+              style={{
+                padding: "10px 24px",
+                borderRadius: "14px",
+                background: "transparent",
+                border: "1px solid rgba(64, 209, 253, 0.5)",
+                color: "#fff",
+                fontSize: "14px",
+                letterSpacing: "-0.06em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                fontFamily: "JetBrains Mono, monospace",
+                marginTop: "24px",
+              }}
+            >
+              {t.home.readGuideBtn}
+            </button>
+          </div>
+        </>
       )}
-
-      {/* Servers with continuous marquee horizontal ticker */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "40px" }}>
-        <p style={{ fontSize: "16px", color: "#666666", textAlign: "center", margin: 0 }}>
-          {t.home.optimizedServers}
-        </p>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            overflow: "hidden",
-            width: "calc(100% + 32px)",
-            margin: "4px -16px 12px",
-            padding: "6px 0",
-            maskImage: "linear-gradient(to right, transparent, white 8%, white 92%, transparent)",
-            WebkitMaskImage: "linear-gradient(to right, transparent, white 8%, white 92%, transparent)",
-          }}
-        >
-          <style dangerouslySetInnerHTML={{
-            __html: `
-              @keyframes home-marquee-ltr {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-50%); }
-              }
-              @keyframes home-marquee-rtl {
-                0% { transform: translateX(-50%); }
-                100% { transform: translateX(0); }
-              }
-            `
-          }}
-          />
-
-          {/* Row 1: Left to Right */}
-          <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
-            <div style={{ display: "flex", gap: "8px", animation: "home-marquee-ltr 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1, ...SERVERS_ROW1].map((srv, idx) => (
-                <span
-                  key={`r1-${idx}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "13px",
-                    color: "#fff",
-                    background: "#1A1A1A",
-                    padding: "6.5px 12px 6.5px 8px",
-                    borderRadius: "20px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {srv.flag} {srv.name}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Row 2: Right to Left */}
-          <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
-            <div style={{ display: "flex", gap: "8px", animation: "home-marquee-rtl 26s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2, ...SERVERS_ROW2].map((srv, idx) => (
-                <span
-                  key={`r2-${idx}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "13px",
-                    color: "#fff",
-                    background: "#1A1A1A",
-                    padding: "6.5px 12px 6.5px 8px",
-                    borderRadius: "20px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {srv.flag} {srv.name}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Row 3: Left to Right */}
-          <div style={{ display: "flex", width: "100%", overflow: "hidden" }}>
-            <div style={{ display: "flex", gap: "8px", animation: "home-marquee-ltr 22s linear infinite", width: "max-content" }}>
-              {[...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3, ...SERVERS_ROW3].map((srv, idx) => (
-                <span
-                  key={`r3-${idx}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    fontSize: "13px",
-                    color: "#fff",
-                    background: "#1A1A1A",
-                    padding: "6.5px 12px 6.5px 8px",
-                    borderRadius: "20px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {srv.flag} {srv.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* ─── BOTTOM SHEET 1: Choose a plan ────────────────────────────────────── */}
       {isPlanSheetOpen && mounted && createPortal(
@@ -986,9 +913,8 @@ export default function HomeScreen({
 
             {/* Plan cards selector inside Bottom Sheet — GradientBlock Figma Spec */}
             <div style={{ display: "flex", flexDirection: "column", gap: "45px", width: "100%" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", width: "100%" }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: "12px", width: "100%" }}>
                 {plans.map((plan) => {
-                  const isYearly = plan.periodMonths === 12;
                   const isActive = selectedPlan?.id === plan.id;
 
                   return (
@@ -996,9 +922,10 @@ export default function HomeScreen({
                       key={plan.id}
                       onClick={() => { triggerHaptic("light"); onSelectPlan(plan); }}
                       style={{
-                        width: "100%",
+                        width: "170px",
                         height: "170px",
-                        borderRadius: "36px",
+                        flexShrink: 0,
+                        borderRadius: "45px",
                         position: "relative",
                         cursor: "pointer",
                         border: "none",
@@ -1008,111 +935,14 @@ export default function HomeScreen({
                         padding: 0,
                       }}
                     >
-                      <GradientBlock
-                        label=""
-                        primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
-                        secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                        baseColor={isYearly ? "#5B1B85" : "#08090a"}
-                        borderRadius="36px"
-                        height="100%"
-                        animate={isYearly}
-                        glowIntensity={isYearly ? 1.2 : 0.25}
-                        borderGlow={true}
-                        solidGradient={isYearly ? "#5B1B85" : undefined}
-                        solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
-                        enableHoverScale={false}
-                        absoluteChildren={true}
-                      >
-                        {/* Border and Checkmark Icon Overlay when Selected */}
-                        {isActive && (
-                          <>
-                            <div
-                              style={{
-                                position: "absolute",
-                                inset: 0,
-                                border: "2px solid #6C63FF",
-                                borderRadius: "36px",
-                                pointerEvents: "none",
-                                zIndex: 30,
-                              }}
-                            />
-                            <div
-                              style={{
-                                position: "absolute",
-                                top: "16px",
-                                right: "16px",
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: "50%",
-                                background: "#6C63FF",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                pointerEvents: "none",
-                                zIndex: 30,
-                              }}
-                            >
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            </div>
-                          </>
-                        )}
-
-                        {/* Overlay Content */}
-                        <div
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "space-between",
-                            padding: "16px 12px 20px",
-                            zIndex: 20,
-                            pointerEvents: "none",
-                            boxSizing: "border-box",
-                            textAlign: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: "inline-block",
-                              fontSize: "11px",
-                              padding: "6px 14px",
-                              borderRadius: "20px",
-                              background: isYearly ? "rgba(0, 0, 0, 0.16)" : "rgba(255, 255, 255, 0.08)",
-                              color: "#fff",
-                            }}
-                          >
-                            {getPlanLabelText(plan.periodMonths, language)}
-                          </span>
-                          <div>
-                            <span style={{
-                              display: "block",
-                              fontSize: language === "ru" || language === "by" || language === "uz" ? "20px" : "24px",
-                              color: "#fff",
-                              lineHeight: 1.1,
-                            }}>
-                              {isYearly ? (
-                                language === "uz" ? "$48 / yil" :
-                                language === "by" ? "$48 / год" :
-                                language === "ru" ? "$48 / год" : "$48 / year"
-                              ) : (
-                                `$ ${plan.usdPerMonth.toFixed(2)}`
-                              )}
-                            </span>
-                            {!isYearly && (
-                              <span style={{ display: "block", fontSize: "10px", color: isYearly ? "rgba(255,255,255,0.85)" : "#8A94A6", marginTop: "2px" }}>
-                                {t.home.perMonth}
-                              </span>
-                            )}
-                          </div>
-                          <span style={{ display: "block", fontSize: "11px", color: isYearly ? "#E0F2FE" : "#8A94A6", opacity: isYearly ? 0.9 : 1 }}>
-                            {getBilledFrequencyText(plan.periodMonths, language, t)}
-                          </span>
-                        </div>
-                      </GradientBlock>
+                      <PlanCard
+                        plan={plan}
+                        plans={plans}
+                        isActive={isActive}
+                        language={language}
+                        t={t}
+                        borderRadius="45px"
+                      />
                     </button>
                   );
                 })}
@@ -1158,222 +988,6 @@ export default function HomeScreen({
                 )}
               </div>
             </div>
-          </div>
-        </>,
-        document.body
-      )}
-
-      {/* ─── BOTTOM SHEET 2: Use your personal code ───────────────────────────── */}
-      {isKeySheetOpen && mounted && createPortal(
-        <>
-          <div
-            onClick={() => setIsKeySheetOpen(false)}
-            className="animate-backdrop"
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              zIndex: 200,
-            }}
-          />
-          <div
-            className="animate-drawer"
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "100%",
-              maxWidth: "480px",
-              height: "340px",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              background: "#000",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderBottom: "none",
-              borderRadius: "32px 32px 0 0",
-              padding: "24px 20px 32px",
-              zIndex: 210,
-              boxShadow: "0 -12px 40px rgba(0,0,0,0.6)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              boxSizing: "border-box",
-            }}
-          >
-            {/* Drag handle */}
-            <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 8px" }} />
-
-            <div style={{ textAlign: "center" }}>
-              <h2 style={{ fontSize: "24px", color: "#fff", margin: 0 }}>
-                {t.success.useCode}
-              </h2>
-            </div>
-
-            {/* Key container */}
-            {activeKey ? (
-              <>
-                <GradientBlock
-                  label=""
-                  primaryColor={"#cfdfe5"}
-                  secondaryColor={"#686F70"}
-                  baseColor="#1D1C1B"
-                  borderRadius="30px"
-                  height="85px"
-                  animate={false}
-                  glowIntensity={0.6}
-                  borderGlow={true}
-                  enableMouseTracking={false}
-                  contentAlign={"start"}
-                  padding="12px 28px"
-                >
-                  <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
-                    {t.guide.personalKeyLabel}
-                  </span>
-                  <span
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      fontSize: "16px",
-                      color: "#fff",
-                      fontFamily: "var(--font-onest), sans-serif",
-                      fontWeight: 400,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {activeKey}
-                  </span>
-                </GradientBlock>
-
-                {/* Side-by-side Buttons */}
-                <div style={{ display: "flex", gap: "15px", margin: "12px auto 0", width: "100%" }}>
-                  <button
-                    onClick={() => {
-                      trackEvent("read_guide_tapped", { source: "home_modal" });
-                      triggerHaptic("light");
-                      setIsKeySheetOpen(false);
-                      onTabChange("guide");
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: "10px 15px",
-                      borderRadius: "14px",
-                      background: "#333333",
-                      color: "#fff",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      fontFamily: "JetBrains Mono, monospace",
-                      textWrap: "nowrap",
-                      border: "none",
-                    }}
-                  >
-                    {t.success.readGuide.toUpperCase()}
-                  </button>
-                  <button
-                    onClick={handleCopyAndClose}
-                    style={{
-                      flex: 1.5,
-                      padding: "10px 15px",
-                      borderRadius: "14px",
-                      background: "#fff",
-                      border: "none",
-                      color: "#000",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      fontFamily: "JetBrains Mono, monospace",
-                    }}
-                  >
-                    {t.success.copyAndClose.toUpperCase()}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <GradientBlock
-                  label=""
-                  primaryColor={"#cfdfe5"}
-                  secondaryColor={"#686F70"}
-                  baseColor="#1D1C1B"
-                  borderRadius="30px"
-                  height="auto"
-                  animate={false}
-                  glowIntensity={0.6}
-                  borderGlow={true}
-                  enableMouseTracking={false}
-                  contentAlign={"start"}
-                  padding="16px 28px"
-                >
-                  <span style={{ fontSize: "13px", color: "#8E8E93", fontWeight: 400, fontFamily: "var(--font-onest), sans-serif" }}>
-                    {t.guide.personalKeyLabel}
-                  </span>
-                  <span
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      fontSize: "14px",
-                      color: "rgba(255, 255, 255, 0.6)",
-                      fontFamily: "var(--font-onest), sans-serif",
-                      fontWeight: 400,
-                      lineHeight: 1.4,
-                      marginTop: "4px",
-                    }}
-                  >
-                    {t.guide.personalKeyEmptyState}
-                  </span>
-                </GradientBlock>
-
-                {/* Side-by-side Buttons */}
-                <div style={{ display: "flex", gap: "15px", margin: "12px auto 0", width: "100%" }}>
-                  <button
-                    onClick={() => {
-                      trackEvent("read_guide_tapped", { source: "home_modal" });
-                      triggerHaptic("light");
-                      setIsKeySheetOpen(false);
-                      onTabChange("guide");
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: "10px 15px",
-                      borderRadius: "14px",
-                      background: "#333333",
-                      color: "#fff",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      fontFamily: "JetBrains Mono, monospace",
-                      textWrap: "nowrap",
-                      border: "none",
-                    }}
-                  >
-                    {t.success.readGuide.toUpperCase()}
-                  </button>
-                  <button
-                    onClick={() => {
-                      triggerHaptic("medium");
-                      setIsKeySheetOpen(false);
-                      setIsPlanSheetOpen(true);
-                    }}
-                    style={{
-                      flex: 1.5,
-                      padding: "10px 15px",
-                      borderRadius: "14px",
-                      background: "#fff",
-                      border: "none",
-                      color: "#000",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      fontFamily: "JetBrains Mono, monospace",
-                    }}
-                  >
-                    {t.onboarding.selectAndBuy.toUpperCase()}
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </>,
         document.body

@@ -114,19 +114,27 @@ export default function ChoosePlanStep({
       </p>
 
       {/* Plans List */}
-      <div className="grid grid-cols-2 gap-2.5 w-full box-border">
+      <div className="flex justify-center gap-2.5 w-full box-border">
         {onboardingPlans.map((plan) => {
           const isYearly = plan.periodMonths === 12;
           const isActive = tempSelectedPlanId === plan.id;
+
+          const monthlyPlan = onboardingPlans.find((p) => p.periodMonths === 1);
+          const yearlyOriginalTotal = monthlyPlan ? monthlyPlan.usdPerMonth * 12 : undefined;
+          const yearlyDiscountPercent = yearlyOriginalTotal
+            ? Math.round((1 - plan.usdTotal / yearlyOriginalTotal) * 100)
+            : undefined;
 
           const primaryColor = (isYearly ? "#501B77" : "#cfdfe5");
 
           const secondaryColor = (isYearly ? "#7F96D0" : "#606768");
 
-          const baseColor = (isYearly ? "#5B1B85" : "#08090a");
+          const baseColor = "#000000";
 
-          const solidGradient = (isYearly ? "#5B1B85" : undefined);
-          const solidBoxShadow = (isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined);
+          const solidGradient = "#000000";
+          const solidBoxShadow = isYearly
+            ? "inset 0 -106px 33.5px -56px rgba(93, 28, 137, 0.9), inset 0 -37px 31.3px -1px rgba(64, 209, 253, 0.6), inset 0 0 12.3px -22px rgba(230, 252, 255, 0.1), inset 0 0 9.85px 0 rgba(230, 252, 255, 0.7)"
+            : "inset 0 -70px 24px -50px rgba(255, 255, 255, 0.06)";
 
           return (
             <div
@@ -146,7 +154,7 @@ export default function ChoosePlanStep({
                   trackEvent("onboarding_plan_selected", { plan: planType, price: priceVal });
                 }
               }}
-              className="w-full h-[170px] rounded-[45px] relative cursor-pointer overflow-hidden select-none"
+              className="w-[170px] h-[170px] shrink-0 rounded-[45px] relative cursor-pointer overflow-hidden select-none"
             >
               <GradientBlock
                 label=""
@@ -164,58 +172,71 @@ export default function ChoosePlanStep({
                 enableHoverScale={false}
                 absoluteChildren={true}
               >
-                {/* Border and Checkmark Icon Overlay when Selected */}
+                {/* Border Overlay when Selected */}
                 {isActive && (
-                  <>
-                    <div className="absolute inset-0 border-2 border-[#6C63FF] rounded-[45px] pointer-events-none z-30" />
-                    <div className="absolute top-4.5 right-4.5 w-[20px] h-[20px] rounded-full bg-[#6C63FF] flex items-center justify-center pointer-events-none z-30 shadow-sm shadow-[#6C63FF]/30">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                  </>
+                  <div className="absolute inset-0 border-2 border-white rounded-[45px] pointer-events-none z-30" />
                 )}
 
-                <div className="absolute inset-0 flex flex-col justify-between p-4 px-3 pb-5 z-20 pointer-events-none box-border text-center items-center">
-                  {/* Plan title badge */}
+                {/* RadioButton */}
+                <div className="absolute top-[15px] right-[15px] w-6 h-6 z-30 pointer-events-none flex items-center justify-center">
+                  {isActive ? (
+                    <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
+                      <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.0625 4.59608L4.59803 8.13161L11.6691 1.06055" stroke="black" strokeWidth="1.5" strokeLinecap="square" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full border border-white/40" />
+                  )}
+                </div>
+
+                <div className="absolute inset-0 flex flex-col items-center z-20 pointer-events-none box-border text-center">
+                  {/* Plan title label */}
                   <span
-                    className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${campaign === "adults"
-                      ? "bg-white/15"
-                      : (isYearly ? "bg-black/16" : "bg-white/8")
-                      }`}
+                    className="mt-[25px] font-mono text-[12px] leading-none tracking-[-0.06em] text-center"
+                    style={{ color: isYearly ? "#40D1FD" : "#8A94A6" }}
                   >
                     {getPlanLabelText(plan.periodMonths, language)}
                   </span>
 
-                  <div>
+                  <div className="relative mt-[27px] flex flex-col items-center">
                     <span
-                      className={`block text-[24px] text-white leading-none font-sans ${language === "ru" || language === "by" || language === "uz" ? "text-[20px]" : ""
+                      className={`block text-[24px] leading-[31px] text-white font-sans ${language === "ru" || language === "by" || language === "uz" ? "text-[20px]" : ""
                         }`}
                     >
                       {isYearly ? (
-                        language === "uz" ? "$48 / yil" :
-                        language === "by" ? "$48 / год" :
-                        language === "ru" ? "$48 / год" : "$48 / year"
+                        `$ ${plan.usdTotal.toFixed(2)}`
                       ) : (
                         `$ ${plan.usdPerMonth.toFixed(2)}`
                       )}
                     </span>
-                    {!isYearly && (
-                      <span
-                        className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"
-                          }`}
-                      >
+                    {isYearly && yearlyOriginalTotal ? (
+                      <span className="block text-[18px] leading-[23px] mt-0 font-sans text-white/40 line-through">
+                        $ {yearlyOriginalTotal.toFixed(0)}
+                      </span>
+                    ) : !isYearly ? (
+                      <span className="block text-[10px] mt-0.5 font-sans text-[#8A94A6]">
                         {t.home.perMonth}
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
-                  <span
-                    className={`block text-[11px] font-sans ${isYearly ? "text-[#E0F2FE] opacity-90" : "text-[#8A94A6]"
-                      }`}
-                  >
-                    {getBilledFrequencyText(plan.periodMonths, language, t)}
-                  </span>
+                  {!isYearly && (
+                    <span className="block text-[11px] mt-1 font-sans text-[#8A94A6]">
+                      {getBilledFrequencyText(plan.periodMonths, language, t)}
+                    </span>
+                  )}
+
+                  {isYearly && yearlyDiscountPercent && yearlyDiscountPercent > 0 ? (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center py-2 px-2.5 rounded-t-[12px] bg-[#40D1FD]">
+                      <span className="font-mono text-[12px] leading-none tracking-[-0.06em] text-black text-center">
+                        {language === "ru" ? `Скидка ${yearlyDiscountPercent}%` :
+                          language === "by" ? `Зніжка ${yearlyDiscountPercent}%` :
+                          language === "uz" ? `${yearlyDiscountPercent}% chegirma` :
+                          `${yearlyDiscountPercent}% save`}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               </GradientBlock>
             </div>
