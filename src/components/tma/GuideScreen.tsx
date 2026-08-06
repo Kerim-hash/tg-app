@@ -5,65 +5,9 @@ import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import type { Plan, PaymentMethod, Translations, HapticType, Tab } from "./types";
 import GradientBlock from "../GradientBlock";
+import { PlanCard } from "./PlanCard";
 import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
-
-function getPlanLabelText(periodMonths: number, lang: string): string {
-  if (periodMonths === 12) {
-    if (lang === "uz") return "60% chegirma";
-    if (lang === "by") return "Зніжка 60%";
-    if (lang === "ru") return "Скидка 60%";
-    return "Save 60%";
-  }
-  if (lang === "ru") {
-    if (periodMonths === 1) return "30 дней";
-    if (periodMonths === 3) return "3 месяца";
-    if (periodMonths === 6) return "6 месяцев";
-    return `${periodMonths} мес.`;
-  } else if (lang === "uz") {
-    if (periodMonths === 1) return "30 kun";
-    if (periodMonths === 3) return "3 oy";
-    if (periodMonths === 6) return "6 oy";
-    return `${periodMonths} oy`;
-  } else if (lang === "by") {
-    if (periodMonths === 1) return "30 дзён";
-    if (periodMonths === 3) return "3 месяцы";
-    if (periodMonths === 6) return "6 месяцаў";
-    return `${periodMonths} мес.`;
-  } else {
-    if (periodMonths === 1) return "30 Days";
-    if (periodMonths === 3) return "3 Months";
-    if (periodMonths === 6) return "6 Months";
-    return `${periodMonths} Months`;
-  }
-}
-
-function getBilledFrequencyText(periodMonths: number, lang: string, t: any): string {
-  if (periodMonths === 12) {
-    if (lang === "uz") return "Oyiga $4";
-    if (lang === "by") return "$4 у месяц";
-    if (lang === "ru") return "$4 в месяц";
-    return "$4 per month";
-  }
-  if (periodMonths === 1) {
-    return t.home.billedMonthly;
-  }
-  if (lang === "ru") {
-    if (periodMonths === 3) return "Оплата каждые 3 месяца";
-    if (periodMonths === 6) return "Оплата каждые 6 месяцев";
-    return `Оплата каждые ${periodMonths} мес.`;
-  } else if (lang === "uz") {
-    if (periodMonths === 3) return "Har 3 oyda to'lov";
-    if (periodMonths === 6) return "Har 6 oyda to'lov";
-    return `Har ${periodMonths} oyda to'lov`;
-  } else if (lang === "by") {
-    if (periodMonths === 3) return "Аплата кожныя 3 месяцы";
-    if (periodMonths === 6) return "Аплата кожныя 6 месяцаў";
-    return `Аплата кожныя ${periodMonths} мес.`;
-  } else {
-    return `Billed every ${periodMonths} months`;
-  }
-}
 
 const SERVERS_ROW1 = [
   { name: "Albania", flag: "🇦🇱" },
@@ -679,9 +623,8 @@ export default function GuideScreen({
             ) : (
               <>
                 {/* Interactive plan selection */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", width: "100%" }}>
+                <div style={{ display: "flex", justifyContent: "center", gap: "10px", width: "100%" }}>
               {plans.map((plan) => {
-                const isYearly = plan.periodMonths === 12;
                 const isActive = selectedPlan?.id === plan.id;
 
                 return (
@@ -693,8 +636,9 @@ export default function GuideScreen({
                       onSelectPlan(plan);
                     }}
                     style={{
-                      width: "100%",
+                      width: "170px",
                       height: "170px",
+                      flexShrink: 0,
                       borderRadius: "45px",
                       position: "relative",
                       cursor: "pointer",
@@ -705,114 +649,14 @@ export default function GuideScreen({
                       padding: 0,
                     }}
                   >
-                    <GradientBlock
-                      label=""
-                      primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
-                      secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                      baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                    <PlanCard
+                      plan={plan}
+                      plans={plans}
+                      isActive={isActive}
+                      language={language}
+                      t={t}
                       borderRadius="45px"
-                      height="100%"
-                      animate={isYearly}
-                      glowIntensity={isYearly ? .3 : 0.5}
-                      borderGlow={true}
-                      solidGradient={isYearly ? "#5B1B85" : undefined}
-                      solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
-                      absoluteChildren={true}
-                      enableHoverScale={false}
-                    >
-                      {/* Border and Checkmark Icon Overlay when Selected */}
-                      {isActive && (
-                        <>
-                          <div
-                            style={{
-                              position: "absolute",
-                              inset: 0,
-                              border: "2px solid #6C63FF",
-                              borderRadius: "45px",
-                              pointerEvents: "none",
-                              zIndex: 30,
-                            }}
-                          />
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "16px",
-                              right: "16px",
-                              width: "20px",
-                              height: "20px",
-                              borderRadius: "50%",
-                              background: "#6C63FF",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              pointerEvents: "none",
-                              zIndex: 30,
-                            }}
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Overlay Content */}
-                      <div
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          padding: "15px 12px 22px",
-                          pointerEvents: "none",
-                          boxSizing: "border-box",
-                          textAlign: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "inline-block",
-                            fontSize: "12px",
-                            padding: "6px 8px",
-                            borderRadius: "20px",
-                            background: isYearly ? "rgba(0, 0, 0, 0.16)" : "#353534",
-                            color: "#fff",
-                            letterSpacing: "-6%",
-                            fontFamily: "JetBrains Mono, monospace",
-                            textTransform: "capitalize"
-                          }}
-                        >
-                          {getPlanLabelText(plan.periodMonths, language)}
-                        </span>
-                        <div>
-                          <span style={{
-                            display: "block",
-                            fontSize: language === "ru" || language === "by" || language === "uz" ? "18px" : "22px",
-                            color: "#fff",
-                            lineHeight: 1.1,
-                            letterSpacing: "-0.02em"
-                          }}>
-                            {isYearly ? (
-                              language === "uz" ? "$48 / yil" :
-                              language === "by" ? "$48 / год" :
-                              language === "ru" ? "$48 / год" : "$48 / year"
-                            ) : (
-                              `$ ${plan.usdPerMonth.toFixed(2)}`
-                            )}
-                          </span>
-                          {!isYearly && (
-                            <span style={{ display: "block", fontSize: "14px", color: isYearly ? "rgba(255,255,255,0.85)" : "#fff", marginTop: "2px" }}>
-                              {t.home.perMonth}
-                            </span>
-                          )}
-                        </div>
-                        <span style={{ display: "block", fontSize: "14px", color: isYearly ? "#8EBCDC" : "#797978" }}>
-                          {getBilledFrequencyText(plan.periodMonths, language, t)}
-                        </span>
-                      </div>
-                    </GradientBlock>
+                    />
                   </button>
                 );
               })}

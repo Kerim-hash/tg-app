@@ -96,6 +96,22 @@ export interface Translations {
     freeTrialPill: string;
     freeTrialBadge: string;
     trialPlanName: string;
+    welcomeBack: string;
+    welcomeSubtitle: string;
+    activateBtn: string;
+    badgeProtection: string;
+    badgePrivacy: string;
+    badgeSpeed: string;
+    buyBtn: string;
+    serverKeyPill: string;
+    serverKeyTitle: string;
+    serverKeyDesc: string;
+    copyMe: string;
+    copyBtn: string;
+    guidePill: string;
+    needHelpTitle: string;
+    needHelpDesc: string;
+    readGuideBtn: string;
   };
   payment: {
     selectMethod: string;

@@ -59,6 +59,44 @@ html, body {
   display: none;
 }
 
+@keyframes haptikos-glow {
+  from {
+    box-shadow: 0 0 0px rgba(64, 209, 253, 0);
+  }
+  to {
+    box-shadow: 0 0 8px 1px rgba(64, 209, 253, 0.9);
+  }
+}
+
+@keyframes haptikos-ripple {
+  0% {
+    inset: -3px;
+    opacity: 1;
+  }
+  100% {
+    inset: -9px;
+    opacity: 0;
+  }
+}
+
+.haptikos-bullet {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  background-color: #40D1FD;
+  border-radius: 0px;
+  animation: haptikos-glow 2s ease-in-out infinite alternate;
+}
+
+.haptikos-bullet::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 1px solid rgba(64, 209, 253, 0.6);
+  animation: haptikos-ripple 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
+}
+
 /* Hide scrollbar for IE, Edge and Firefox */
 * {
   -ms-overflow-style: none;  /* IE and Edge */

@@ -25,10 +25,10 @@ interface OnboardingScreenProps {
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
   if (periodMonths === 12) {
-    if (lang === "uz") return "60% chegirma";
-    if (lang === "by") return "Зніжка 60%";
-    if (lang === "ru") return "Скидка 60%";
-    return "Save 60%";
+    if (lang === "uz") return "Yillik";
+    if (lang === "by") return "Гадавы";
+    if (lang === "ru") return "Годовой";
+    return "Annual";
   }
   if (lang === "ru") {
     if (periodMonths === 1) return "30 дней";

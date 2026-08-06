@@ -4,8 +4,17 @@ import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import Intercom from "@intercom/messenger-js-sdk";
 
-
-import type { Language, Tab, Plan, UserData, PaymentMethod, Notifications, ActivePlan, ReferralInfo, Campaign } from "./tma/types";
+import type {
+  Language,
+  Tab,
+  Plan,
+  UserData,
+  PaymentMethod,
+  Notifications,
+  ActivePlan,
+  ReferralInfo,
+  Campaign,
+} from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage, recordPushClick } from "./tma/api";
 import { trackEvent } from "../lib/mixpanel";
@@ -23,31 +32,47 @@ import IntercomWidget from "@/lib/intercom";
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [];
 
-
-function formatPlanNameFromSubType(subType?: string, daysLeft?: number): string {
+function formatPlanNameFromSubType(
+  subType?: string,
+  daysLeft?: number,
+): string {
   if (!subType) {
-    return (daysLeft && daysLeft > 45) ? "1 Year" : "30 days";
+    return daysLeft && daysLeft > 45 ? "1 Year" : "30 days";
   }
   const normalized = subType.toLowerCase();
-  if (normalized === "12-month" || normalized === "1-year" || normalized === "12-months" || normalized === "yearly") {
+  if (
+    normalized === "12-month" ||
+    normalized === "1-year" ||
+    normalized === "12-months" ||
+    normalized === "yearly"
+  ) {
     return "1 Year";
   }
-  if (normalized === "1-month" || normalized === "30-day" || normalized === "monthly") {
+  if (
+    normalized === "1-month" ||
+    normalized === "30-day" ||
+    normalized === "monthly"
+  ) {
     return "30 days";
   }
   const match = normalized.match(/^(\d+)-(month|months|day|days|year|years)$/);
   if (match) {
     const num = parseInt(match[1], 10);
     const unit = match[2];
-    if (unit.startsWith("year") || (unit.startsWith("month") && num >= 12)) return "1 Year";
+    if (unit.startsWith("year") || (unit.startsWith("month") && num >= 12))
+      return "1 Year";
     if (unit.startsWith("month") && num === 1) return "30 days";
     if (unit.startsWith("month")) return `${num} Months`;
     if (unit.startsWith("day")) return `${num} Days`;
   }
-  return (daysLeft && daysLeft > 45) ? "1 Year" : "30 days";
+  return daysLeft && daysLeft > 45 ? "1 Year" : "30 days";
 }
 
-function parseActivePlan(expirationStr?: string, isTrial?: boolean, subType?: string): ActivePlan | undefined {
+function parseActivePlan(
+  expirationStr?: string,
+  isTrial?: boolean,
+  subType?: string,
+): ActivePlan | undefined {
   if (!expirationStr) return undefined;
   const expDate = new Date(expirationStr);
   const now = new Date();
@@ -58,13 +83,28 @@ function parseActivePlan(expirationStr?: string, isTrial?: boolean, subType?: st
   const diffTime = expDate.getTime() - now.getTime();
   const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const day = String(expDate.getDate()).padStart(2, "0");
   const month = months[expDate.getMonth()];
   const year = expDate.getFullYear();
   const nextBilling = `${day} ${month}, ${year}`;
 
-  const name = isTrial ? "Free Trial" : formatPlanNameFromSubType(subType, daysLeft);
+  const name = isTrial
+    ? "Free Trial"
+    : formatPlanNameFromSubType(subType, daysLeft);
 
   return { name, daysLeft, nextBilling, isTrial };
 }
@@ -119,7 +159,9 @@ function getRawStartParam(): string | null {
 
       const tgWebAppData = hashParams.get("tgWebAppData");
       if (tgWebAppData) {
-        const decodedData = new URLSearchParams(decodeURIComponent(tgWebAppData));
+        const decodedData = new URLSearchParams(
+          decodeURIComponent(tgWebAppData),
+        );
         const startParamFromData = decodedData.get("start_param");
         if (startParamFromData) return startParamFromData;
       }
@@ -136,7 +178,9 @@ interface LocaleFromParam {
   billing_region?: string;
 }
 
-function parseLocaleStartParam(startParam: string | null | undefined): LocaleFromParam | null {
+function parseLocaleStartParam(
+  startParam: string | null | undefined,
+): LocaleFromParam | null {
   if (!startParam || !startParam.startsWith("l-")) return null;
 
   const content = startParam.substring(2);
@@ -147,7 +191,12 @@ function parseLocaleStartParam(startParam: string | null | undefined): LocaleFro
 
   const rawLang = parts[0]?.toLowerCase();
   let mappedLang: Language | undefined;
-  if (rawLang === "en" || rawLang === "ru" || rawLang === "uz" || rawLang === "by") {
+  if (
+    rawLang === "en" ||
+    rawLang === "ru" ||
+    rawLang === "uz" ||
+    rawLang === "by"
+  ) {
     mappedLang = rawLang;
   } else if (rawLang === "be") {
     mappedLang = "by";
@@ -171,7 +220,9 @@ function parseLocaleStartParam(startParam: string | null | undefined): LocaleFro
   return result;
 }
 
-function parseStartParam(startParam: string | null | undefined): ParsedStartParam {
+function parseStartParam(
+  startParam: string | null | undefined,
+): ParsedStartParam {
   if (!startParam) {
     return { campaign: "default", referral: null, clickId: null };
   }
@@ -276,7 +327,10 @@ function detectCampaign(): Campaign {
   return "default";
 }
 
-function formatReferralLink(originalLink: string, currentCampaign: string): string {
+function formatReferralLink(
+  originalLink: string,
+  currentCampaign: string,
+): string {
   if (!originalLink || !currentCampaign || currentCampaign === "default") {
     return originalLink;
   }
@@ -284,7 +338,11 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
     if (originalLink.includes("startapp=")) {
       const url = new URL(originalLink);
       const startapp = url.searchParams.get("startapp");
-      if (startapp && !startapp.startsWith("c-") && !startapp.startsWith("l-")) {
+      if (
+        startapp &&
+        !startapp.startsWith("c-") &&
+        !startapp.startsWith("l-")
+      ) {
         url.searchParams.set("startapp", `c-${currentCampaign}_${startapp}`);
         return url.toString();
       }
@@ -294,7 +352,11 @@ function formatReferralLink(originalLink: string, currentCampaign: string): stri
     if (originalLink.includes("startapp=")) {
       const parts = originalLink.split("startapp=");
       const paramVal = parts[1];
-      if (paramVal && !paramVal.startsWith("c-") && !paramVal.startsWith("l-")) {
+      if (
+        paramVal &&
+        !paramVal.startsWith("c-") &&
+        !paramVal.startsWith("l-")
+      ) {
         return `${parts[0]}startapp=c-${currentCampaign}_${paramVal}`;
       }
     }
@@ -338,9 +400,11 @@ export default function TMA() {
   const handleBillingRegionChange = (region: string) => {
     setBillingRegion(region);
     safeStorage.setItem("iguard_billing_region", region);
-    apiCall("/users/locale", "PATCH", { billing_region: region }).catch((err) => {
-      console.error("[IGuard] Failed to update billing_region locale:", err);
-    });
+    apiCall("/users/locale", "PATCH", { billing_region: region }).catch(
+      (err) => {
+        console.error("[IGuard] Failed to update billing_region locale:", err);
+      },
+    );
   };
 
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
@@ -385,7 +449,7 @@ export default function TMA() {
     const w = window as any;
     if (typeof window !== "undefined" && w.Intercom) {
       try {
-        w.Intercom('show');
+        w.Intercom("show");
         return;
       } catch (err) {
         console.error("Failed to open Intercom messenger:", err);
@@ -395,9 +459,12 @@ export default function TMA() {
     window.location.href = "mailto:support@fastguard.site";
   };
 
-
   // User
-  const [user, setUser] = useState<UserData>({ id: 0, firstName: "User", isPremium: false });
+  const [user, setUser] = useState<UserData>({
+    id: 0,
+    firstName: "User",
+    isPremium: false,
+  });
 
   // Navbar dynamic scroll visibility state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -408,13 +475,22 @@ export default function TMA() {
 
   // Payment flow
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<"idle" | "success" | "error">("idle");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(
+    null,
+  );
+  const [paymentStatus, setPaymentStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [personalKey, setPersonalKey] = useState("");
   const [isPaying, setIsPaying] = useState(false);
 
   // Notifications
-  const [notifs, setNotifs] = useState<Notifications>({ all: true, news: true, billing: true, tech: false });
+  const [notifs, setNotifs] = useState<Notifications>({
+    all: true,
+    news: true,
+    billing: true,
+    tech: false,
+  });
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
 
   const handleNotifsChange = async (updated: Notifications) => {
@@ -437,18 +513,50 @@ export default function TMA() {
     let tgUser: any = null;
     try {
       tgUser = WebApp.initDataUnsafe?.user;
-    } catch { }
+    } catch {}
 
     try {
       const profile = await apiCall("/auth/profile", "GET");
       if (profile) {
-        const rawSubType = (profile.subscription_type ?? profile.subscriptionType ?? "").toString().trim();
+        const rawSubType = (
+          profile.subscription_type ??
+          profile.subscriptionType ??
+          ""
+        )
+          .toString()
+          .trim();
         const normalizedSubType = rawSubType.toLowerCase();
 
-        let isTrial = profile.is_trial ?? profile.isTrial ?? profile.is_trial_active ?? profile.isTrialActive ?? (normalizedSubType === "trial");
-        let hasUsedTrial = profile.has_used_trial ?? profile.hasUsedTrial ?? profile.trial_used ?? profile.trialUsed ?? (normalizedSubType === "trial" || normalizedSubType === "expired" || normalizedSubType.includes("month") || normalizedSubType.includes("year"));
-        const trialDuration = profile.trial_duration ?? profile.trialDuration ?? profile.trial_days ?? profile.trialDays ?? 3;
-        let hasPaid = profile.has_paid ?? profile.hasPaid ?? profile.is_paid ?? profile.isPaid ?? (normalizedSubType !== "trial" && normalizedSubType !== "trial_available" && normalizedSubType !== "expired" && normalizedSubType !== "");
+        let isTrial =
+          profile.is_trial ??
+          profile.isTrial ??
+          profile.is_trial_active ??
+          profile.isTrialActive ??
+          normalizedSubType === "trial";
+        let hasUsedTrial =
+          profile.has_used_trial ??
+          profile.hasUsedTrial ??
+          profile.trial_used ??
+          profile.trialUsed ??
+          (normalizedSubType === "trial" ||
+            normalizedSubType === "expired" ||
+            normalizedSubType.includes("month") ||
+            normalizedSubType.includes("year"));
+        const trialDuration =
+          profile.trial_duration ??
+          profile.trialDuration ??
+          profile.trial_days ??
+          profile.trialDays ??
+          3;
+        let hasPaid =
+          profile.has_paid ??
+          profile.hasPaid ??
+          profile.is_paid ??
+          profile.isPaid ??
+          (normalizedSubType !== "trial" &&
+            normalizedSubType !== "trial_available" &&
+            normalizedSubType !== "expired" &&
+            normalizedSubType !== "");
 
         if (normalizedSubType === "trial_available") {
           isTrial = false;
@@ -462,7 +570,10 @@ export default function TMA() {
           hasUsedTrial = true;
         }
 
-        let activePlanObj = profile.active_plan || profile.activePlan || parseActivePlan(profile.expiration, isTrial, rawSubType);
+        let activePlanObj =
+          profile.active_plan ||
+          profile.activePlan ||
+          parseActivePlan(profile.expiration, isTrial, rawSubType);
         if (activePlanObj && isTrial) {
           activePlanObj = {
             ...activePlanObj,
@@ -473,21 +584,31 @@ export default function TMA() {
 
         setUser({
           id: profile.id || profile.user_id || tgUser?.id || 0,
-          firstName: profile.first_name || profile.firstName || tgUser?.first_name || "User",
+          firstName:
+            profile.first_name ||
+            profile.firstName ||
+            tgUser?.first_name ||
+            "User",
           username: profile.username || tgUser?.username,
           photoUrl: profile.photo_url || profile.photoUrl || tgUser?.photo_url,
           isPremium: profile.is_premium || profile.isPremium || false,
           activePlan: activePlanObj,
           expiration: profile.expiration,
-          paymentMethodSaved: profile.payment_method_saved || profile.paymentMethodSaved || false,
+          paymentMethodSaved:
+            profile.payment_method_saved || profile.paymentMethodSaved || false,
           isTrial,
           hasUsedTrial,
           trialDuration,
           hasPaid,
-          subscriptionType: rawSubType || (isTrial ? "trial" : hasUsedTrial ? "expired" : "trial_available"),
+          subscriptionType:
+            rawSubType ||
+            (isTrial ? "trial" : hasUsedTrial ? "expired" : "trial_available"),
         });
 
-        const hasActivePlan = profile.expiration && !isNaN(new Date(profile.expiration).getTime()) && new Date(profile.expiration) > new Date();
+        const hasActivePlan =
+          profile.expiration &&
+          !isNaN(new Date(profile.expiration).getTime()) &&
+          new Date(profile.expiration) > new Date();
         if (hasActivePlan) {
           safeStorage.setItem("iguard_onboarding_completed", "true");
           setShowOnboarding(false);
@@ -496,11 +617,18 @@ export default function TMA() {
         const rawParam = getRawStartParam();
         const localeFromParam = parseLocaleStartParam(rawParam);
 
-        if (!localeFromParam?.language && profile.language && ["en", "ru", "uz", "by"].includes(profile.language)) {
+        if (
+          !localeFromParam?.language &&
+          profile.language &&
+          ["en", "ru", "uz", "by"].includes(profile.language)
+        ) {
           setLanguage(profile.language as Language);
           safeStorage.setItem("iguard_language", profile.language);
         }
-        if (!localeFromParam?.billing_region && (profile.billing_region || profile.billingRegion)) {
+        if (
+          !localeFromParam?.billing_region &&
+          (profile.billing_region || profile.billingRegion)
+        ) {
           const reg = profile.billing_region || profile.billingRegion;
           setBillingRegion(reg);
           safeStorage.setItem("iguard_billing_region", reg);
@@ -542,7 +670,10 @@ export default function TMA() {
         const formatted = {
           ...refData,
           link: formatReferralLink(refData.link, campaign),
-          telegram_referral_link: formatReferralLink(refData.telegram_referral_link, campaign),
+          telegram_referral_link: formatReferralLink(
+            refData.telegram_referral_link,
+            campaign,
+          ),
         };
         setReferralInfo(formatted);
       }
@@ -595,10 +726,15 @@ export default function TMA() {
         }
         if (localeFromParam.billing_region) {
           setBillingRegion(localeFromParam.billing_region);
-          safeStorage.setItem("iguard_billing_region", localeFromParam.billing_region);
+          safeStorage.setItem(
+            "iguard_billing_region",
+            localeFromParam.billing_region,
+          );
         }
       } else {
-        const stored = safeStorage.getItem("iguard_language") as Language | null;
+        const stored = safeStorage.getItem(
+          "iguard_language",
+        ) as Language | null;
         if (stored && ["en", "ru", "uz", "by"].includes(stored)) {
           setLanguage(stored);
         } else {
@@ -628,7 +764,10 @@ export default function TMA() {
       const rawStartParam = getRawStartParam();
       let finalInitData = initDataString;
       if (rawStartParam && !initDataString.includes("start_param=")) {
-        const separator = initDataString.includes("&") || initDataString.includes("=") ? "&" : "";
+        const separator =
+          initDataString.includes("&") || initDataString.includes("=")
+            ? "&"
+            : "";
         finalInitData = `${initDataString}${separator}start_param=${encodeURIComponent(rawStartParam)}`;
       }
       apiCall("/auth/telegram/mini-app", "POST", {
@@ -641,13 +780,18 @@ export default function TMA() {
             const localeFromParam = parseLocaleStartParam(getRawStartParam());
             if (localeFromParam) {
               const body: Record<string, string> = {};
-              if (localeFromParam.language) body.language = localeFromParam.language;
-              if (localeFromParam.billing_region) body.billing_region = localeFromParam.billing_region;
+              if (localeFromParam.language)
+                body.language = localeFromParam.language;
+              if (localeFromParam.billing_region)
+                body.billing_region = localeFromParam.billing_region;
               if (Object.keys(body).length > 0) {
                 try {
                   await apiCall("/users/locale", "PATCH", body);
                 } catch (err) {
-                  console.error("[IGuard] Failed to save locale from start_param to profile:", err);
+                  console.error(
+                    "[IGuard] Failed to save locale from start_param to profile:",
+                    err,
+                  );
                 }
               }
             }
@@ -667,7 +811,9 @@ export default function TMA() {
     if (rawInitData && rawInitData !== "string") {
       runAuth(rawInitData);
     } else {
-      console.warn("[IGuard] App is running outside Telegram or initData is missing.");
+      console.warn(
+        "[IGuard] App is running outside Telegram or initData is missing.",
+      );
       setAuthError("Please open this app inside Telegram");
       setIsLoadingAuth(false);
     }
@@ -704,7 +850,6 @@ export default function TMA() {
     }
   }, []);
 
-
   // Update Intercom user attributes when user state changes
   useEffect(() => {
     if ((window as any).Intercom) {
@@ -714,7 +859,7 @@ export default function TMA() {
         custom_data: {
           username: user?.username || "",
           isPremium: user?.isPremium || false,
-        }
+        },
       });
     }
   }, [user]);
@@ -728,25 +873,34 @@ export default function TMA() {
             let periodMonths = price.period || 1;
             if (price.period_types === "year") {
               periodMonths = (price.period || 1) * 12;
-            } else if (price.period_types === "day" || price.period_types === "days") {
+            } else if (
+              price.period_types === "day" ||
+              price.period_types === "days"
+            ) {
               periodMonths = (price.period || 30) / 30;
             }
 
             const usdTotal = (price.amount_usd || 0) / 100;
-            const usdPerMonth = periodMonths > 0 ? usdTotal / periodMonths : usdTotal;
+            const usdPerMonth =
+              periodMonths > 0 ? usdTotal / periodMonths : usdTotal;
             const rubTotal = (price.amount_rub || 0) / 100;
-            const rubPerMonth = periodMonths > 0 ? rubTotal / periodMonths : rubTotal;
+            const rubPerMonth =
+              periodMonths > 0 ? rubTotal / periodMonths : rubTotal;
 
             return {
               id: String(price.id),
-              label: price.name || `${price.period} ${price.period_types || 'month'}`,
+              label:
+                price.name ||
+                `${price.period} ${price.period_types || "month"}`,
               starsPrice: price.amount_stars || 0,
               usdTotal: usdTotal,
               usdPerMonth: usdPerMonth,
               rubTotal: rubTotal,
               rubPerMonth: rubPerMonth,
               periodMonths: periodMonths,
-              badge: price.description || (price.period_types === "year" ? "Best Value" : undefined)
+              badge:
+                price.description ||
+                (price.period_types === "year" ? "Best Value" : undefined),
             };
           });
           setPlans(mappedPlans);
@@ -762,14 +916,18 @@ export default function TMA() {
   }, []);
 
   // ─── Haptic ───────────────────────────────────────────────────────────────
-  const triggerHaptic = (type: "light" | "medium" | "heavy" | "success" | "warning") => {
+  const triggerHaptic = (
+    type: "light" | "medium" | "heavy" | "success" | "warning",
+  ) => {
     try {
       if (type === "success" || type === "warning") {
         WebApp.HapticFeedback.notificationOccurred(type);
       } else {
         WebApp.HapticFeedback.impactOccurred(type);
       }
-    } catch { /* not available outside Telegram */ }
+    } catch {
+      /* not available outside Telegram */
+    }
   };
 
   // ─── Payment flow ─────────────────────────────────────────────────────────
@@ -781,7 +939,10 @@ export default function TMA() {
 
     try {
       if (method === "stars") {
-        trackEvent("telegram_stars_flow_viewed", { amount_stars: selectedPlan.starsPrice || 0, plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year" });
+        trackEvent("telegram_stars_flow_viewed", {
+          amount_stars: selectedPlan.starsPrice || 0,
+          plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year",
+        });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
         });
@@ -790,7 +951,12 @@ export default function TMA() {
           WebApp.openInvoice(data.invoice_url, (status) => {
             setIsPaying(false);
             if (status === "paid") {
-              trackEvent("payment_success", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", amount: selectedPlan.starsPrice || 0, currency: "STARS" });
+              trackEvent("payment_success", {
+                plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year",
+                method: "stars",
+                amount: selectedPlan.starsPrice || 0,
+                currency: "STARS",
+              });
               if (showOnboarding) {
                 completeOnboarding();
               }
@@ -798,7 +964,11 @@ export default function TMA() {
               triggerHaptic("success");
               refreshUserData();
             } else if (status === "failed") {
-              trackEvent("payment_error", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", error_type: "telegram_failed" });
+              trackEvent("payment_error", {
+                plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year",
+                method: "stars",
+                error_type: "telegram_failed",
+              });
               triggerHaptic("warning");
               setPaymentStatus("error");
             } else {
@@ -821,7 +991,11 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
-          trackEvent("payment_external_opened", { method: foundDynamic.method_type, amount: selectedPlan.usdTotal, opens_new_tab: true });
+          trackEvent("payment_external_opened", {
+            method: foundDynamic.method_type,
+            amount: selectedPlan.usdTotal,
+            opens_new_tab: true,
+          });
           WebApp.openLink(link);
           if (showOnboarding) {
             completeOnboarding();
@@ -842,7 +1016,11 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
-          trackEvent("payment_external_opened", { method: merchant, amount: selectedPlan.usdTotal, opens_new_tab: true });
+          trackEvent("payment_external_opened", {
+            method: merchant,
+            amount: selectedPlan.usdTotal,
+            opens_new_tab: true,
+          });
           WebApp.openLink(link);
           if (showOnboarding) {
             completeOnboarding();
@@ -862,7 +1040,11 @@ export default function TMA() {
       }
     } catch (err) {
       console.error("[IGuard] Payment error:", err);
-      trackEvent("payment_error", { plan: selectedPlan?.periodMonths === 1 ? "30_days" : "1_year", method: method, error_type: "exception" });
+      trackEvent("payment_error", {
+        plan: selectedPlan?.periodMonths === 1 ? "30_days" : "1_year",
+        method: method,
+        error_type: "exception",
+      });
       setIsPaying(false);
       triggerHaptic("warning");
       setPaymentStatus("error");
@@ -875,9 +1057,14 @@ export default function TMA() {
     setIsPaying(true);
 
     try {
-      const foundDynamic = paymentMethods.find((m) => m.method_type === selectedMethod);
+      const foundDynamic = paymentMethods.find(
+        (m) => m.method_type === selectedMethod,
+      );
       if (selectedMethod === "stars") {
-        trackEvent("telegram_stars_flow_viewed", { amount_stars: selectedPlan.starsPrice || 0, plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year" });
+        trackEvent("telegram_stars_flow_viewed", {
+          amount_stars: selectedPlan.starsPrice || 0,
+          plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year",
+        });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
         });
@@ -886,7 +1073,12 @@ export default function TMA() {
           WebApp.openInvoice(data.invoice_url, (status) => {
             setIsPaying(false);
             if (status === "paid") {
-              trackEvent("payment_success", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", amount: selectedPlan.starsPrice || 0, currency: "STARS" });
+              trackEvent("payment_success", {
+                plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year",
+                method: "stars",
+                amount: selectedPlan.starsPrice || 0,
+                currency: "STARS",
+              });
               if (showOnboarding) {
                 completeOnboarding();
               }
@@ -894,7 +1086,11 @@ export default function TMA() {
               triggerHaptic("success");
               refreshUserData();
             } else if (status === "failed") {
-              trackEvent("payment_error", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", method: "stars", error_type: "telegram_failed" });
+              trackEvent("payment_error", {
+                plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year",
+                method: "stars",
+                error_type: "telegram_failed",
+              });
               triggerHaptic("warning");
               setPaymentStatus("error");
             } else {
@@ -915,7 +1111,11 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
-          trackEvent("payment_external_opened", { method: foundDynamic.method_type, amount: selectedPlan.usdTotal, opens_new_tab: true });
+          trackEvent("payment_external_opened", {
+            method: foundDynamic.method_type,
+            amount: selectedPlan.usdTotal,
+            opens_new_tab: true,
+          });
           WebApp.openLink(link);
           if (showOnboarding) {
             completeOnboarding();
@@ -936,7 +1136,11 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
-          trackEvent("payment_external_opened", { method: merchant, amount: selectedPlan.usdTotal, opens_new_tab: true });
+          trackEvent("payment_external_opened", {
+            method: merchant,
+            amount: selectedPlan.usdTotal,
+            opens_new_tab: true,
+          });
           WebApp.openLink(link);
           if (showOnboarding) {
             completeOnboarding();
@@ -956,7 +1160,11 @@ export default function TMA() {
       }
     } catch (err) {
       console.error("[IGuard] Payment error:", err);
-      trackEvent("payment_error", { plan: selectedPlan?.periodMonths === 1 ? "30_days" : "1_year", method: selectedMethod, error_type: "exception" });
+      trackEvent("payment_error", {
+        plan: selectedPlan?.periodMonths === 1 ? "30_days" : "1_year",
+        method: selectedMethod,
+        error_type: "exception",
+      });
       setIsPaying(false);
       triggerHaptic("warning");
       setPaymentStatus("error");
@@ -984,7 +1192,14 @@ export default function TMA() {
           fontFamily: "var(--font-onest), sans-serif",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "16px",
+          }}
+        >
           <div
             style={{
               width: "40px",
@@ -1009,38 +1224,38 @@ export default function TMA() {
             {t.loading}
           </p>
         </div>
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
             @keyframes tma-spin  { to { transform: rotate(360deg); } }
             @keyframes tma-pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
           `,
-        }} />
+          }}
+        />
       </div>
     );
   }
 
   if (authError) {
-    const authDesc = language === "ru"
-      ? "Произошла ошибка при авторизации. Попробуйте снова."
-      : language === "uz"
-        ? "Avtorizatsiyadan o'tishda xatolik yuz berdi. Qayta urinib ko'ring."
-        : language === "by"
-          ? "Адбылася памылка пры аўтарызацыі. Паспрабуйце зноў."
-          : "Authentication failed. Please try again.";
-    return (
-      <ErrorScreen
-        t={t}
-        desc={authDesc}
-        onRetry={handleInitAuth}
-      />
-    );
+    const authDesc =
+      language === "ru"
+        ? "Произошла ошибка при авторизации. Попробуйте снова."
+        : language === "uz"
+          ? "Avtorizatsiyadan o'tishda xatolik yuz berdi. Qayta urinib ko'ring."
+          : language === "by"
+            ? "Адбылася памылка пры аўтарызацыі. Паспрабуйце зноў."
+            : "Authentication failed. Please try again.";
+    return <ErrorScreen t={t} desc={authDesc} onRetry={handleInitAuth} />;
   }
 
   if (paymentStatus === "error") {
     return (
       <ErrorScreen
         t={t}
-        onRetry={() => { handleReset(); setShowPayment(true); }}
+        onRetry={() => {
+          handleReset();
+          setShowPayment(true);
+        }}
       />
     );
   }
@@ -1068,8 +1283,24 @@ export default function TMA() {
           }}
         />
         {showPayment && selectedPlan && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#000", display: "flex", justifyContent: "center" }}>
-            <div style={{ width: "100%", maxWidth: "480px", height: "100%", position: "relative" }}>
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1000,
+              background: "#000",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "480px",
+                height: "100%",
+                position: "relative",
+              }}
+            >
               <PaymentScreen
                 t={t}
                 language={language}
@@ -1106,8 +1337,9 @@ export default function TMA() {
       }}
     >
       <IntercomWidget appId="ljq492l3" />
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes screenFade {
             from { opacity: 0; transform: scale(0.99); }
             to { opacity: 1; transform: scale(1); }
@@ -1116,9 +1348,15 @@ export default function TMA() {
             animation: screenFade 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           }
         `,
-      }} />
+        }}
+      />
       <main
-        style={{ flex: 1, overflowY: "auto", position: "relative", paddingBottom: "110px" }}
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          position: "relative",
+          paddingBottom: "110px",
+        }}
       >
         {currentTab === "home" && (
           <div className="animate-screen-fade">
@@ -1212,10 +1450,16 @@ export default function TMA() {
         }}
       />
 
-
       {/* Payment screen overlay */}
       {showPayment && selectedPlan && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 1000, background: "#000" }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1000,
+            background: "#000",
+          }}
+        >
           <PaymentScreen
             t={t}
             language={language}
