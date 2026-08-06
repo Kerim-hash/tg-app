@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import GradientBlock from "../GradientBlock";
 import SwipeSlider from "./SwipeSlider";
+import { PlanCard } from "./PlanCard";
 import type { HapticType } from "./types";
 
 interface SetupStepProps {
@@ -441,7 +442,6 @@ export default function SetupStep({
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex justify-center gap-3 w-full box-border">
                   {onboardingPlans.map((plan) => {
-                    const isYearly = plan.periodMonths === 12;
                     const isActive = tempSelectedPlanId === plan.id;
 
                     return (
@@ -464,58 +464,14 @@ export default function SetupStep({
                         }}
                         className="w-[170px] h-[170px] shrink-0 rounded-[45px] relative cursor-pointer overflow-hidden select-none"
                       >
-                        <GradientBlock
-                          label=""
-                          primaryColor={isYearly ? "#5B1B85" : "#cfdfe5"}
-                          secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-                          baseColor={isYearly ? "#5B1B85" : "#08090a"}
+                        <PlanCard
+                          plan={plan}
+                          plans={onboardingPlans}
+                          isActive={isActive}
+                          language={language}
+                          t={t}
                           borderRadius="45px"
-                          height="100%"
-                          animate={isYearly}
-                          glowIntensity={isYearly ? 1.2 : 0.25}
-                          borderGlow={true}
-                          solidGradient={isYearly ? "#5B1B85" : undefined}
-                          solidBoxShadow={isYearly ? "inset 0 0 24px 0 rgba(230, 252, 255, 0.7), inset 0 0 24px -22px rgba(230, 252, 255, 0.1), inset 0 -35px 65px -1px rgba(64, 209, 253, 1), inset 0 48px 67px -56px rgba(93, 28, 137, 1)" : undefined}
-                          enableHoverScale={false}
-                          absoluteChildren={true}
-                        >
-                          {isActive && (
-                            <div className="absolute inset-0 border-2 border-white rounded-[45px] pointer-events-none z-30" />
-                          )}
-
-                          <div className="absolute inset-0 flex flex-col justify-between p-4 px-3 pb-5 z-20 pointer-events-none box-border text-center items-center">
-                            <span
-                              className={`inline-block text-[11px] py-1.5 px-3.5 rounded-[20px] text-white font-sans ${
-                                isYearly ? "bg-black/16" : "bg-white/8"
-                              }`}
-                            >
-                              {getPlanLabelText(plan.periodMonths, language)}
-                            </span>
-
-                            <div>
-                              <span className={`block text-[24px] text-white leading-none font-sans ${
-                                language === "ru" || language === "by" || language === "uz" ? "text-[20px]" : ""
-                              }`}>
-                                {isYearly ? (
-                                  language === "uz" ? "$48 / yil" :
-                                  language === "by" ? "$48 / год" :
-                                  language === "ru" ? "$48 / год" : "$48 / year"
-                                ) : (
-                                  `$ ${plan.usdPerMonth.toFixed(2)}`
-                                )}
-                              </span>
-                              {!isYearly && (
-                                <span className={`block text-[10px] mt-0.5 font-sans ${isYearly ? "text-white/85" : "text-[#8A94A6]"}`}>
-                                  {t.home.perMonth}
-                                </span>
-                              )}
-                            </div>
-
-                            <span className={`block text-[11px] font-sans ${isYearly ? "text-[#E0F2FE] opacity-90" : "text-[#8A94A6]"}`}>
-                              {getBilledFrequencyText(plan.periodMonths, language, t)}
-                            </span>
-                          </div>
-                        </GradientBlock>
+                        />
                       </div>
                     );
                   })}

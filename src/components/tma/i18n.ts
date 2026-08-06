@@ -3,7 +3,7 @@ import type { Language, Translations } from "./types";
 const en: Translations = {
   nav: { home: "Home", guide: "Guide", profile: "Profile", support: "Support" },
   home: {
-    welcome: "Welcome to iGuard",
+    welcome: "Welcome to iGuard",
     activePlanLabel: "Active Plan",
     noActivePlan: "No active plan",
     daysLeft: (n) => `${n} Days`,
@@ -32,7 +32,7 @@ const en: Translations = {
     freeTrialBadge: "FREE",
     trialPlanName: "Free Trial",
     welcomeBack: "Welcome back",
-    welcomeSubtitle: "iGuard — your reliable VPN service for internet access worldwide.",
+    welcomeSubtitle: "iGuard — your reliable VPN service for internet access worldwide.",
     activateBtn: "Activate iGuard",
     badgeProtection: "Protection from\ntracking and ads",
     badgePrivacy: "Privacy\nby default",
@@ -227,7 +227,7 @@ const en: Translations = {
 const ru: Translations = {
   nav: { home: "Главная", guide: "Гайд", profile: "Профиль", support: "Поддержка" },
   home: {
-    welcome: "Добро пожаловать в iGuard",
+    welcome: "Добро пожаловать в iGuard",
     activePlanLabel: "Активный план",
     noActivePlan: "Нет активного плана",
     daysLeft: (n) => `${n} дней`,
@@ -256,7 +256,7 @@ const ru: Translations = {
     freeTrialBadge: "БЕСПЛАТНО",
     trialPlanName: "Пробный период",
     welcomeBack: "С возвращением",
-    welcomeSubtitle: "iGuard — ваш надёжный VPN-сервис для доступа в интернет по всему миру.",
+    welcomeSubtitle: "iGuard — ваш надёжный VPN-сервис для доступа в интернет по всему миру.",
     activateBtn: "Активировать iGuard",
     badgeProtection: "Защита от\nтрекинга и рекламы",
     badgePrivacy: "Приватность\nпо умолчанию",
@@ -480,7 +480,7 @@ const uz: Translations = {
     freeTrialBadge: "BEPUL",
     trialPlanName: "Sinov davri",
     welcomeBack: "Xush kelibsiz",
-    welcomeSubtitle: "iGuard — butun dunyo bo'ylab internetga kirish uchun ishonchli VPN xizmatingiz.",
+    welcomeSubtitle: "iGuard — butun dunyo bo'ylab internetga kirish uchun ishonchli VPN xizmatingiz.",
     activateBtn: "iGuard-ni faollashtirish",
     badgeProtection: "Kuzatuv va\nreklamadan himoya",
     badgePrivacy: "Sukut bo'yicha\nmaxfiylik",
@@ -675,7 +675,7 @@ const uz: Translations = {
 const by: Translations = {
   nav: { home: "Галоўная", guide: "Гайд", profile: "Профіль", support: "Падтрымка" },
   home: {
-    welcome: "Сардэчна запрашаем у iGuard",
+    welcome: "Сардэчна запрашаем у iGuard",
     activePlanLabel: "Актыўны план",
     noActivePlan: "Няма актыўнага плана",
     daysLeft: (n) => `${n} Дзён`,
@@ -704,7 +704,7 @@ const by: Translations = {
     freeTrialBadge: "БЯСПЛАТНА",
     trialPlanName: "Праектны перыяд",
     welcomeBack: "З вяртаннем",
-    welcomeSubtitle: "iGuard — ваш надзейны VPN-сэрвіс для доступу ў інтэрнэт па ўсім свеце.",
+    welcomeSubtitle: "iGuard — ваш надзейны VPN-сэрвіс для доступу ў інтэрнэт па ўсім свеце.",
     activateBtn: "Актываваць iGuard",
     badgeProtection: "Абарона ад\nтрэкінгу і рэкламы",
     badgePrivacy: "Прыватнасць\nпа змаўчанні",

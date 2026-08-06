@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import GradientBlock from "../GradientBlock";
 import { ParticleGlobe } from "../ParticleGlobe";
@@ -83,8 +83,14 @@ export default function HomeScreen({
   const [mounted, setMounted] = useState(false);
   const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
+  const [globeOffsetTop, setGlobeOffsetTop] = useState<number | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const heroContainerRef = useRef<HTMLDivElement>(null);
+  const heroTextRef = useRef<HTMLDivElement>(null);
+  const globeSize = 720; // matches maxWidth of the globe wrapper
+  const globeShiftY = 0; // extra downward shift of the globe center
+  const globeMinViewportTop = 80; // globe's top edge never rises above this viewport Y
 
   useEffect(() => {
     function handleClickOutside(event: Event) {
@@ -121,6 +127,29 @@ export default function HomeScreen({
   }, [billingRegion]);
 
   const hasActivePlan = !!user.activePlan;
+
+  useLayoutEffect(() => {
+    if (hasActivePlan) return;
+    const container = heroContainerRef.current;
+    const textBlock = heroTextRef.current;
+    if (!container || !textBlock) return;
+
+    const recalc = () => {
+      const containerRect = container.getBoundingClientRect();
+      const textRect = textBlock.getBoundingClientRect();
+      const textCenterY = textRect.top - containerRect.top + textRect.height / 2;
+      let top = textCenterY - globeSize / 2 + globeShiftY;
+      // Don't let the globe's top edge climb to the very top of the screen
+      const minTop = globeMinViewportTop - containerRect.top;
+      if (top < minTop) top = minTop;
+      setGlobeOffsetTop(top);
+    };
+
+    recalc();
+    window.addEventListener("resize", recalc);
+    return () => window.removeEventListener("resize", recalc);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasActivePlan]);
 
   useEffect(() => {
     setMounted(true);
@@ -405,22 +434,24 @@ export default function HomeScreen({
           </div>
         </>
       ) : (
-        <div style={{ position: "relative" }}>
+        <div ref={heroContainerRef} style={{ position: "relative" }}>
           {/* Particle globe background */}
           <div
             style={{
               position: "absolute",
-              left: "50%",
-              top: "calc(-150px - env(safe-area-inset-top, 0px))",
-              transform: "translateX(-50%)",
+              left: 0,
+              right: 0,
+              top: globeOffsetTop !== null ? `${globeOffsetTop}px` : "calc(-150px - env(safe-area-inset-top, 0px))",
               pointerEvents: "none",
               zIndex: 0,
-              width: "100vw",
-              maxWidth: "600px",
+              width: "100%",
+              maxWidth: `${globeSize}px`,
+              margin: "0 auto",
               aspectRatio: "1 / 1",
               display: "flex",
               alignItems: "flex-start",
               justifyContent: "center",
+              visibility: globeOffsetTop !== null ? "visible" : "hidden",
             }}
           >
             <ParticleGlobe width={900} height={900} className="w-full h-full" />
@@ -435,6 +466,7 @@ export default function HomeScreen({
             <FeatureBadge text={t.home.badgeProtection} />
           </div>
 
+          <div ref={heroTextRef} style={{ display: "flex", flexDirection: "column" }}>
           {/* Welcome heading */}
           <h1
             className="animate-fade-in-up"
@@ -456,6 +488,7 @@ export default function HomeScreen({
           <p
             className="animate-fade-in-up"
             style={{
+              marginTop: "8px",
               fontSize: "16px",
               fontWeight: 400,
               textAlign: "center",
@@ -473,7 +506,7 @@ export default function HomeScreen({
           {/* Activate button */}
           <div
             className="animate-fade-in-up"
-            style={{ display: "flex", justifyContent: "center", animationDelay: "250ms" }}
+            style={{ display: "flex", justifyContent: "center", animationDelay: "250ms", marginTop: "16px" }}
           >
             <button
               className="hover-scale-btn"
@@ -483,8 +516,8 @@ export default function HomeScreen({
                 document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
               }}
               style={{
-                padding: "10px 24px",
-                borderRadius: "14px",
+                padding: "13px 17px",
+                borderRadius: "12px",
                 background: "#fff",
                 border: "none",
                 color: "#000",
@@ -499,6 +532,7 @@ export default function HomeScreen({
             >
               {t.home.activateBtn}
             </button>
+          </div>
           </div>
 
           {/* Feature badges — privacy / speed */}

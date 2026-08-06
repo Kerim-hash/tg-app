@@ -83,31 +83,17 @@ export function PlanCard({
     ? Math.round((1 - plan.usdTotal / yearlyOriginalTotal) * 100)
     : undefined;
 
-  const solidBoxShadow = isYearly
-    ? "inset 0 -106px 33.5px -56px rgba(93, 28, 137, 0.9), inset 0 -37px 31.3px -1px rgba(64, 209, 253, 0.6), inset 0 0 12.3px -22px rgba(230, 252, 255, 0.1), inset 0 0 9.85px 0 rgba(230, 252, 255, 0.7)"
-    : "inset 0 -70px 24px -50px rgba(255, 255, 255, 0.06)";
+  // Exact CSS translation of the Figma SVG filter for the annual card:
+  // fill #3E155E, 1px white/10% stroke, 4 inner shadows
+  const yearlyBoxShadow =
+    "inset 0px 0px 19.7px rgba(230, 252, 255, 0.55), inset 0px 0px 18.6px 22px rgba(230, 252, 255, 0.08), inset 0px -37px 62.6px 1px rgba(64, 209, 253, 0.5), inset 0px -106px 67px 56px rgba(93, 28, 137, 0.9)";
 
-  return (
-    <GradientBlock
-      label=""
-      primaryColor={isYearly ? "#501B77" : "#cfdfe5"}
-      secondaryColor={isYearly ? "#7F96D0" : "#606768"}
-      baseColor={isYearly ? "#000000" : "#08090a"}
-      borderRadius={borderRadius}
-      height="100%"
-      animate={false}
-      glowIntensity={isYearly ? 1.2 : 0.8}
-      borderGlow={true}
-      enableMouseTracking={false}
-      solidGradient="#000000"
-      solidBoxShadow={solidBoxShadow}
-      enableHoverScale={false}
-      absoluteChildren={true}
-    >
+  const cardContent = (
+    <>
       {/* Border Overlay when Selected */}
       {isActive && (
         <div
-          className="absolute inset-0 border-2 border-white pointer-events-none z-30"
+          className="absolute inset-0 border border-white pointer-events-none z-30"
           style={{ borderRadius }}
         />
       )}
@@ -146,21 +132,15 @@ export function PlanCard({
               $ {yearlyOriginalTotal.toFixed(0)}
             </span>
           ) : !isYearly ? (
-            <span className="block text-[10px] mt-0.5 font-sans text-[#8A94A6]">
+            <span className="block text-[14px] mt-0.5 font-sans text-[#8A94A6]">
               {t.home.perMonth}
             </span>
           ) : null}
         </div>
 
-        {!isYearly && (
-          <span className="block text-[11px] mt-1 font-sans text-[#8A94A6]">
-            {getBilledFrequencyText(plan.periodMonths, language, t)}
-          </span>
-        )}
-
         {isYearly && yearlyDiscountPercent && yearlyDiscountPercent > 0 ? (
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center py-2 px-2.5 rounded-t-[12px] bg-[#40D1FD]">
-            <span className="font-mono text-[12px] leading-none tracking-[-0.06em] text-black text-center">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center py-2 px-2.5 rounded-t-[12px] bg-[#40D1FD] whitespace-nowrap max-w-full">
+            <span className="font-mono text-[12px] leading-none tracking-[-0.06em] text-black text-center whitespace-nowrap">
               {language === "ru" ? `Скидка ${yearlyDiscountPercent}%` :
                 language === "by" ? `Зніжка ${yearlyDiscountPercent}%` :
                 language === "uz" ? `${yearlyDiscountPercent}% chegirma` :
@@ -169,6 +149,43 @@ export function PlanCard({
           </div>
         ) : null}
       </div>
+    </>
+  );
+
+  if (isYearly) {
+    return (
+      <div
+        className="relative w-full h-full box-border overflow-hidden"
+        style={{
+          background: "#3E155E",
+          borderRadius,
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: yearlyBoxShadow,
+        }}
+      >
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
+    <GradientBlock
+      label=""
+      primaryColor="#cfdfe5"
+      secondaryColor="#606768"
+      baseColor="#08090a"
+      borderRadius={borderRadius}
+      height="100%"
+      animate={false}
+      glowIntensity={0.8}
+      borderGlow={true}
+      enableMouseTracking={false}
+      solidGradient="#1E1E1E"
+      solidBoxShadow="none"
+      enableHoverScale={false}
+      absoluteChildren={true}
+    >
+      {cardContent}
     </GradientBlock>
   );
 }
