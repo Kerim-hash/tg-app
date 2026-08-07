@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import GradientBlock from "../GradientBlock";
 import { ParticleGlobe } from "../ParticleGlobe";
@@ -83,14 +83,8 @@ export default function HomeScreen({
   const [mounted, setMounted] = useState(false);
   const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
-  const [globeOffsetTop, setGlobeOffsetTop] = useState<number | null>(null);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const heroContainerRef = useRef<HTMLDivElement>(null);
-  const heroTextRef = useRef<HTMLDivElement>(null);
   const globeSize = 720; // matches maxWidth of the globe wrapper
-  const globeShiftY = 0; // extra downward shift of the globe center
-  const globeMinViewportTop = 80; // globe's top edge never rises above this viewport Y
 
   useEffect(() => {
     function handleClickOutside(event: Event) {
@@ -127,29 +121,6 @@ export default function HomeScreen({
   }, [billingRegion]);
 
   const hasActivePlan = !!user.activePlan;
-
-  useLayoutEffect(() => {
-    if (hasActivePlan) return;
-    const container = heroContainerRef.current;
-    const textBlock = heroTextRef.current;
-    if (!container || !textBlock) return;
-
-    const recalc = () => {
-      const containerRect = container.getBoundingClientRect();
-      const textRect = textBlock.getBoundingClientRect();
-      const textCenterY = textRect.top - containerRect.top + textRect.height / 2;
-      let top = textCenterY - globeSize / 2 + globeShiftY;
-      // Don't let the globe's top edge climb to the very top of the screen
-      const minTop = globeMinViewportTop - containerRect.top;
-      if (top < minTop) top = minTop;
-      setGlobeOffsetTop(top);
-    };
-
-    recalc();
-    window.addEventListener("resize", recalc);
-    return () => window.removeEventListener("resize", recalc);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasActivePlan]);
 
   useEffect(() => {
     setMounted(true);
@@ -434,14 +405,14 @@ export default function HomeScreen({
           </div>
         </>
       ) : (
-        <div ref={heroContainerRef} style={{ position: "relative" }}>
+        <div style={{ position: "relative" }}>
           {/* Particle globe background */}
           <div
             style={{
               position: "absolute",
               left: 0,
               right: 0,
-              top: globeOffsetTop !== null ? `${globeOffsetTop}px` : "calc(-150px - env(safe-area-inset-top, 0px))",
+              top: '-50px',
               pointerEvents: "none",
               zIndex: 0,
               width: "100%",
@@ -451,7 +422,6 @@ export default function HomeScreen({
               display: "flex",
               alignItems: "flex-start",
               justifyContent: "center",
-              visibility: globeOffsetTop !== null ? "visible" : "hidden",
             }}
           >
             <ParticleGlobe width={900} height={900} className="w-full h-full" />
@@ -466,7 +436,7 @@ export default function HomeScreen({
             <FeatureBadge text={t.home.badgeProtection} />
           </div>
 
-          <div ref={heroTextRef} style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
           {/* Welcome heading */}
           <h1
             className="animate-fade-in-up"
@@ -516,6 +486,8 @@ export default function HomeScreen({
                 document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
               }}
               style={{
+                width: "150px",
+                height: "40px",
                 padding: "13px 17px",
                 borderRadius: "12px",
                 background: "#fff",
@@ -528,6 +500,10 @@ export default function HomeScreen({
                 fontFamily: "JetBrains Mono, monospace",
                 letterSpacing: "-0.06em",
                 textTransform: "uppercase",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {t.home.activateBtn}
@@ -557,7 +533,7 @@ export default function HomeScreen({
       {user.paymentMethodSaved ? (
         <div
           id="unsubscribe-section"
-          className="animate-fade-in-up flex flex-col gap-6 w-full p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.08] box-border items-center text-center"
+          className="mt-6 animate-fade-in-up flex flex-col gap-6 w-full p-6 rounded-[32px] bg-white/[0.02] border border-white/[0.08] box-border items-center text-center"
           style={{ animationDelay: "400ms" }}
         >
           <div className="w-14 h-14 rounded-full bg-[#00D1FF]/10 flex items-center justify-center mb-1">
@@ -699,7 +675,8 @@ export default function HomeScreen({
                 setIsPaymentSheetOpen(true);
               }}
               style={{
-                padding: "10px 15px",
+                height: "40px",
+                padding: "13px 17px",
                 borderRadius: "14px",
                 background: user.paymentMethodSaved ? "transparent" : (selectedPlan ? "#FFFFFF" : "rgba(255, 255, 255, 0.05)"),
                 border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : (selectedPlan ? "none" : "1px solid rgba(255, 255, 255, 0.1)"),
@@ -712,6 +689,10 @@ export default function HomeScreen({
                 transition: "all 0.25s ease",
                 opacity: user.paymentMethodSaved ? 0.5 : 1,
                 width: "100%",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {user.paymentMethodSaved
@@ -747,7 +728,7 @@ export default function HomeScreen({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "6px 8px",
+                padding: "6px 9px",
                 gap: "8px",
                 fontSize: "12px",
                 fontWeight: 400,
