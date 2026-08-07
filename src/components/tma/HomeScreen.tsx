@@ -384,7 +384,9 @@ export default function HomeScreen({
                 setIsPlanSheetOpen(true);
               }}
               style={{
-                padding: "10px 24px",
+                minWidth: "150px",
+                height: "40px",
+                padding: "13px 17px",
                 borderRadius: "14px",
                 background: user.paymentMethodSaved ? "transparent" : "#fff",
                 border: user.paymentMethodSaved ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
@@ -396,6 +398,10 @@ export default function HomeScreen({
                 fontFamily: "JetBrains Mono, monospace",
                 letterSpacing: "-0.06em",
                 textTransform: "uppercase",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {user.paymentMethodSaved
@@ -486,7 +492,7 @@ export default function HomeScreen({
                 document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
               }}
               style={{
-                width: "150px",
+                minWidth: "150px",
                 height: "40px",
                 padding: "13px 17px",
                 borderRadius: "12px",
@@ -657,7 +663,7 @@ export default function HomeScreen({
           </div>
 
           {/* Action Buy Button below cards */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group w-[150px]">
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", alignSelf: "center", position: "relative" }} className="group min-w-[150px]">
             <button
               className={user.paymentMethodSaved ? "" : (selectedPlan ? "hover-scale-btn" : "")}
               disabled={!user.paymentMethodSaved && !selectedPlan}
@@ -688,7 +694,8 @@ export default function HomeScreen({
                 fontFamily: "JetBrains Mono, monospace",
                 transition: "all 0.25s ease",
                 opacity: user.paymentMethodSaved ? 0.5 : 1,
-                width: "100%",
+                minWidth: "150px",
+                whiteSpace: "nowrap",
                 lineHeight: 1,
                 display: "flex",
                 alignItems: "center",
@@ -794,7 +801,9 @@ export default function HomeScreen({
               onClick={handleCopyKey}
               disabled={!activeKey}
               style={{
-                padding: "10px 32px",
+                minWidth: "150px",
+                height: "40px",
+                padding: "13px 17px",
                 borderRadius: "14px",
                 background: activeKey ? "#fff" : "rgba(255, 255, 255, 0.05)",
                 border: activeKey ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
@@ -803,6 +812,11 @@ export default function HomeScreen({
                 cursor: activeKey ? "pointer" : "default",
                 fontFamily: "var(--font-mono), monospace",
                 marginTop: "24px",
+                whiteSpace: "nowrap",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {(copiedKey ? t.success.copied : t.home.copyBtn).toUpperCase()}
@@ -856,7 +870,9 @@ export default function HomeScreen({
                 onTabChange("guide");
               }}
               style={{
-                padding: "10px 24px",
+                minWidth: "150px",
+                height: "40px",
+                padding: "13px 17px",
                 borderRadius: "14px",
                 background: "transparent",
                 border: "1px solid rgba(64, 209, 253, 0.5)",
@@ -867,6 +883,11 @@ export default function HomeScreen({
                 cursor: "pointer",
                 fontFamily: "JetBrains Mono, monospace",
                 marginTop: "24px",
+                whiteSpace: "nowrap",
+                lineHeight: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {t.home.readGuideBtn}
