@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import type { Plan, Language, Translations, HapticType, Campaign } from "./types";
+import type { FirstPurchaseDiscount } from "./discount";
 import { trackEvent } from "../../lib/mixpanel";
 
 import WelcomeStep from "./WelcomeStep";
@@ -21,6 +22,7 @@ interface OnboardingScreenProps {
   onSelectPlanForPayment?: (planId: string) => void;
   campaign?: Campaign;
   expiration?: string;
+  firstPurchaseDiscount?: FirstPurchaseDiscount | null;
 }
 
 function getPlanLabelText(periodMonths: number, lang: string): string {
@@ -321,6 +323,7 @@ export default function OnboardingScreen({
   onSelectPlanForPayment,
   campaign = "default",
   expiration,
+  firstPurchaseDiscount,
 }: OnboardingScreenProps) {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
@@ -761,6 +764,7 @@ export default function OnboardingScreen({
               tempSelectedPlanId={tempSelectedPlanId}
               setTempSelectedPlanId={setTempSelectedPlanId}
               selectedPlan={selectedPlan}
+              firstPurchaseDiscount={firstPurchaseDiscount}
               triggerHaptic={triggerHaptic}
               trackEvent={trackEvent}
               getPlanLabelText={getPlanLabelText}
@@ -821,6 +825,7 @@ export default function OnboardingScreen({
               tempSelectedPlanId={tempSelectedPlanId}
               setTempSelectedPlanId={setTempSelectedPlanId}
               selectedPlan={selectedPlan}
+              firstPurchaseDiscount={firstPurchaseDiscount}
               triggerHaptic={triggerHaptic}
               trackEvent={trackEvent}
               getPlanLabelText={getPlanLabelText}

@@ -115,6 +115,8 @@ export interface Translations {
   };
   payment: {
     selectMethod: string;
+    total: string;
+    discount: string;
     card: string;
     cardDesc: (price: string) => string;
     crypto: string;
@@ -129,6 +131,17 @@ export interface Translations {
     regionUAE: string;
     regionUZB: string;
     regionBY: string;
+  };
+  promo: {
+    label: string;
+    placeholder: string;
+    apply: string;
+    applied: string;
+    remove: string;
+    invalid: string;
+    expired: string;
+    used: string;
+    networkError: string;
   };
   success: {
     title: string;

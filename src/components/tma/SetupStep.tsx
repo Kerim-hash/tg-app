@@ -5,6 +5,7 @@ import GradientBlock from "../GradientBlock";
 import SwipeSlider from "./SwipeSlider";
 import { PlanCard } from "./PlanCard";
 import type { HapticType } from "./types";
+import { applyDiscountToPlan, type FirstPurchaseDiscount } from "./discount";
 
 interface SetupStepProps {
   language: string;
@@ -22,6 +23,7 @@ interface SetupStepProps {
   tempSelectedPlanId: string;
   setTempSelectedPlanId: (id: string) => void;
   selectedPlan: any;
+  firstPurchaseDiscount?: FirstPurchaseDiscount | null;
   triggerHaptic: (type: HapticType) => void;
   trackEvent: (eventName: string, params?: any) => void;
   getPlanLabelText: (periodMonths: number, lang: string) => string;
@@ -158,6 +160,7 @@ export default function SetupStep({
   tempSelectedPlanId,
   setTempSelectedPlanId,
   selectedPlan,
+  firstPurchaseDiscount,
   triggerHaptic,
   trackEvent,
   getPlanLabelText,
@@ -471,6 +474,7 @@ export default function SetupStep({
                           language={language}
                           t={t}
                           borderRadius="45px"
+                          firstPurchaseDiscount={firstPurchaseDiscount}
                         />
                       </div>
                     );
@@ -497,10 +501,13 @@ export default function SetupStep({
                     }`}
                   >
                     {selectedPlan
-                      ? t.home.buyFor(
-                          `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                          selectedPlan.starsPrice
-                        ).toUpperCase()
+                      ? (() => {
+                          const p = applyDiscountToPlan(selectedPlan, firstPurchaseDiscount?.percent ?? 0);
+                          return t.home.buyFor(
+                            `${p.usdTotal % 1 === 0 ? p.usdTotal : p.usdTotal.toFixed(2)}$`,
+                            p.starsPrice
+                          ).toUpperCase();
+                        })()
                       : t.onboarding.selectAndBuy.toUpperCase()}
                   </button>
                 </div>

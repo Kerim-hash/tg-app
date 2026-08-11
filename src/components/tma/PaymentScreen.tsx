@@ -5,6 +5,14 @@ import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./
 import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
 import GradientBlock from "../GradientBlock";
+import PriceSummary from "./PriceSummary";
+import PromoCodeInput, { type PromoApplyResult } from "./PromoCodeInput";
+import {
+  applyDiscountToPlan,
+  isDiscountActive,
+  type AppliedPromo,
+  type FirstPurchaseDiscount,
+} from "./discount";
 
 interface PaymentScreenProps {
   t: Translations;
@@ -17,6 +25,10 @@ interface PaymentScreenProps {
   isPaying: boolean;
   triggerHaptic: (type: HapticType) => void;
   paymentMethods?: any[];
+  firstPurchaseDiscount?: FirstPurchaseDiscount | null;
+  appliedPromo?: AppliedPromo | null;
+  onApplyPromo?: (code: string) => Promise<PromoApplyResult>;
+  onClearPromo?: () => void;
 }
 
 
@@ -31,7 +43,16 @@ export default function PaymentScreen({
   isPaying,
   triggerHaptic,
   paymentMethods = [],
+  firstPurchaseDiscount,
+  appliedPromo,
+  onApplyPromo,
+  onClearPromo,
 }: PaymentScreenProps) {
+  // A manually applied promo wins over the automatic first-purchase discount
+  const effectivePercent =
+    appliedPromo?.percent ??
+    (isDiscountActive(firstPurchaseDiscount) ? firstPurchaseDiscount.percent : 0);
+  const effectivePlan = applyDiscountToPlan(plan, effectivePercent);
   const combinedMethods = [
     ...(paymentMethods || []).map((m: any) => ({
       id: m.method_type,
@@ -53,10 +74,10 @@ export default function PaymentScreen({
 
   const getMethodPrice = (m: { id: string; merchant_method_type: string }) => {
     if (m.id === "stars") {
-      return t.payment.starsDesc(plan.starsPrice);
+      return t.payment.starsDesc(effectivePlan.starsPrice);
     }
     if (m.merchant_method_type === "cryptocloud") {
-      return `${plan.usdTotal.toFixed(0)} USDT`;
+      return `${effectivePlan.usdTotal.toFixed(0)} USDT`;
     }
     if (
       m.merchant_method_type.endsWith("_rub") ||
@@ -64,9 +85,9 @@ export default function PaymentScreen({
       m.id === "tinkoff_bank" ||
       m.id === "yoo_money"
     ) {
-      return plan.rubTotal ? `${plan.rubTotal.toFixed(0)} ₽` : `$ ${plan.usdTotal.toFixed(2)}`;
+      return effectivePlan.rubTotal ? `${effectivePlan.rubTotal.toFixed(0)} ₽` : `$ ${effectivePlan.usdTotal.toFixed(2)}`;
     }
-    return `$ ${plan.usdTotal.toFixed(2)}`;
+    return `$ ${effectivePlan.usdTotal.toFixed(2)}`;
   };
 
   const canProceed = !!selectedMethod && !isPaying;
@@ -121,6 +142,24 @@ export default function PaymentScreen({
       <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#fff", textAlign: "center", marginBottom: "32px", margin: "0 0 32px" }}>
         {t.payment.selectMethod}
       </h2>
+
+      {/* Total price for the selected plan */}
+      <div style={{ marginBottom: "12px" }}>
+        <PriceSummary t={t} language={language} plan={plan} discountPercent={effectivePercent} />
+      </div>
+
+      {/* Promo code — before choosing a payment method */}
+      {onApplyPromo && onClearPromo && (
+        <div style={{ marginBottom: "20px" }}>
+          <PromoCodeInput
+            t={t}
+            appliedPromo={appliedPromo ?? null}
+            onApply={onApplyPromo}
+            onClear={onClearPromo}
+            triggerHaptic={triggerHaptic}
+          />
+        </div>
+      )}
 
       {/* Method list */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

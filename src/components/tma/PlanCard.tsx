@@ -2,6 +2,7 @@
 
 import GradientBlock from "../GradientBlock";
 import type { Plan, Translations } from "./types";
+import { applyDiscountToPlan, useCountdown, type FirstPurchaseDiscount } from "./discount";
 
 export function getPlanLabelText(periodMonths: number, lang: string): string {
   if (periodMonths === 12) {
@@ -67,6 +68,7 @@ export function PlanCard({
   language,
   t,
   borderRadius = "45px",
+  firstPurchaseDiscount,
 }: {
   plan: Plan;
   plans: Plan[];
@@ -74,8 +76,14 @@ export function PlanCard({
   language: string;
   t: Translations;
   borderRadius?: string;
+  firstPurchaseDiscount?: FirstPurchaseDiscount | null;
 }) {
   const isYearly = plan.periodMonths === 12;
+
+  const countdown = useCountdown(firstPurchaseDiscount?.expiresAt ?? null, language);
+  // The discount is rendered only while the countdown is alive
+  const fpPercent = countdown && firstPurchaseDiscount ? firstPurchaseDiscount.percent : 0;
+  const discountedPlan = fpPercent > 0 ? applyDiscountToPlan(plan, fpPercent) : plan;
 
   const monthlyPlan = plans.find((p) => p.periodMonths === 1);
   const yearlyOriginalTotal = monthlyPlan ? monthlyPlan.usdPerMonth * 12 : undefined;
@@ -125,9 +133,13 @@ export function PlanCard({
             className={`block text-[24px] leading-[31px] text-white font-sans ${language === "ru" || language === "by" || language === "uz" ? "text-[20px]" : ""
               }`}
           >
-            {isYearly ? `$ ${plan.usdTotal.toFixed(2)}` : `$ ${plan.usdPerMonth.toFixed(2)}`}
+            {isYearly ? `$ ${discountedPlan.usdTotal.toFixed(2)}` : `$ ${discountedPlan.usdPerMonth.toFixed(2)}`}
           </span>
-          {isYearly && yearlyOriginalTotal ? (
+          {fpPercent > 0 ? (
+            <span className="block text-[18px] leading-[23px] mt-0 font-sans text-white/40 line-through">
+              $ {isYearly ? plan.usdTotal.toFixed(2) : plan.usdPerMonth.toFixed(2)}
+            </span>
+          ) : isYearly && yearlyOriginalTotal ? (
             <span className="block text-[18px] leading-[23px] mt-0 font-sans text-white/40 line-through">
               $ {yearlyOriginalTotal.toFixed(0)}
             </span>
@@ -138,7 +150,13 @@ export function PlanCard({
           ) : null}
         </div>
 
-        {isYearly && yearlyDiscountPercent && yearlyDiscountPercent > 0 ? (
+        {fpPercent > 0 ? (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center py-2 px-2.5 rounded-t-[12px] bg-[#40D1FD] whitespace-nowrap max-w-full">
+            <span className="font-mono text-[12px] leading-none tracking-[-0.06em] text-black text-center whitespace-nowrap">
+              {`-${fpPercent}% · ${countdown}`}
+            </span>
+          </div>
+        ) : isYearly && yearlyDiscountPercent && yearlyDiscountPercent > 0 ? (
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center py-2 px-2.5 rounded-t-[12px] bg-[#40D1FD] whitespace-nowrap max-w-full">
             <span className="font-mono text-[12px] leading-none tracking-[-0.06em] text-black text-center whitespace-nowrap">
               {language === "ru" ? `Скидка ${yearlyDiscountPercent}%` :
