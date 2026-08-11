@@ -23,9 +23,13 @@ export type PromoValidationResult =
   | { ok: true; percent: number; promoId?: number }
   | { ok: false; reason: PromoFailReason };
 
+// Promo endpoints are shared across products; the backend needs to know
+// which product the promo is being validated for.
+const PROMO_HEADERS = { "X-Product": "iguard" };
+
 export async function fetchFirstPurchaseDiscount(): Promise<FirstPurchaseDiscount | null> {
   try {
-    const data = await apiCall("/discount/first-purchase", "GET");
+    const data = await apiCall("/discount/first-purchase", "GET", undefined, PROMO_HEADERS);
     if (!data?.eligible) return null;
     const percent = Number(data.discount_percent);
     const expiresAt = data.expires_at;
@@ -42,7 +46,7 @@ export async function fetchFirstPurchaseDiscount(): Promise<FirstPurchaseDiscoun
 // be readable to show a specific error message.
 export async function validatePromoCode(code: string): Promise<PromoValidationResult> {
   const token = safeStorage.getItem("iguard_jwt_token");
-  const headers: HeadersInit = { "Content-Type": "application/json" };
+  const headers: HeadersInit = { "Content-Type": "application/json", ...PROMO_HEADERS };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   let response: Response;
@@ -70,11 +74,30 @@ export async function validatePromoCode(code: string): Promise<PromoValidationRe
   }
 
   const valid = data?.valid ?? data?.eligible ?? true;
-  const percent = Number(data?.discount_percent ?? data?.percent ?? 0);
+  const promoId = data?.promo_id ?? data?.id;
+
+  // Live response shape: { id: 11, type: "sale", sale: 10, sale_type: "percent" }
+  let percent = Number(data?.discount_percent ?? data?.percent ?? 0);
+  if (!percent && data?.sale !== undefined) {
+    const isPercentSale =
+      (data.type === undefined || data.type === "sale") &&
+      (data.sale_type === undefined || data.sale_type === "percent");
+    if (isPercentSale) {
+      percent = Number(data.sale);
+    } else {
+      // e.g. a fixed-amount sale — the UI can only render percent discounts
+      console.warn(
+        "[IGuard] Unsupported promo type/sale_type:",
+        data.type,
+        data.sale_type,
+      );
+    }
+  }
+
   if (!valid || !percent || percent <= 0) {
     return { ok: false, reason: knownReason(data?.reason) };
   }
-  return { ok: true, percent, promoId: data?.promo_id };
+  return { ok: true, percent, promoId };
 }
 
 // Discounted prices are computed on the client: /payment/prices is a public
