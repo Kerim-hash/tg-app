@@ -101,6 +101,7 @@ export default function PaymentScreen({
     <div
       style={{
         height: "100%",
+        overflowY: "auto",
         background: "#090B0E",
         display: "flex",
         flexDirection: "column",

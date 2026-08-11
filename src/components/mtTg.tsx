@@ -24,15 +24,7 @@ import {
   type AppliedPromo,
   type FirstPurchaseDiscount,
   type PromoFailReason,
-  type PromoValidationResult,
 } from "./tma/discount";
-import {
-  isMockMode,
-  MOCK_USER,
-  MOCK_PLANS,
-  mockFirstPurchaseDiscount,
-  mockValidatePromo,
-} from "./tma/mock";
 import { trackEvent } from "../lib/mixpanel";
 
 import NavBar from "./tma/NavBar";
@@ -519,19 +511,10 @@ export default function TMA() {
     return () => clearTimeout(id);
   }, [firstPurchaseDiscount]);
 
-  // The real /promo/validate request is always fired, mock mode included.
-  // In mock mode there is no JWT, so a failed real validation falls back to
-  // the local mock codes (TEST<n> / USED / EXPIRED).
-  const validatePromo = async (code: string): Promise<PromoValidationResult> => {
-    const real = await validatePromoCode(code);
-    if (real.ok || !isMockMode()) return real;
-    return mockValidatePromo(code);
-  };
-
   const handleApplyPromo = async (
     code: string,
   ): Promise<{ ok: boolean; reason?: PromoFailReason }> => {
-    const result = await validatePromo(code);
+    const result = await validatePromoCode(code);
     if (result.ok) {
       setAppliedPromo({
         code,
@@ -560,7 +543,7 @@ export default function TMA() {
   const applyDeeplinkPromo = async () => {
     const code = parsePromoStartParam(getRawStartParam());
     if (!code) return;
-    const result = await validatePromo(code);
+    const result = await validatePromoCode(code);
     if (result.ok) {
       setAppliedPromo({
         code,
@@ -912,19 +895,6 @@ export default function TMA() {
 
     if (rawInitData && rawInitData !== "string") {
       runAuth(rawInitData);
-    } else if (isMockMode()) {
-      // `?mock=1`: fake session for developing outside Telegram
-      console.warn("[IGuard] Mock mode: using a mock user, no backend auth.");
-      setUser(MOCK_USER);
-      setPlans((prev) => (prev.length > 0 ? prev : MOCK_PLANS));
-      setSelectedPlan(
-        (prev) =>
-          prev ?? MOCK_PLANS.find((p) => p.periodMonths === 12) ?? MOCK_PLANS[0],
-      );
-      setFirstPurchaseDiscount(mockFirstPurchaseDiscount());
-      applyDeeplinkPromo();
-      setAuthError(null);
-      setIsLoadingAuth(false);
     } else {
       console.warn(
         "[IGuard] App is running outside Telegram or initData is missing.",
