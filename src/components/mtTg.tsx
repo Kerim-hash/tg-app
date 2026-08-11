@@ -17,6 +17,15 @@ import type {
 } from "./tma/types";
 import { translations, getDefaultLanguage } from "./tma/i18n";
 import { apiCall, safeStorage, recordPushClick } from "./tma/api";
+import {
+  fetchFirstPurchaseDiscount,
+  validatePromoCode,
+  parsePromoStartParam,
+  isDiscountActive,
+  type AppliedPromo,
+  type FirstPurchaseDiscount,
+  type PromoFailReason,
+} from "./tma/discount";
 import { trackEvent } from "../lib/mixpanel";
 
 import NavBar from "./tma/NavBar";
@@ -484,6 +493,87 @@ export default function TMA() {
   const [personalKey, setPersonalKey] = useState("");
   const [isPaying, setIsPaying] = useState(false);
 
+  // Discounts
+  const [firstPurchaseDiscount, setFirstPurchaseDiscount] =
+    useState<FirstPurchaseDiscount | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+
+  // Drop the first-purchase discount the moment its countdown runs out
+  useEffect(() => {
+    if (!firstPurchaseDiscount) return;
+    const msLeft =
+      new Date(firstPurchaseDiscount.expiresAt).getTime() - Date.now();
+    if (msLeft <= 0) {
+      setFirstPurchaseDiscount(null);
+      return;
+    }
+    if (msLeft > 0x7fffffff) return; // setTimeout overflows past ~24.8 days
+    const id = setTimeout(() => setFirstPurchaseDiscount(null), msLeft);
+    return () => clearTimeout(id);
+  }, [firstPurchaseDiscount]);
+
+  const handleApplyPromo = async (
+    code: string,
+  ): Promise<{ ok: boolean; reason?: PromoFailReason }> => {
+    const result = await validatePromoCode(code);
+    if (result.ok) {
+      setAppliedPromo({
+        code,
+        percent: result.percent,
+        promoId: result.promoId,
+        source: "manual",
+      });
+      trackEvent("promo_code_applied", {
+        source: "manual",
+        code,
+        percent: result.percent,
+      });
+      return { ok: true };
+    }
+    trackEvent("promo_code_invalid", {
+      source: "manual",
+      code,
+      reason: result.reason,
+    });
+    return { ok: false, reason: result.reason };
+  };
+
+  const handleClearPromo = () => setAppliedPromo(null);
+
+  // Id of the promo being applied at checkout: a manually entered promo wins
+  // over the automatic first-purchase discount.
+  const activePromoId =
+    appliedPromo?.promoId ??
+    (isDiscountActive(firstPurchaseDiscount)
+      ? firstPurchaseDiscount.promoId
+      : undefined);
+
+  // `startapp=promo_CODE` deep link: validate and apply automatically
+  const applyDeeplinkPromo = async () => {
+    const code = parsePromoStartParam(getRawStartParam());
+    if (!code) return;
+    const result = await validatePromoCode(code);
+    if (result.ok) {
+      setAppliedPromo({
+        code,
+        percent: result.percent,
+        promoId: result.promoId,
+        source: "deeplink",
+      });
+      trackEvent("promo_code_applied", {
+        source: "deeplink",
+        code,
+        percent: result.percent,
+      });
+    } else {
+      trackEvent("promo_code_invalid", {
+        source: "deeplink",
+        code,
+        reason: result.reason,
+      });
+    }
+  };
+
   // Notifications
   const [notifs, setNotifs] = useState<Notifications>({
     all: true,
@@ -680,6 +770,9 @@ export default function TMA() {
     } catch (err) {
       console.error("[IGuard] Fetch referral info error:", err);
     }
+
+    // First-purchase discount (JWT-protected; goes away once the user pays)
+    setFirstPurchaseDiscount(await fetchFirstPurchaseDiscount());
   };
 
   // Reset scroll on tab change
@@ -797,6 +890,7 @@ export default function TMA() {
             }
 
             await refreshUserData();
+            await applyDeeplinkPromo();
           } else {
             throw new Error("No access token returned");
           }
@@ -945,6 +1039,7 @@ export default function TMA() {
         });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
+          ...(activePromoId !== undefined ? { promo_id: activePromoId } : {}),
         });
 
         if (data?.invoice_url) {
@@ -961,6 +1056,7 @@ export default function TMA() {
                 completeOnboarding();
               }
               handleReset();
+              setAppliedPromo(null);
               triggerHaptic("success");
               refreshUserData();
             } else if (status === "failed") {
@@ -986,6 +1082,7 @@ export default function TMA() {
           paymentMethodType: foundDynamic.merchant_method_type,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1011,6 +1108,7 @@ export default function TMA() {
           paymentMethodType: merchant,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1067,6 +1165,7 @@ export default function TMA() {
         });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
+          ...(activePromoId !== undefined ? { promo_id: activePromoId } : {}),
         });
 
         if (data?.invoice_url) {
@@ -1083,6 +1182,7 @@ export default function TMA() {
                 completeOnboarding();
               }
               handleReset();
+              setAppliedPromo(null);
               triggerHaptic("success");
               refreshUserData();
             } else if (status === "failed") {
@@ -1106,6 +1206,7 @@ export default function TMA() {
           paymentMethodType: foundDynamic.merchant_method_type,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1131,6 +1232,7 @@ export default function TMA() {
           paymentMethodType: merchant,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1274,6 +1376,7 @@ export default function TMA() {
           personalKey={personalKey}
           campaign={campaign}
           expiration={user.expiration}
+          firstPurchaseDiscount={firstPurchaseDiscount}
           onSelectPlanForPayment={(planId) => {
             const targetPlan = plans.find((p) => p.id === planId);
             if (targetPlan) {
@@ -1312,6 +1415,11 @@ export default function TMA() {
                 isPaying={isPaying}
                 triggerHaptic={triggerHaptic}
                 paymentMethods={paymentMethods}
+                plans={plans}
+                firstPurchaseDiscount={firstPurchaseDiscount}
+                appliedPromo={appliedPromo}
+                onApplyPromo={handleApplyPromo}
+                onClearPromo={handleClearPromo}
               />
             </div>
           </div>
@@ -1375,6 +1483,10 @@ export default function TMA() {
               onBillingRegionChange={handleBillingRegionChange}
               paymentMethods={paymentMethods}
               onRefreshProfile={refreshUserData}
+              firstPurchaseDiscount={firstPurchaseDiscount}
+              appliedPromo={appliedPromo}
+              onApplyPromo={handleApplyPromo}
+              onClearPromo={handleClearPromo}
             />
           </div>
         )}
@@ -1396,6 +1508,10 @@ export default function TMA() {
               paymentMethods={paymentMethods}
               expiration={user.expiration}
               paymentMethodSaved={user.paymentMethodSaved}
+              firstPurchaseDiscount={firstPurchaseDiscount}
+              appliedPromo={appliedPromo}
+              onApplyPromo={handleApplyPromo}
+              onClearPromo={handleClearPromo}
             />
           </div>
         )}
@@ -1471,6 +1587,11 @@ export default function TMA() {
             isPaying={isPaying}
             triggerHaptic={triggerHaptic}
             paymentMethods={paymentMethods}
+            plans={plans}
+            firstPurchaseDiscount={firstPurchaseDiscount}
+            appliedPromo={appliedPromo}
+            onApplyPromo={handleApplyPromo}
+            onClearPromo={handleClearPromo}
           />
         </div>
       )}

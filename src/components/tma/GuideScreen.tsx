@@ -8,6 +8,14 @@ import GradientBlock from "../GradientBlock";
 import { PlanCard } from "./PlanCard";
 import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
+import PriceSummary from "./PriceSummary";
+import PromoCodeInput, { type PromoApplyResult } from "./PromoCodeInput";
+import {
+  applyDiscountToPlan,
+  isDiscountActive,
+  type AppliedPromo,
+  type FirstPurchaseDiscount,
+} from "./discount";
 
 const SERVERS_ROW1 = [
   { name: "Albania", flag: "🇦🇱" },
@@ -44,6 +52,10 @@ interface GuideScreenProps {
   paymentMethods?: any[];
   expiration?: string;
   paymentMethodSaved?: boolean;
+  firstPurchaseDiscount?: FirstPurchaseDiscount | null;
+  appliedPromo?: AppliedPromo | null;
+  onApplyPromo?: (code: string) => Promise<PromoApplyResult>;
+  onClearPromo?: () => void;
 }
 
 const REGION_OPTIONS = [
@@ -137,8 +149,15 @@ export default function GuideScreen({
   paymentMethods = [],
   expiration,
   paymentMethodSaved = false,
+  firstPurchaseDiscount,
+  appliedPromo,
+  onApplyPromo,
+  onClearPromo,
 }: GuideScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
+  const activeFirstPurchase = isDiscountActive(firstPurchaseDiscount) ? firstPurchaseDiscount : null;
+  // A manually applied promo wins over the automatic first-purchase discount
+  const effectivePercent = appliedPromo?.percent ?? activeFirstPurchase?.percent ?? 0;
   const [copied, setCopied] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -656,6 +675,7 @@ export default function GuideScreen({
                       language={language}
                       t={t}
                       borderRadius="45px"
+                      firstPurchaseDiscount={activeFirstPurchase}
                     />
                   </button>
                 );
@@ -690,10 +710,13 @@ export default function GuideScreen({
                 }}
               >
                 {selectedPlan
-                  ? t.home.buyFor(
-                    `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                    selectedPlan.starsPrice
-                  )
+                  ? (() => {
+                    const p = applyDiscountToPlan(selectedPlan, activeFirstPurchase?.percent ?? 0);
+                    return t.home.buyFor(
+                      `${p.usdTotal % 1 === 0 ? p.usdTotal : p.usdTotal.toFixed(2)}$`,
+                      p.starsPrice
+                    );
+                  })()
                   : t.onboarding.selectAndBuy.toUpperCase()}
               </button>
               {!selectedPlan && (
@@ -1295,6 +1318,20 @@ export default function GuideScreen({
                   </h2>
                 </div>
 
+                {/* Total price for the selected plan */}
+                <PriceSummary t={t} language={language} plan={selectedPlan} discountPercent={effectivePercent} plans={plans} />
+
+                {/* Promo code — before choosing a payment method */}
+                {onApplyPromo && onClearPromo && (
+                  <PromoCodeInput
+                    t={t}
+                    appliedPromo={appliedPromo ?? null}
+                    onApply={onApplyPromo}
+                    onClear={onClearPromo}
+                    triggerHaptic={triggerHaptic}
+                  />
+                )}
+
                 {/* Methods list */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "100%" }}>
                   {(() => {
@@ -1316,6 +1353,7 @@ export default function GuideScreen({
                       { id: "stars", name: t.payment.stars, merchant_method_type: "stars" }
                     ];
                     const methodsToRender = paymentMethods.length > 0 ? combinedMethods : fallbackMethods;
+                    const effectivePlan = applyDiscountToPlan(selectedPlan, effectivePercent);
 
                     return methodsToRender.map((method) => {
                       const isSelected = localSelectedMethod === method.id;
@@ -1323,18 +1361,18 @@ export default function GuideScreen({
                       // Calculate pricing text
                       let priceText = "";
                       if (method.id === "stars") {
-                        priceText = t.payment.starsDesc(selectedPlan.starsPrice);
+                        priceText = t.payment.starsDesc(effectivePlan.starsPrice);
                       } else if (method.merchant_method_type === "cryptocloud") {
-                        priceText = `${selectedPlan.usdTotal.toFixed(0)} USDT`;
+                        priceText = `${effectivePlan.usdTotal.toFixed(0)} USDT`;
                       } else if (
                         method.merchant_method_type.endsWith("_rub") ||
                         method.id === "sberbank" ||
                         method.id === "tinkoff_bank" ||
                         method.id === "yoo_money"
                       ) {
-                        priceText = selectedPlan.rubTotal ? `${selectedPlan.rubTotal.toFixed(0)} ₽` : `$ ${selectedPlan.usdTotal.toFixed(2)}`;
+                        priceText = effectivePlan.rubTotal ? `${effectivePlan.rubTotal.toFixed(0)} ₽` : `$ ${effectivePlan.usdTotal.toFixed(2)}`;
                       } else {
-                        priceText = `$ ${selectedPlan.usdTotal.toFixed(2)}`;
+                        priceText = `$ ${effectivePlan.usdTotal.toFixed(2)}`;
                       }
 
                       return (

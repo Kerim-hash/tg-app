@@ -9,6 +9,14 @@ import { PlanCard, getPlanLabelText, getBilledFrequencyText } from "./PlanCard";
 import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
+import PriceSummary from "./PriceSummary";
+import PromoCodeInput, { type PromoApplyResult } from "./PromoCodeInput";
+import {
+  applyDiscountToPlan,
+  isDiscountActive,
+  type AppliedPromo,
+  type FirstPurchaseDiscount,
+} from "./discount";
 
 function FeatureBadge({ text, align = "left" }: { text: string; align?: "left" | "right" }) {
   return (
@@ -50,6 +58,10 @@ interface HomeScreenProps {
   onBillingRegionChange: (region: string) => void;
   paymentMethods?: any[];
   onRefreshProfile?: () => Promise<void>;
+  firstPurchaseDiscount?: FirstPurchaseDiscount | null;
+  appliedPromo?: AppliedPromo | null;
+  onApplyPromo?: (code: string) => Promise<PromoApplyResult>;
+  onClearPromo?: () => void;
 }
 
 const REGION_OPTIONS = [
@@ -73,8 +85,15 @@ export default function HomeScreen({
   onBillingRegionChange,
   paymentMethods = [],
   onRefreshProfile,
+  firstPurchaseDiscount,
+  appliedPromo,
+  onApplyPromo,
+  onClearPromo,
 }: HomeScreenProps) {
   const language = t.nav.home === "Главная" ? "ru" : t.nav.home === "Bosh sahifa" ? "uz" : t.nav.home === "Галоўная" ? "by" : "en";
+  const activeFirstPurchase = isDiscountActive(firstPurchaseDiscount) ? firstPurchaseDiscount : null;
+  // A manually applied promo wins over the automatic first-purchase discount
+  const effectivePercent = appliedPromo?.percent ?? activeFirstPurchase?.percent ?? 0;
   const [isPlanSheetOpen, setIsPlanSheetOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
@@ -656,6 +675,7 @@ export default function HomeScreen({
                     language={language}
                     t={t}
                     borderRadius="45px"
+                    firstPurchaseDiscount={activeFirstPurchase}
                   />
                 </button>
               );
@@ -978,6 +998,7 @@ export default function HomeScreen({
                         language={language}
                         t={t}
                         borderRadius="45px"
+                        firstPurchaseDiscount={activeFirstPurchase}
                       />
                     </button>
                   );
@@ -1011,10 +1032,13 @@ export default function HomeScreen({
                   }}
                 >
                   {selectedPlan
-                    ? t.home.buyFor(
-                      `${selectedPlan.usdTotal % 1 === 0 ? selectedPlan.usdTotal : selectedPlan.usdTotal.toFixed(2)}$`,
-                      selectedPlan.starsPrice
-                    ).toUpperCase()
+                    ? (() => {
+                      const p = applyDiscountToPlan(selectedPlan, activeFirstPurchase?.percent ?? 0);
+                      return t.home.buyFor(
+                        `${p.usdTotal % 1 === 0 ? p.usdTotal : p.usdTotal.toFixed(2)}$`,
+                        p.starsPrice
+                      ).toUpperCase();
+                    })()
                     : t.onboarding.selectAndBuy.toUpperCase()}
                 </button>
                 {!selectedPlan && (
@@ -1266,6 +1290,20 @@ export default function HomeScreen({
                   </h2>
                 </div>
 
+                {/* Total price for the selected plan */}
+                <PriceSummary t={t} language={language} plan={selectedPlan} discountPercent={effectivePercent} plans={plans} />
+
+                {/* Promo code — before choosing a payment method */}
+                {onApplyPromo && onClearPromo && (
+                  <PromoCodeInput
+                    t={t}
+                    appliedPromo={appliedPromo ?? null}
+                    onApply={onApplyPromo}
+                    onClear={onClearPromo}
+                    triggerHaptic={triggerHaptic}
+                  />
+                )}
+
                 {/* Methods list */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "100%" }}>
                   {(() => {
@@ -1287,25 +1325,26 @@ export default function HomeScreen({
                       { id: "stars", name: t.payment.stars, merchant_method_type: "stars" }
                     ];
                     const methodsToRender = paymentMethods.length > 0 ? combinedMethods : fallbackMethods;
+                    const effectivePlan = applyDiscountToPlan(selectedPlan, effectivePercent);
 
                     return methodsToRender.map((method) => {
                       const isSelected = localSelectedMethod === method.id;
-                      
+
                       // Calculate pricing text
                       let priceText = "";
                       if (method.id === "stars") {
-                        priceText = t.payment.starsDesc(selectedPlan.starsPrice);
+                        priceText = t.payment.starsDesc(effectivePlan.starsPrice);
                       } else if (method.merchant_method_type === "cryptocloud") {
-                        priceText = `${selectedPlan.usdTotal.toFixed(0)} USDT`;
+                        priceText = `${effectivePlan.usdTotal.toFixed(0)} USDT`;
                       } else if (
                         method.merchant_method_type.endsWith("_rub") ||
                         method.id === "sberbank" ||
                         method.id === "tinkoff_bank" ||
                         method.id === "yoo_money"
                       ) {
-                        priceText = selectedPlan.rubTotal ? `${selectedPlan.rubTotal.toFixed(0)} ₽` : `$ ${selectedPlan.usdTotal.toFixed(2)}`;
+                        priceText = effectivePlan.rubTotal ? `${effectivePlan.rubTotal.toFixed(0)} ₽` : `$ ${effectivePlan.usdTotal.toFixed(2)}`;
                       } else {
-                        priceText = `$ ${selectedPlan.usdTotal.toFixed(2)}`;
+                        priceText = `$ ${effectivePlan.usdTotal.toFixed(2)}`;
                       }
 
                       return (
