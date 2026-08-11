@@ -81,6 +81,7 @@ export interface Translations {
     buyFor: (usd: string, stars: number) => string;
     optimizedServers: string;
     perMonth: string;
+    perYear: string;
     thirtyDays: string;
     oneYear: string;
     billedMonthly: string;

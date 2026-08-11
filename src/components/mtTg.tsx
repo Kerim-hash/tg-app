@@ -21,6 +21,7 @@ import {
   fetchFirstPurchaseDiscount,
   validatePromoCode,
   parsePromoStartParam,
+  isDiscountActive,
   type AppliedPromo,
   type FirstPurchaseDiscount,
   type PromoFailReason,
@@ -539,6 +540,14 @@ export default function TMA() {
 
   const handleClearPromo = () => setAppliedPromo(null);
 
+  // Id of the promo being applied at checkout: a manually entered promo wins
+  // over the automatic first-purchase discount.
+  const activePromoId =
+    appliedPromo?.promoId ??
+    (isDiscountActive(firstPurchaseDiscount)
+      ? firstPurchaseDiscount.promoId
+      : undefined);
+
   // `startapp=promo_CODE` deep link: validate and apply automatically
   const applyDeeplinkPromo = async () => {
     const code = parsePromoStartParam(getRawStartParam());
@@ -1030,6 +1039,7 @@ export default function TMA() {
         });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
+          ...(activePromoId !== undefined ? { promo_id: activePromoId } : {}),
         });
 
         if (data?.invoice_url) {
@@ -1072,6 +1082,7 @@ export default function TMA() {
           paymentMethodType: foundDynamic.merchant_method_type,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1097,6 +1108,7 @@ export default function TMA() {
           paymentMethodType: merchant,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1153,6 +1165,7 @@ export default function TMA() {
         });
         const data = await apiCall("/payment/stars/invoice", "POST", {
           price_id: Number(selectedPlan.id),
+          ...(activePromoId !== undefined ? { promo_id: activePromoId } : {}),
         });
 
         if (data?.invoice_url) {
@@ -1193,6 +1206,7 @@ export default function TMA() {
           paymentMethodType: foundDynamic.merchant_method_type,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1218,6 +1232,7 @@ export default function TMA() {
           paymentMethodType: merchant,
           planId: Number(selectedPlan.id),
           userId: String(user.id),
+          ...(activePromoId !== undefined ? { promoId: activePromoId } : {}),
         });
 
         setIsPaying(false);
@@ -1400,6 +1415,7 @@ export default function TMA() {
                 isPaying={isPaying}
                 triggerHaptic={triggerHaptic}
                 paymentMethods={paymentMethods}
+                plans={plans}
                 firstPurchaseDiscount={firstPurchaseDiscount}
                 appliedPromo={appliedPromo}
                 onApplyPromo={handleApplyPromo}
@@ -1571,6 +1587,7 @@ export default function TMA() {
             isPaying={isPaying}
             triggerHaptic={triggerHaptic}
             paymentMethods={paymentMethods}
+            plans={plans}
             firstPurchaseDiscount={firstPurchaseDiscount}
             appliedPromo={appliedPromo}
             onApplyPromo={handleApplyPromo}

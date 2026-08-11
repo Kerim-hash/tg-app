@@ -25,6 +25,7 @@ interface PaymentScreenProps {
   isPaying: boolean;
   triggerHaptic: (type: HapticType) => void;
   paymentMethods?: any[];
+  plans?: Plan[];
   firstPurchaseDiscount?: FirstPurchaseDiscount | null;
   appliedPromo?: AppliedPromo | null;
   onApplyPromo?: (code: string) => Promise<PromoApplyResult>;
@@ -43,6 +44,7 @@ export default function PaymentScreen({
   isPaying,
   triggerHaptic,
   paymentMethods = [],
+  plans,
   firstPurchaseDiscount,
   appliedPromo,
   onApplyPromo,
@@ -146,7 +148,7 @@ export default function PaymentScreen({
 
       {/* Total price for the selected plan */}
       <div style={{ marginBottom: "12px" }}>
-        <PriceSummary t={t} language={language} plan={plan} discountPercent={effectivePercent} />
+        <PriceSummary t={t} language={language} plan={plan} discountPercent={effectivePercent} plans={plans} />
       </div>
 
       {/* Promo code — before choosing a payment method */}

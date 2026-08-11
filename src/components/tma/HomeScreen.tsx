@@ -1291,7 +1291,7 @@ export default function HomeScreen({
                 </div>
 
                 {/* Total price for the selected plan */}
-                <PriceSummary t={t} language={language} plan={selectedPlan} discountPercent={effectivePercent} />
+                <PriceSummary t={t} language={language} plan={selectedPlan} discountPercent={effectivePercent} plans={plans} />
 
                 {/* Promo code — before choosing a payment method */}
                 {onApplyPromo && onClearPromo && (
