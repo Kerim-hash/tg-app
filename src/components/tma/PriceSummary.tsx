@@ -14,23 +14,19 @@ interface PriceSummaryProps {
 
 // Total price row shown on the payment-method step. With a discount active it
 // shows the struck-through original next to the discounted price.
-export default function PriceSummary({ t, language, plan, discountPercent, plans }: PriceSummaryProps) {
+export default function PriceSummary({ t, language, plan, discountPercent }: PriceSummaryProps) {
   const discounted = applyDiscountToPlan(plan, discountPercent);
   const hasDiscount = discountPercent > 0;
 
-  const fmt = (v: number) => `$ ${v % 1 === 0 ? v : v.toFixed(2)}`;
-  // The other price scale: per-month equivalent for the yearly plan; for the
-  // monthly plan — the actual catalog price of the yearly plan, not month×12.
-  // Uzbek puts the period word first.
+  // Yearly plan only: its effective monthly rate (total ÷ 12) — the standard
+  // "billed annually" hint. Kept at the base price: the promo changes only
+  // the payable total above. Uzbek puts the period word first.
   const withUnit = (price: string, unit: string) =>
     language === "uz" ? `${unit} ${price}` : `${price} ${unit}`;
-  const yearlyPlan = plans?.find((p) => p.periodMonths === 12);
   const secondaryPrice =
     plan.periodMonths === 12
-      ? withUnit(fmt(discounted.usdPerMonth), t.home.perMonth)
-      : plan.periodMonths === 1 && yearlyPlan
-        ? withUnit(fmt(applyDiscountToPlan(yearlyPlan, discountPercent).usdTotal), t.home.perYear)
-        : null;
+      ? withUnit(`$ ${plan.usdPerMonth % 1 === 0 ? plan.usdPerMonth : plan.usdPerMonth.toFixed(2)}`, t.home.perMonth)
+      : null;
 
   return (
     <div
