@@ -37,6 +37,53 @@ export default function WelcomeStep({
       {/* Top spacer for vertical centering */}
       {/* <div className="grow min-h-[12px]" /> */}
 
+      {/* 30-days-free promo banner — tap jumps straight to the connect step,
+          because the trial activates upon connecting in happ */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes tma-banner-glow {
+              0%, 100% { box-shadow: 0 0 0 1px rgba(64, 209, 253, 0.35), 0 0 18px rgba(64, 209, 253, 0.25), 0 0 44px rgba(64, 209, 253, 0.12); }
+              50% { box-shadow: 0 0 0 1.5px rgba(64, 209, 253, 0.75), 0 0 30px rgba(64, 209, 253, 0.5), 0 0 70px rgba(64, 209, 253, 0.25); }
+            }
+            @keyframes tma-banner-shine {
+              0% { transform: translateX(-140%) skewX(-20deg); }
+              55%, 100% { transform: translateX(320%) skewX(-20deg); }
+            }
+            .tma-promo-banner {
+              animation: tma-banner-glow 2.8s ease-in-out infinite;
+            }
+            .tma-promo-banner-shine {
+              position: absolute;
+              top: 0;
+              bottom: 0;
+              left: 0;
+              width: 45%;
+              background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+              animation: tma-banner-shine 3.6s ease-in-out infinite;
+              pointer-events: none;
+            }
+          `,
+        }}
+      />
+      <button
+        onClick={() => {
+          triggerHaptic("medium");
+          trackEvent("onboarding_banner_clicked", { campaign, banner: "30_days_free" });
+          setDirection("next");
+          setCurrentStep(campaign === "default" ? 3 : 4);
+        }}
+        className="tma-promo-banner relative shrink-0 w-full p-0 mt-5 mb-2 border-none bg-transparent cursor-pointer rounded-[24px] overflow-hidden active:scale-[0.98] transition-transform duration-100 ease"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/iGuard_VPN_30_Day.png"
+          alt="iGuard VPN — 30 days free trial"
+          className="block w-full h-auto"
+        />
+        <div className="tma-promo-banner-shine" />
+      </button>
+
       {welcomeTexts.title && (
         <div className={`${campaign === "gaming" ? "max-w-[320px] mx-auto mb-12" : campaign === "adults" ? "mb-8" : ""} text-center`}>
           <h2 className="text-[24px] text-white m-0 mb-2.5 leading-tight font-sans">
