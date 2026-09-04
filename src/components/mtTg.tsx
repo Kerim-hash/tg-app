@@ -27,6 +27,11 @@ import {
   type PromoFailReason,
 } from "./tma/discount";
 import { trackEvent } from "../lib/mixpanel";
+import {
+  trackAppOpened,
+  trackTrialLifecycle,
+  getPurchaseTrigger,
+} from "./tma/analytics";
 
 import NavBar from "./tma/NavBar";
 import HomeScreen from "./tma/HomeScreen";
@@ -672,7 +677,7 @@ export default function TMA() {
           };
         }
 
-        setUser({
+        const nextUser: UserData = {
           id: profile.id || profile.user_id || tgUser?.id || 0,
           firstName:
             profile.first_name ||
@@ -693,7 +698,10 @@ export default function TMA() {
           subscriptionType:
             rawSubType ||
             (isTrial ? "trial" : hasUsedTrial ? "expired" : "trial_available"),
-        });
+        };
+        setUser(nextUser);
+        // trial_started / trial_expiring / trial_expired (deduped per trial)
+        trackTrialLifecycle(nextUser);
 
         const hasActivePlan =
           profile.expiration &&
@@ -915,6 +923,9 @@ export default function TMA() {
 
   useEffect(() => {
     handleInitAuth();
+
+    // Entry-point event: fired once per launch, before auth resolves
+    trackAppOpened(getRawStartParam());
 
     // Detect campaign from referral link or start param
     const detected = detectCampaign();
@@ -1408,6 +1419,7 @@ export default function TMA() {
                 t={t}
                 language={language}
                 plan={selectedPlan as Plan}
+                trigger={getPurchaseTrigger(user)}
                 selectedMethod={selectedMethod}
                 onSelectMethod={setSelectedMethod}
                 onProceed={handlePayment}
@@ -1580,6 +1592,7 @@ export default function TMA() {
             t={t}
             language={language}
             plan={selectedPlan!}
+            trigger={getPurchaseTrigger(user)}
             selectedMethod={selectedMethod}
             onSelectMethod={setSelectedMethod}
             onProceed={handlePayment}

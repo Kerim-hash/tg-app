@@ -7,6 +7,7 @@ import { ParticleGlobe } from "../ParticleGlobe";
 import { ScrambleText } from "../ScrambleText";
 import { PlanCard, getPlanLabelText, getBilledFrequencyText } from "./PlanCard";
 import { trackEvent } from "../../lib/mixpanel";
+import { getPlanStatus, getPlanType, getCurrentPlanType } from "./analytics";
 import { apiCall } from "./api";
 import type { Plan, UserData, Translations, HapticType, Tab, PaymentMethod } from "./types";
 import PriceSummary from "./PriceSummary";
@@ -140,19 +141,78 @@ export default function HomeScreen({
   }, [billingRegion]);
 
   const hasActivePlan = !!user.activePlan;
+  // none | trial | active | expiring | expired — shared enum for Mixpanel
+  const planStatus = getPlanStatus(user);
 
   useEffect(() => {
     setMounted(true);
-    trackEvent("screen_home_viewed", {
-      plan_status: user.activePlan ? "active" : "none" // We don't have expiring state readily available here, simplifying for now or can calculate if needed
-    });
-  }, [user.activePlan]);
+    trackEvent("screen_home_viewed", { plan_status: planStatus });
+  }, [planStatus]);
 
   useEffect(() => {
     if (isPlanSheetOpen) {
-      trackEvent("plan_selector_viewed", { trigger: hasActivePlan ? "extend" : "buy" });
+      trackEvent("plan_selector_viewed", { screen: "home", trigger: hasActivePlan ? "extend" : "buy" });
+      trackEvent("money_back_badge_viewed", { source: "plan_sheet" });
     }
   }, [isPlanSheetOpen, hasActivePlan]);
+
+  // home_scroll_depth: 25 / 50 / 75 / 100, each fired once per Home mount.
+  // `main` is the scroll container (see mtTg.tsx), not the window.
+  const scrollDepthFired = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    const check = () => {
+      const { scrollTop, clientHeight, scrollHeight } = mainEl;
+      if (scrollHeight <= 0) return;
+      const pct = ((scrollTop + clientHeight) / scrollHeight) * 100;
+      for (const threshold of [25, 50, 75, 100]) {
+        if (pct >= threshold && !scrollDepthFired.current.has(threshold)) {
+          scrollDepthFired.current.add(threshold);
+          trackEvent("home_scroll_depth", { pct: threshold });
+        }
+      }
+    };
+    mainEl.addEventListener("scroll", check, { passive: true });
+    // Content may already fit the viewport; measure once the enter animation settles
+    const initial = window.setTimeout(check, 800);
+    return () => {
+      mainEl.removeEventListener("scroll", check);
+      window.clearTimeout(initial);
+    };
+  }, []);
+
+  // plans_block_viewed / money_back_badge_viewed: impressions of the plans block,
+  // which sits below the fold. Fired once per Home mount when ≥30% is visible.
+  const plansBlockFired = useRef(false);
+  const moneyBackFired = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") return;
+    const plansEl = document.getElementById("plans-section");
+    const badgeEl = document.getElementById("money-back-badge");
+    if (!plansEl && !badgeEl) return;
+    const mainEl = document.querySelector("main");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          if (entry.target === plansEl && !plansBlockFired.current) {
+            plansBlockFired.current = true;
+            trackEvent("plans_block_viewed", { plan_status: planStatus });
+          }
+          if (entry.target === badgeEl && !moneyBackFired.current) {
+            moneyBackFired.current = true;
+            trackEvent("money_back_badge_viewed", { source: "home" });
+          }
+        }
+      },
+      { root: mainEl, threshold: 0.3 },
+    );
+    if (plansEl) observer.observe(plansEl);
+    if (badgeEl) observer.observe(badgeEl);
+    return () => observer.disconnect();
+  }, [planStatus, user.paymentMethodSaved]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -174,7 +234,7 @@ export default function HomeScreen({
   const handleCopyKey = () => {
     if (!activeKey) return;
     navigator.clipboard.writeText(activeKey);
-    trackEvent("personal_key_copied", { source: "home_inline" });
+    trackEvent("access_key_copied", { screen: "home", source: "home_inline" });
     triggerHaptic("success");
     setCopiedKey(true);
     setTimeout(() => setCopiedKey(false), 2000);
@@ -396,7 +456,7 @@ export default function HomeScreen({
                 }
                 triggerHaptic("medium");
                 const daysLeft = user.activePlan?.daysLeft || 0;
-                trackEvent("extend_plan_tapped", { days_left: daysLeft, current_plan: user.activePlan?.name.includes("Year") || user.activePlan?.name.includes("год") ? "1y" : "30d" });
+                trackEvent("extend_plan_tapped", { days_left: daysLeft, current_plan: getCurrentPlanType(user) });
                 apiCall("/api/track-event", "POST", { event: "buy_plan_tapped" }).catch((err) => {
                   console.error("Failed to track buy_plan_tapped event on backend:", err);
                 });
@@ -507,7 +567,7 @@ export default function HomeScreen({
               className="hover-scale-btn"
               onClick={() => {
                 triggerHaptic("medium");
-                trackEvent("activate_iguard_tapped", { source: "home_hero" });
+                trackEvent("activate_iguard_tapped", { plan_status: planStatus, has_key: !!activeKey });
                 document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
               }}
               style={{
@@ -625,7 +685,7 @@ export default function HomeScreen({
             <h2 style={{ fontSize: "24px", color: "#fff", margin: "0 0 6px" }}>
               {t.home.choosePlan}
             </h2>
-            <p style={{ fontSize: "16px", color: "#666666", margin: 0 }}>{t.home.moneyBack}</p>
+            <p id="money-back-badge" style={{ fontSize: "16px", color: "#666666", margin: 0 }}>{t.home.moneyBack}</p>
           </div>
 
 
@@ -643,12 +703,21 @@ export default function HomeScreen({
                       return;
                     }
                     if (selectedPlan?.id === plan.id) {
+                      // Second tap on the selected card opens checkout
                       triggerHaptic("medium");
+                      trackEvent("buy_plan_tapped", { source: "plan_card", plan: getPlanType(plan), price_usd: plan.usdTotal });
                       setLocalSelectedMethod(null);
                       setIsPaymentSheetOpen(true);
                     } else {
                       triggerHaptic("light");
-                      trackEvent("plan_card_selected", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
+                      trackEvent("plan_card_selected", {
+                        screen: "home",
+                        plan: getPlanType(plan),
+                        price_usd: plan.usdTotal,
+                        discount_pct: effectivePercent,
+                        // annual is pre-selected on load; flag whether the tap matches that default
+                        is_default_selected: plan.periodMonths === 12,
+                      });
                       onSelectPlan(plan);
                     }
                   }}
@@ -697,6 +766,7 @@ export default function HomeScreen({
                   return;
                 }
                 triggerHaptic("medium");
+                trackEvent("buy_plan_tapped", { source: "home_cta", plan: getPlanType(selectedPlan), price_usd: selectedPlan.usdTotal });
                 setLocalSelectedMethod(null);
                 setIsPaymentSheetOpen(true);
               }}
@@ -885,7 +955,7 @@ export default function HomeScreen({
             <button
               className="hover-scale-btn"
               onClick={() => {
-                trackEvent("read_guide_tapped", { source: "home_inline" });
+                trackEvent("read_guide_tapped", { screen: "home", source: "home_inline" });
                 triggerHaptic("light");
                 onTabChange("guide");
               }}
@@ -976,7 +1046,19 @@ export default function HomeScreen({
                   return (
                     <button
                       key={plan.id}
-                      onClick={() => { triggerHaptic("light"); onSelectPlan(plan); }}
+                      onClick={() => {
+                        triggerHaptic("light");
+                        if (selectedPlan?.id !== plan.id) {
+                          trackEvent("plan_card_selected", {
+                            screen: "home",
+                            plan: getPlanType(plan),
+                            price_usd: plan.usdTotal,
+                            discount_pct: effectivePercent,
+                            is_default_selected: plan.periodMonths === 12,
+                          });
+                        }
+                        onSelectPlan(plan);
+                      }}
                       style={{
                         width: "170px",
                         height: "170px",
@@ -1011,7 +1093,7 @@ export default function HomeScreen({
                   onClick={() => {
                     triggerHaptic("medium");
                     if (selectedPlan) {
-                      trackEvent("select_and_continue_tapped", { plan: selectedPlan.periodMonths === 1 ? "30_days" : "1_year", price: selectedPlan.starsPrice || selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
+                      trackEvent("select_and_continue_tapped", { plan: getPlanType(selectedPlan), price_usd: selectedPlan.usdTotal, trigger: hasActivePlan ? "extend" : "buy" });
                       setIsPlanSheetOpen(false);
                       setLocalSelectedMethod(null);
                       setIsPaymentSheetOpen(true);
