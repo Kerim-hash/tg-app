@@ -568,7 +568,11 @@ export default function HomeScreen({
               onClick={() => {
                 triggerHaptic("medium");
                 trackEvent("activate_iguard_tapped", { plan_status: planStatus, has_key: !!activeKey });
-                document.getElementById("plans-section")?.scrollIntoView({ behavior: "smooth" });
+                // Lead the user to their server key; fall back to the plans block if no key yet
+                const target =
+                  document.getElementById("server-key-section") ??
+                  document.getElementById("plans-section");
+                target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               style={{
                 minWidth: "150px",
@@ -807,10 +811,13 @@ export default function HomeScreen({
         </div>
       ) : null}
 
-      {hasActivePlan && (
+      {/* Key + guide: shown whenever a key exists, even if the plan/trial state
+          from the profile is missing (buy-first regression: key must stay visible) */}
+      {(hasActivePlan || !!activeKey) && (
         <>
           {/* Server Key section */}
           <div
+            id="server-key-section"
             className="animate-fade-in-up"
             style={{
               display: "flex",
