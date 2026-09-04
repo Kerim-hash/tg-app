@@ -27,6 +27,11 @@ import {
   type PromoFailReason,
 } from "./tma/discount";
 import { trackEvent } from "../lib/mixpanel";
+import {
+  trackAppOpened,
+  trackTrialLifecycle,
+  getPurchaseTrigger,
+} from "./tma/analytics";
 
 import NavBar from "./tma/NavBar";
 import HomeScreen from "./tma/HomeScreen";
@@ -116,6 +121,39 @@ function parseActivePlan(
     : formatPlanNameFromSubType(subType, daysLeft);
 
   return { name, daysLeft, nextBilling, isTrial };
+}
+
+// Pulls the Happ key out of /users/config-keys regardless of response shape:
+// array of { app, key } (current contract), array of strings, a wrapped list
+// ({ keys: [...] } / { items: [...] }) or a single key object.
+function extractConfigKey(keys: any): string {
+  const pick = (k: any): string => {
+    if (!k) return "";
+    if (typeof k === "string") return k;
+    const val =
+      k.key ?? k.config_key ?? k.configKey ?? k.vless_key ?? k.vlessKey ?? k.value ?? k.url ?? "";
+    return typeof val === "string" ? val : "";
+  };
+  if (Array.isArray(keys)) {
+    const happ = keys.filter(
+      (k) =>
+        k &&
+        typeof k === "object" &&
+        String(k.app ?? k.app_name ?? k.client ?? "").toLowerCase() === "happ",
+    );
+    const ordered = happ.length > 0 ? happ : keys;
+    for (let i = ordered.length - 1; i >= 0; i--) {
+      const v = pick(ordered[i]);
+      if (v) return v;
+    }
+    return "";
+  }
+  if (keys && typeof keys === "object") {
+    if (Array.isArray(keys.keys)) return extractConfigKey(keys.keys);
+    if (Array.isArray(keys.items)) return extractConfigKey(keys.items);
+    return pick(keys);
+  }
+  return "";
 }
 
 interface ParsedStartParam {
@@ -607,7 +645,19 @@ export default function TMA() {
 
     try {
       const profile = await apiCall("/auth/profile", "GET");
+      // Temporary diagnostics for the buy-first regression (trial / key not shown)
+      console.info("[IGuard][debug] /auth/profile:", profile);
       if (profile) {
+        // After buy-first the trial end date may come in a field other than `expiration`
+        const expirationRaw: string | undefined =
+          profile.expiration ??
+          profile.expires_at ??
+          profile.expiration_date ??
+          profile.trial_expiration ??
+          profile.trial_expires_at ??
+          profile.trial_end ??
+          profile.subscription_expiration ??
+          undefined;
         const rawSubType = (
           profile.subscription_type ??
           profile.subscriptionType ??
@@ -663,7 +713,7 @@ export default function TMA() {
         let activePlanObj =
           profile.active_plan ||
           profile.activePlan ||
-          parseActivePlan(profile.expiration, isTrial, rawSubType);
+          parseActivePlan(expirationRaw, isTrial, rawSubType);
         if (activePlanObj && isTrial) {
           activePlanObj = {
             ...activePlanObj,
@@ -672,7 +722,19 @@ export default function TMA() {
           };
         }
 
-        setUser({
+        // Some backends return the key inline with the profile
+        const keyInProfile =
+          profile.key ??
+          profile.config_key ??
+          profile.configKey ??
+          profile.vless_key ??
+          profile.personal_key ??
+          profile.happ_key;
+        if (typeof keyInProfile === "string" && keyInProfile) {
+          setPersonalKey(keyInProfile);
+        }
+
+        const nextUser: UserData = {
           id: profile.id || profile.user_id || tgUser?.id || 0,
           firstName:
             profile.first_name ||
@@ -683,7 +745,7 @@ export default function TMA() {
           photoUrl: profile.photo_url || profile.photoUrl || tgUser?.photo_url,
           isPremium: profile.is_premium || profile.isPremium || false,
           activePlan: activePlanObj,
-          expiration: profile.expiration,
+          expiration: expirationRaw,
           paymentMethodSaved:
             profile.payment_method_saved || profile.paymentMethodSaved || false,
           isTrial,
@@ -693,12 +755,15 @@ export default function TMA() {
           subscriptionType:
             rawSubType ||
             (isTrial ? "trial" : hasUsedTrial ? "expired" : "trial_available"),
-        });
+        };
+        setUser(nextUser);
+        // trial_started / trial_expiring / trial_expired (deduped per trial)
+        trackTrialLifecycle(nextUser);
 
         const hasActivePlan =
-          profile.expiration &&
-          !isNaN(new Date(profile.expiration).getTime()) &&
-          new Date(profile.expiration) > new Date();
+          expirationRaw &&
+          !isNaN(new Date(expirationRaw).getTime()) &&
+          new Date(expirationRaw) > new Date();
         if (hasActivePlan) {
           safeStorage.setItem("iguard_onboarding_completed", "true");
           setShowOnboarding(false);
@@ -730,11 +795,12 @@ export default function TMA() {
 
     try {
       const keys = await apiCall("/users/config-keys", "GET");
-      if (Array.isArray(keys)) {
-        const happKeys = keys.filter((k: any) => k.app === "happ");
-        if (happKeys.length > 0) {
-          setPersonalKey(happKeys[happKeys.length - 1].key);
-        }
+      console.info("[IGuard][debug] /users/config-keys:", keys);
+      const extractedKey = extractConfigKey(keys);
+      if (extractedKey) {
+        setPersonalKey(extractedKey);
+      } else {
+        console.warn("[IGuard] /users/config-keys returned no usable key", keys);
       }
     } catch (err) {
       console.error("[IGuard] Fetch config keys error:", err);
@@ -915,6 +981,9 @@ export default function TMA() {
 
   useEffect(() => {
     handleInitAuth();
+
+    // Entry-point event: fired once per launch, before auth resolves
+    trackAppOpened(getRawStartParam());
 
     // Detect campaign from referral link or start param
     const detected = detectCampaign();
@@ -1408,6 +1477,7 @@ export default function TMA() {
                 t={t}
                 language={language}
                 plan={selectedPlan as Plan}
+                trigger={getPurchaseTrigger(user)}
                 selectedMethod={selectedMethod}
                 onSelectMethod={setSelectedMethod}
                 onProceed={handlePayment}
@@ -1580,6 +1650,7 @@ export default function TMA() {
             t={t}
             language={language}
             plan={selectedPlan!}
+            trigger={getPurchaseTrigger(user)}
             selectedMethod={selectedMethod}
             onSelectMethod={setSelectedMethod}
             onProceed={handlePayment}

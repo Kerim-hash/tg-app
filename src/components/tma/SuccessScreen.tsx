@@ -18,7 +18,7 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
     if (!personalKey) return;
     triggerHaptic("light");
     navigator.clipboard.writeText(personalKey).catch(() => { });
-    trackEvent("personal_key_copied", { source: "payment_success" });
+    trackEvent("access_key_copied", { screen: "payment", source: "payment_success" });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -107,7 +107,7 @@ export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }
         <button
           onClick={() => {
             triggerHaptic("light");
-            trackEvent("read_guide_tapped", { source: "payment_success" });
+            trackEvent("read_guide_tapped", { screen: "payment", source: "payment_success" });
             onClose();
           }}
           style={{

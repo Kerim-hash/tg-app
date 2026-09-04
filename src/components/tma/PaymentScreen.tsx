@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Plan, Translations, PaymentMethod, HapticType, Language } from "./types";
 import { trackEvent } from "../../lib/mixpanel";
+import { getPlanType, type PurchaseTrigger } from "./analytics";
 import { apiCall } from "./api";
 import GradientBlock from "../GradientBlock";
 import PriceSummary from "./PriceSummary";
@@ -18,6 +19,7 @@ interface PaymentScreenProps {
   t: Translations;
   language: Language;
   plan: Plan;
+  trigger?: PurchaseTrigger;
   selectedMethod: PaymentMethod | null;
   onSelectMethod: (method: PaymentMethod) => void;
   onProceed: () => void;
@@ -37,6 +39,7 @@ export default function PaymentScreen({
   t,
   language,
   plan,
+  trigger = "buy",
   selectedMethod,
   onSelectMethod,
   onProceed,
@@ -50,6 +53,7 @@ export default function PaymentScreen({
   onApplyPromo,
   onClearPromo,
 }: PaymentScreenProps) {
+  const planType = getPlanType(plan);
   // A manually applied promo wins over the automatic first-purchase discount
   const effectivePercent =
     appliedPromo?.percent ??
@@ -95,8 +99,8 @@ export default function PaymentScreen({
   const canProceed = !!selectedMethod && !isPaying;
 
   useEffect(() => {
-    trackEvent("screen_payment_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", price: plan.starsPrice || plan.usdTotal });
-    trackEvent("payment_methods_viewed", { plan: plan.periodMonths === 1 ? "30_days" : "1_year", available_methods: methodsToRender.map(m => m.id) });
+    trackEvent("screen_payment_viewed", { plan: planType, price_usd: plan.usdTotal, trigger });
+    trackEvent("payment_methods_viewed", { plan: planType, available_methods: methodsToRender.map(m => m.id) });
   }, [plan, methodsToRender]);
 
   return (
@@ -270,7 +274,7 @@ export default function PaymentScreen({
         disabled={!canProceed}
         onClick={() => {
           triggerHaptic("medium");
-          trackEvent("proceed_to_payment_tapped", { method: selectedMethod, amount: plan.usdTotal, plan: plan.periodMonths === 1 ? "30_days" : "1_year" });
+          trackEvent("proceed_to_payment_tapped", { method: selectedMethod, amount: plan.usdTotal, plan: planType });
           onProceed();
         }}
         style={{
