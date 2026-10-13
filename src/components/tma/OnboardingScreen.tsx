@@ -552,7 +552,7 @@ export default function OnboardingScreen({
   };
 
   return (
-    <div className="h-full flex flex-col bg-black text-white max-w-[480px] mx-auto overflow-hidden relative box-border pt-0 px-0 pb-0">
+    <div className="h-full flex flex-col bg-[#090B0D] text-white max-w-[480px] mx-auto overflow-hidden relative box-border pt-0 px-0 pb-0">
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes slideInFromRight {

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
+  --background: #090B0D;
   --foreground: #ffffff;
 }
 
@@ -18,8 +18,8 @@
 }
 
 html, body {
-  background: #000000 !important;
-  background-color: #000000 !important;
+  background: #090B0D !important;
+  background-color: #090B0D !important;
   color: #ffffff;
   font-family: var(--font-onest), ui-sans-serif, system-ui, -apple-system, sans-serif;
   margin: 0;
@@ -38,7 +38,7 @@ html, body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #000;
+    background: #090B0D;
   }
 
   #app-wrapper {

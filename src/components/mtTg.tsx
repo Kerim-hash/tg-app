@@ -45,6 +45,7 @@ import IntercomWidget from "@/lib/intercom";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [];
+import SuccessScreen from "./tma/SuccessScreen";
 
 function formatPlanNameFromSubType(
   subType?: string,
@@ -872,8 +873,8 @@ export default function TMA() {
       }
 
       try {
-        if (WebApp.setHeaderColor) WebApp.setHeaderColor("#000000");
-        if (WebApp.setBackgroundColor) WebApp.setBackgroundColor("#000000");
+        if (WebApp.setHeaderColor) WebApp.setHeaderColor("#090B0D");
+        if (WebApp.setBackgroundColor) WebApp.setBackgroundColor("#090B0D");
       } catch (err) {
         console.warn("Failed to set WebApp colors:", err);
       }
@@ -1155,6 +1156,7 @@ export default function TMA() {
         });
 
         setIsPaying(false);
+              setPaymentStatus("success");
         const link = data?.link || data?.invoice_url;
         if (link) {
           trackEvent("payment_external_opened", {
@@ -1281,6 +1283,7 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
+              setPaymentStatus("success");
           trackEvent("payment_external_opened", {
             method: foundDynamic.method_type,
             amount: selectedPlan.usdTotal,
@@ -1354,7 +1357,7 @@ export default function TMA() {
       <div
         style={{
           height: "100%",
-          background: "#090B0E",
+          background: "#090B0D",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -1419,20 +1422,38 @@ export default function TMA() {
     return <ErrorScreen t={t} desc={authDesc} onRetry={handleInitAuth} />;
   }
 
-  if (paymentStatus === "error") {
-    return (
-      <ErrorScreen
-        t={t}
-        onRetry={() => {
-          handleReset();
-          setShowPayment(true);
-        }}
-      />
-    );
-  }
+  // Payment result pop-ups, shown above whichever screen is active
+  const paymentPopups = (
+    <>
+      {paymentStatus === "error" && (
+        <ErrorScreen
+          t={t}
+          onClose={handleReset}
+          onRetry={() => {
+            handleReset();
+            setShowPayment(true);
+          }}
+        />
+      )}
+      {paymentStatus === "success" && (
+        <SuccessScreen
+          t={t}
+          personalKey={personalKey}
+          triggerHaptic={triggerHaptic}
+          onClose={() => setPaymentStatus("idle")}
+          onReadGuide={() => {
+            setPaymentStatus("idle");
+            setCurrentTab("guide");
+          }}
+        />
+      )}
+    </>
+  );
+
   if (showOnboarding) {
     return (
       <>
+        {paymentPopups}
         <OnboardingScreen
           t={t}
           language={language}
@@ -1460,7 +1481,7 @@ export default function TMA() {
               position: "fixed",
               inset: 0,
               zIndex: 1000,
-              background: "#000",
+              background: "#090B0D",
               display: "flex",
               justifyContent: "center",
             }}
@@ -1505,7 +1526,7 @@ export default function TMA() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: "#000000",
+        background: "#090B0D",
         color: "#fff",
         maxWidth: "480px",
         margin: "0 auto",
@@ -1643,7 +1664,7 @@ export default function TMA() {
             position: "absolute",
             inset: 0,
             zIndex: 1000,
-            background: "#000",
+            background: "#090B0D",
           }}
         >
           <PaymentScreen
@@ -1666,6 +1687,8 @@ export default function TMA() {
           />
         </div>
       )}
+
+      {paymentPopups}
     </div>
   );
 }

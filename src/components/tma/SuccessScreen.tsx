@@ -3,154 +3,92 @@
 import { useState } from "react";
 import type { Translations, HapticType } from "./types";
 import { trackEvent } from "../../lib/mixpanel";
+import Popup, { PopupButton, PopupTitle } from "./Popup";
 
 interface SuccessScreenProps {
   t: Translations;
   personalKey: string;
+  /** "Copy key and close" and the X button */
   onClose: () => void;
+  /** "Read guide"; falls back to onClose */
+  onReadGuide?: () => void;
   triggerHaptic: (type: HapticType) => void;
 }
 
-export default function SuccessScreen({ t, personalKey, onClose, triggerHaptic }: SuccessScreenProps) {
+// Figma "Succes!" pop-up: title, personal key field, READ GUIDE + COPY KEY AND CLOSE
+export default function SuccessScreen({ t, personalKey, onClose, onReadGuide, triggerHaptic }: SuccessScreenProps) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
+  const handleReadGuide = () => {
+    triggerHaptic("light");
+    trackEvent("read_guide_tapped", { screen: "payment", source: "payment_success" });
+    (onReadGuide ?? onClose)();
+  };
+
+  const handleCopyAndClose = () => {
     if (!personalKey) return;
     triggerHaptic("light");
     navigator.clipboard.writeText(personalKey).catch(() => { });
     trackEvent("access_key_copied", { screen: "payment", source: "payment_success" });
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => {
+      setCopied(false);
+      onClose();
+    }, 600);
   };
 
   return (
-    <div
-      style={{
-        height: "100%",
-        background: "#090B0E",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "32px 20px",
-        maxWidth: "480px",
-        margin: "0 auto",
-        gap: "24px",
-        textAlign: "center",
-      }}
-    >
-      {/* Success icon */}
-      <div
-        style={{
-          width: "80px",
-          height: "80px",
-          borderRadius: "50%",
-          background: "rgba(0,209,255,0.08)",
-          border: "1.5px solid rgba(0,209,255,0.3)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "32px",
-          color: "#00D1FF",
-          animation: "pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        }}
-      >
-        ✓
-      </div>
+    <Popup open onClose={onClose}>
+      <PopupTitle>{t.success.title}</PopupTitle>
 
-      <h2 style={{ fontSize: "26px", fontWeight: 800, color: "#fff", margin: 0 }}>
-        {t.success.title}
-      </h2>
-
-      {/* Personal key section */}
-      <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "12px" }}>
-        <p style={{ fontSize: "14px", color: "#8A94A6", margin: 0 }}>
-          {t.success.useCode}
-        </p>
-
-        {personalKey ? (
-          <div
-            style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "14px",
-              padding: "10px 15px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "12px",
-                color: "#8A94A6",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                flex: 1,
-                textAlign: "left",
-                fontFamily: "var(--font-mono), monospace",
-              }}
-            >
-              {personalKey}
-            </span>
-          </div>
-        ) : (
-          <p style={{ fontSize: "13px", color: "#8A94A6", margin: 0, maxWidth: "260px" }}>
-            {t.success.noKey}
-          </p>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-        <button
-          onClick={() => {
-            triggerHaptic("light");
-            trackEvent("read_guide_tapped", { screen: "payment", source: "payment_success" });
-            onClose();
-          }}
+      {/* Personal key */}
+      {personalKey ? (
+        <div
           style={{
-            flex: 1,
-            padding: "14px 8px",
-            borderRadius: "14px",
+            alignSelf: "stretch",
+            boxSizing: "border-box",
             background: "rgba(255,255,255,0.06)",
             border: "1px solid rgba(255,255,255,0.1)",
-            color: "#fff",
-            fontSize: "13px",
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            textWrap: "nowrap"
+            borderRadius: "20px",
+            padding: "12px 20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "2px",
+            textAlign: "left",
           }}
         >
-          {t.success.readGuide}
-        </button>
-        <button
-          onClick={handleCopy}
-          disabled={!personalKey}
-          style={{
-            flex: 1,
-            padding: "14px 8px",
-            borderRadius: "14px",
-            background: !personalKey
-              ? "rgba(255,255,255,0.06)"
-              : copied
-                ? "rgba(0,184,148,0.85)"
-                : "#00D1FF",
-            border: "none",
-            color: !personalKey ? "#8A94A6" : "#000",
-            fontSize: "13px",
-            fontWeight: 700,
-            cursor: personalKey ? "pointer" : "not-allowed",
-            transition: "all 0.25s ease",
-          }}
-        >
-          {copied ? t.success.copied : t.success.copyAndClose}
-        </button>
-      </div>
+          <span style={{ fontSize: "12px", color: "#8A94A6", fontFamily: "var(--font-onest), sans-serif" }}>
+            {t.guide.personalKeyLabel}
+          </span>
+          <span
+            style={{
+              fontSize: "15px",
+              color: "#FFFFFF",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              fontFamily: "var(--font-onest), sans-serif",
+            }}
+          >
+            {personalKey}
+          </span>
+        </div>
+      ) : (
+        <p style={{ fontSize: "14px", lineHeight: "20px", color: "#8A94A6", margin: 0, textAlign: "center" }}>
+          {t.success.noKey}
+        </p>
+      )}
 
-      <style dangerouslySetInnerHTML={{ __html: `@keyframes pop { 0%{transform:scale(0.5);opacity:0} 100%{transform:scale(1);opacity:1} }` }} />
-    </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+        <PopupButton variant={personalKey ? "secondary" : "primary"} onClick={handleReadGuide}>
+          {t.success.readGuide}
+        </PopupButton>
+        {personalKey && (
+          <PopupButton onClick={handleCopyAndClose}>
+            {copied ? t.success.copied : t.success.copyAndClose}
+          </PopupButton>
+        )}
+      </div>
+    </Popup>
   );
 }

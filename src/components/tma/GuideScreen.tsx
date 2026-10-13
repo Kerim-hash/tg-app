@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import WebApp from "@twa-dev/sdk";
 import type { Plan, PaymentMethod, Translations, HapticType, Tab } from "./types";
 import GradientBlock from "../GradientBlock";
@@ -10,6 +9,7 @@ import { trackEvent } from "../../lib/mixpanel";
 import { apiCall } from "./api";
 import PriceSummary from "./PriceSummary";
 import PromoCodeInput, { type PromoApplyResult } from "./PromoCodeInput";
+import Popup, { PopupButton, PopupOption, PopupOptions, PopupTitle } from "./Popup";
 import {
   applyDiscountToPlan,
   isDiscountActive,
@@ -161,12 +161,8 @@ export default function GuideScreen({
   const [copied, setCopied] = useState(false);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [localSelectedMethod, setLocalSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [sheetRegionDropdownOpen, setSheetRegionDropdownOpen] = useState(false);
   const [tempRegion, setTempRegion] = useState("UAE");
   const [userOS, setUserOS] = useState<string>("iOS");
-
-  const sheetRegionDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -193,20 +189,6 @@ export default function GuideScreen({
       }
     }
   }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event: Event) {
-      if (sheetRegionDropdownOpen && sheetRegionDropdownRef.current && !sheetRegionDropdownRef.current.contains(event.target as Node)) {
-        setSheetRegionDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [sheetRegionDropdownOpen]);
 
   const getRegionLabel = (val: string) => {
     if (val === "UZB") return t.payment.regionUZB;
@@ -252,23 +234,8 @@ export default function GuideScreen({
   }, []);
 
   useEffect(() => {
-    setMounted(true);
     trackEvent("screen_guide_viewed", { referrer: "tab" }); // Simplified referrer tracking
   }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mainEl = document.querySelector("main");
-    if (!mainEl) return;
-    if (isPaymentSheetOpen) {
-      mainEl.style.overflowY = "hidden";
-    } else {
-      mainEl.style.overflowY = "auto";
-    }
-    return () => {
-      mainEl.style.overflowY = "auto";
-    };
-  }, [isPaymentSheetOpen]);
 
   const activeKey = personalKey || "";
 
@@ -442,28 +409,6 @@ export default function GuideScreen({
           }
           .hover-scale-btn {
             transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
-          }
-          @keyframes drawerSlideUp {
-            from {
-              transform: translate(-50%, 100%);
-            }
-            to {
-              transform: translate(-50%, 0);
-            }
-          }
-          @keyframes backdropFadeIn {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-          .animate-drawer {
-            animation: drawerSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          }
-          .animate-backdrop {
-            animation: backdropFadeIn 0.3s ease forwards;
           }
         `,
       }} />
@@ -1079,395 +1024,128 @@ export default function GuideScreen({
         </button>
       </div>
 
-      {/* ─── BOTTOM SHEET: Select a payment method ──────────────────────────── */}
-      {isPaymentSheetOpen && selectedPlan && mounted && createPortal(
-        <>
-          <div
-            onClick={() => {
-              if (!isPaying) {
-                setIsPaymentSheetOpen(false);
-              }
-            }}
-            className="animate-backdrop"
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              zIndex: 200,
-            }}
-          />
-          <div
-            className="animate-drawer"
-            style={{
-              position: "fixed",
-              bottom: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "100%",
-              maxWidth: "480px",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              background: "#000",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderBottom: "none",
-              borderRadius: "32px 32px 0 0",
-              padding: "24px 20px calc(40px + env(safe-area-inset-bottom, 16px))",
-              zIndex: 210,
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-          >
-            {/* Drag handle */}
-            <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "rgba(255,255,255,0.15)", margin: "0 auto 4px" }} />
+      {/* ─── POP-UP 2: Confirm a billing region ───────────────────────────────── */}
+      <Popup
+        open={isPaymentSheetOpen && !!selectedPlan && !billingRegion}
+        onClose={() => setIsPaymentSheetOpen(false)}
+      >
+        <PopupTitle>{t.payment.confirmBillingFirst}</PopupTitle>
 
-            {!billingRegion ? (
-              <>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", fontWeight: 700 }}>
-                    {t.payment.confirmBillingFirst}
-                  </h2>
-                </div>
+        <PopupOptions>
+          {REGION_OPTIONS.map((opt) => (
+            <PopupOption
+              key={opt.value}
+              selected={tempRegion === opt.value}
+              onSelect={() => { triggerHaptic("light"); setTempRegion(opt.value); }}
+              label={getRegionLabel(opt.value)}
+            />
+          ))}
+        </PopupOptions>
 
-                {/* Dropdown Card */}
-                <div ref={sheetRegionDropdownRef} style={{ position: "relative", width: "100%", zIndex: sheetRegionDropdownOpen ? 1001 : 10 }}>
-                  {!sheetRegionDropdownOpen ? (
-                    <button
-                      onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(true); }}
-                      className="hover-scale-btn"
-                      style={{
-                        width: "100%",
-                        background: "transparent",
-                        border: "none",
-                        padding: 0,
-                        cursor: "pointer",
-                        textAlign: "left",
-                        outline: "none",
-                      }}
-                    >
-                      <GradientBlock
-                        label=""
-                        primaryColor={"#cfdfe5"}
-                        secondaryColor={"#686F70"}
-                        baseColor="#1D1C1B"
-                        borderRadius="30px"
-                        height="72px"
-                        animate={false}
-                        glowIntensity={0.6}
-                        borderGlow={true}
-                        enableMouseTracking={false}
-                        enableHoverScale={false}
-                        contentAlign={"start"}
-                        padding="12px 28px"
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            width: "100%",
-                          }}
-                        >
-                          <div>
-                            <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
-                              {t.payment.billingRegion}
-                            </span>
-                            <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
-                              {getRegionLabel(tempRegion)}
-                            </span>
-                          </div>
-                          {/* Chevron Down icon */}
-                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#8A94A6" }}>
-                            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </div>
-                      </GradientBlock>
-                    </button>
-                  ) : (
-                    <div
-                      className="animate-dropdown"
-                      style={{
-                        position: "relative",
-                        width: "100%",
-                        zIndex: 1000,
-                      }}
-                    >
-                      <GradientBlock
-                        label=""
-                        primaryColor={"#cfdfe5"}
-                        secondaryColor={"#686F70"}
-                        baseColor="#1D1C1B"
-                        borderRadius="30px"
-                        height="auto"
-                        animate={false}
-                        glowIntensity={0.6}
-                        borderGlow={true}
-                        enableMouseTracking={false}
-                        enableHoverScale={false}
-                        contentAlign={"start"}
-                        padding="0"
-                      >
-                        {/* Expanded Header Button */}
-                        <button
-                          onClick={() => { triggerHaptic("light"); setSheetRegionDropdownOpen(false); }}
-                          style={{
-                            width: "100%",
-                            height: "72px",
-                            padding: "12px 28px",
-                            background: "transparent",
-                            border: "none",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            cursor: "pointer",
-                            textAlign: "left",
-                            outline: "none",
-                          }}
-                        >
-                          <div>
-                            <span style={{ display: "block", fontSize: "12px", color: "#8A94A6", marginBottom: "3px", fontFamily: "var(--font-onest), sans-serif" }}>
-                              {t.payment.billingRegion}
-                            </span>
-                            <span style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "#fff", fontFamily: "var(--font-onest), sans-serif" }}>
-                              {getRegionLabel(tempRegion)}
-                            </span>
-                          </div>
-                          {/* Chevron Up icon */}
-                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" style={{ color: "#fff" }}>
-                            <path d="M11 6.5L6 1.5L1 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </button>
+        <PopupButton
+          onClick={() => {
+            triggerHaptic("medium");
+            onBillingRegionChange(tempRegion);
+          }}
+        >
+          {t.payment.confirm}
+        </PopupButton>
+      </Popup>
 
-                        {/* Separator line */}
-                        <div style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)", margin: "0 28px", width: "calc(100% - 56px)" }} />
+      {/* ─── POP-UP 3: Select a payment method ────────────────────────────────── */}
+      <Popup
+        open={isPaymentSheetOpen && !!selectedPlan && !!billingRegion}
+        onClose={() => { if (!isPaying) setIsPaymentSheetOpen(false); }}
+        dismissible={!isPaying}
+      >
+        {selectedPlan && (() => {
+          const combinedMethods = [
+            ...paymentMethods.map(m => ({
+              id: m.method_type,
+              name: m.name,
+              merchant_method_type: m.merchant_method_type,
+            })),
+            {
+              id: "stars",
+              name: t.payment.stars,
+              merchant_method_type: "stars",
+            }
+          ];
+          const fallbackMethods = [
+            { id: "card", name: t.payment.card, merchant_method_type: "card" },
+            { id: "crypto", name: t.payment.crypto, merchant_method_type: "crypto" },
+            { id: "stars", name: t.payment.stars, merchant_method_type: "stars" }
+          ];
+          const methodsToRender = paymentMethods.length > 0 ? combinedMethods : fallbackMethods;
+          const effectivePlan = applyDiscountToPlan(selectedPlan, effectivePercent);
 
-                        {/* Options list */}
-                        <div style={{ padding: "8px 0 16px", width: "100%" }}>
-                          {REGION_OPTIONS.map((opt) => {
-                            const isActive = tempRegion === opt.value;
-                            return (
-                              <button
-                                key={opt.value}
-                                onClick={() => {
-                                  triggerHaptic("light");
-                                  setTempRegion(opt.value);
-                                  setSheetRegionDropdownOpen(false);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  height: "48px",
-                                  padding: "0 28px",
-                                  textAlign: "left",
-                                  background: "transparent",
-                                  border: "none",
-                                  outline: "none",
-                                  cursor: "pointer",
-                                  fontSize: "15px",
-                                  fontWeight: isActive ? 700 : 500,
-                                  color: isActive ? "#40D1FD" : "#fff",
-                                  transition: "color 0.2s ease",
-                                  fontFamily: "var(--font-onest), sans-serif",
-                                }}
-                              >
-                                {getRegionLabel(opt.value)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </GradientBlock>
-                    </div>
-                  )}
-                </div>
+          const getPriceText = (method: { id: string; merchant_method_type: string }) => {
+            if (method.id === "stars") return t.payment.starsDesc(effectivePlan.starsPrice);
+            if (method.merchant_method_type === "cryptocloud") return `${effectivePlan.usdTotal.toFixed(0)} USDT`;
+            if (
+              method.merchant_method_type.endsWith("_rub") ||
+              method.id === "sberbank" ||
+              method.id === "tinkoff_bank" ||
+              method.id === "yoo_money"
+            ) {
+              return effectivePlan.rubTotal ? `${effectivePlan.rubTotal.toFixed(0)} ₽` : `$ ${effectivePlan.usdTotal.toFixed(2)}`;
+            }
+            return `$ ${effectivePlan.usdTotal.toFixed(2)}`;
+          };
 
-                {/* Confirm button */}
-                <button
-                  onClick={() => {
-                    triggerHaptic("medium");
-                    onBillingRegionChange(tempRegion);
-                  }}
-                  style={{
-                    width: "280px",
-                    padding: "10px 15px",
-                    borderRadius: "14px",
-                    background: "#FFFFFF",
-                    border: "none",
-                    color: "#000000",
-                    fontSize: "12px",
-                    alignSelf: "center",
-                    cursor: "pointer",
-                    outline: "none",
-                    fontFamily: "var(--font-mono), monospace",
-                    fontWeight: 700,
-                    marginTop: "10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {t.payment.confirm.toUpperCase()}
-                </button>
-              </>
-            ) : (
-              <>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <h2 style={{ fontSize: "20px", color: "#fff", margin: 0, textAlign: "left", fontFamily: "var(--font-onest), sans-serif", fontWeight: 700 }}>
-                    {t.payment.selectMethod}
-                  </h2>
-                </div>
+          return (
+            <>
+              <PopupTitle>{t.payment.selectMethod}</PopupTitle>
 
-                {/* Total price for the selected plan */}
-                <PriceSummary t={t} language={language} plan={selectedPlan} discountPercent={effectivePercent} plans={plans} />
+              {/* Total price for the selected plan */}
+              <PriceSummary t={t} language={language} plan={selectedPlan} discountPercent={effectivePercent} />
 
-                {/* Promo code — before choosing a payment method */}
-                {onApplyPromo && onClearPromo && (
-                  <PromoCodeInput
-                    t={t}
-                    appliedPromo={appliedPromo ?? null}
-                    onApply={onApplyPromo}
-                    onClear={onClearPromo}
-                    triggerHaptic={triggerHaptic}
+              {/* Promo code — before choosing a payment method */}
+              {onApplyPromo && onClearPromo && (
+                <PromoCodeInput
+                  t={t}
+                  appliedPromo={appliedPromo ?? null}
+                  onApply={onApplyPromo}
+                  onClear={onClearPromo}
+                  triggerHaptic={triggerHaptic}
+                />
+              )}
+
+              {/* Methods list */}
+              <PopupOptions>
+                {methodsToRender.map((method) => (
+                  <PopupOption
+                    key={method.id}
+                    selected={localSelectedMethod === method.id}
+                    disabled={isPaying}
+                    onSelect={() => {
+                      triggerHaptic("light");
+                      setLocalSelectedMethod(method.id);
+                      apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
+                        console.error("Failed to track payment_method_selected event on backend:", err);
+                      });
+                    }}
+                    label={method.name}
+                    trailing={getPriceText(method)}
                   />
-                )}
+                ))}
+              </PopupOptions>
 
-                {/* Methods list */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "100%" }}>
-                  {(() => {
-                    const combinedMethods = [
-                      ...paymentMethods.map(m => ({
-                        id: m.method_type,
-                        name: m.name,
-                        merchant_method_type: m.merchant_method_type,
-                      })),
-                      {
-                        id: "stars",
-                        name: t.payment.stars,
-                        merchant_method_type: "stars",
-                      }
-                    ];
-                    const fallbackMethods = [
-                      { id: "card", name: t.payment.card, merchant_method_type: "card" },
-                      { id: "crypto", name: t.payment.crypto, merchant_method_type: "crypto" },
-                      { id: "stars", name: t.payment.stars, merchant_method_type: "stars" }
-                    ];
-                    const methodsToRender = paymentMethods.length > 0 ? combinedMethods : fallbackMethods;
-                    const effectivePlan = applyDiscountToPlan(selectedPlan, effectivePercent);
-
-                    return methodsToRender.map((method) => {
-                      const isSelected = localSelectedMethod === method.id;
-
-                      // Calculate pricing text
-                      let priceText = "";
-                      if (method.id === "stars") {
-                        priceText = t.payment.starsDesc(effectivePlan.starsPrice);
-                      } else if (method.merchant_method_type === "cryptocloud") {
-                        priceText = `${effectivePlan.usdTotal.toFixed(0)} USDT`;
-                      } else if (
-                        method.merchant_method_type.endsWith("_rub") ||
-                        method.id === "sberbank" ||
-                        method.id === "tinkoff_bank" ||
-                        method.id === "yoo_money"
-                      ) {
-                        priceText = effectivePlan.rubTotal ? `${effectivePlan.rubTotal.toFixed(0)} ₽` : `$ ${effectivePlan.usdTotal.toFixed(2)}`;
-                      } else {
-                        priceText = `$ ${effectivePlan.usdTotal.toFixed(2)}`;
-                      }
-
-                      return (
-                        <button
-                          key={method.id}
-                          disabled={isPaying}
-                          onClick={() => {
-                            triggerHaptic("light");
-                            setLocalSelectedMethod(method.id);
-                            apiCall("/api/track-event", "POST", { event: "payment_method_selected" }).catch((err) => {
-                              console.error("Failed to track payment_method_selected event on backend:", err);
-                            });
-                          }}
-                          style={{
-                            width: "310px",
-                            height: "80px",
-                            borderRadius: "30px",
-                            position: "relative",
-                            cursor: isPaying ? "not-allowed" : "pointer",
-                            border: "none",
-                            outline: "none",
-                            overflow: "hidden",
-                            background: "transparent",
-                            padding: 0,
-                            transition: "all 0.2s ease",
-                          }}
-                        >
-                          <GradientBlock
-                            label=""
-                            primaryColor="#FFFFFF"
-                            secondaryColor="#9A9790"
-                            baseColor="#12141A"
-                            borderRadius="30px"
-                            height={80}
-                            animate={false}
-                            glowIntensity={0.6}
-                            borderGlow={true}
-                            enableMouseTracking={false}
-                            enableHoverScale={false}
-                          />
-
-                          {isSelected && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                inset: 0,
-                                border: "1.5px solid #00D1FF",
-                                borderRadius: "30px",
-                                pointerEvents: "none",
-                                zIndex: 30,
-                              }}
-                            />
-                          )}
-
-                          <div
-                            style={{
-                              position: "absolute",
-                              inset: 0,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              padding: "0 30px",
-                              zIndex: 20,
-                              pointerEvents: "none",
-                              boxSizing: "border-box",
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: "15px",
-                                color: isSelected ? "#00D1FF" : "#FFFFFF",
-                                fontFamily: "var(--font-onest), sans-serif",
-                              }}
-                            >
-                              {method.name}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: "14px",
-                                color: isSelected ? "#00D1FF" : "#8A94A6",
-                                fontFamily: "var(--font-onest), sans-serif",
-                              }}
-                            >
-                              {priceText}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    });
-                  })()}
-                </div>
-
-                {/* Action button */}
-                <button
+              {/* Actions: BACK + SELECT AND PAY */}
+              <div style={{ display: "flex", gap: "8px", alignSelf: "stretch", justifyContent: "center" }}>
+                <PopupButton
+                  variant="secondary"
                   disabled={isPaying}
+                  onClick={() => {
+                    triggerHaptic("light");
+                    setIsPaymentSheetOpen(false);
+                  }}
+                  style={{ width: "auto", padding: "10px 15px" }}
+                >
+                  {t.onboarding.back}
+                </PopupButton>
+                <PopupButton
+                  disabled={isPaying || !localSelectedMethod}
                   onClick={async () => {
                     if (!localSelectedMethod) return;
                     triggerHaptic("medium");
@@ -1478,25 +1156,7 @@ export default function GuideScreen({
                       // error handled by screen
                     }
                   }}
-                  style={{
-                    width: "310px",
-                    padding: "14px 20px",
-                    borderRadius: "14px",
-                    background: localSelectedMethod ? "#FFFFFF" : "transparent",
-                    border: localSelectedMethod ? "none" : "1.5px solid #FFFFFF",
-                    color: localSelectedMethod ? "#000000" : "#FFFFFF",
-                    fontSize: "14px",
-                    alignSelf: "center",
-                    cursor: localSelectedMethod && !isPaying ? "pointer" : "not-allowed",
-                    outline: "none",
-                    fontFamily: "var(--font-mono), monospace",
-                    transition: "all 0.2s ease",
-                    marginTop: "10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                  }}
+                  style={{ width: "auto", flex: 1, maxWidth: "246px", gap: "8px" }}
                 >
                   {isPaying ? (
                     <>
@@ -1513,17 +1173,16 @@ export default function GuideScreen({
                       PROCESSING...
                     </>
                   ) : localSelectedMethod ? (
-                    t.payment.proceedToPayment.toUpperCase()
+                    t.payment.proceedToPayment
                   ) : (
-                    t.payment.selectAndPay.toUpperCase()
+                    t.payment.selectAndPay
                   )}
-                </button>
-              </>
-            )}
-          </div>
-        </>,
-        document.body
-      )}
+                </PopupButton>
+              </div>
+            </>
+          );
+        })()}
+      </Popup>
     </div>
   );
 }

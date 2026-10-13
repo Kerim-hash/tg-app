@@ -51,7 +51,7 @@ export default function RejectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-between p-6 box-border font-sans max-w-[480px] mx-auto relative overflow-hidden">
+    <div className="min-h-screen bg-[#090B0D] text-white flex flex-col justify-between p-6 box-border font-sans max-w-[480px] mx-auto relative overflow-hidden">
       {/* Background gradients */}
       <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] rounded-full bg-red-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
