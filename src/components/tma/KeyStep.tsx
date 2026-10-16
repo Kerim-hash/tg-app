@@ -186,7 +186,7 @@ export default function KeyStep({
         <div className="min-h-6" />
       </div>
 
-      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3 pb-4">
+      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
         <PrimaryButton onClick={onOpenGuide}>{t.onboarding.ctaInstruction}</PrimaryButton>
         <SecondaryButton onClick={onNext}>{t.onboarding.next}</SecondaryButton>
       </div>

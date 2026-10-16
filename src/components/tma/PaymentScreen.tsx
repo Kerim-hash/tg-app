@@ -111,7 +111,7 @@ export default function PaymentScreen({
         background: "#090B0E",
         display: "flex",
         flexDirection: "column",
-        padding: "20px 16px calc(48px + env(safe-area-inset-bottom, 20px))",
+        padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px calc(48px + env(safe-area-inset-bottom, 20px))",
         maxWidth: "480px",
         margin: "0 auto",
         fontFamily: "var(--font-onest), sans-serif",

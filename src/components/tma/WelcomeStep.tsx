@@ -144,7 +144,7 @@ export default function WelcomeStep({ t, trialDays, onContinue }: WelcomeStepPro
         </div>
       </div>
 
-      <div className="relative shrink-0 px-4 pt-3 pb-4">
+      <div className="relative shrink-0 px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
         <PrimaryButton onClick={onContinue}>{t.onboarding.ctaEnableFree}</PrimaryButton>
       </div>
     </div>

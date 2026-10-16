@@ -1,0 +1,14 @@
+▲ Next.js 16.2.7 (Turbopack)
+- Local:         http://localhost:3111
+- Network:       http://192.168.0.102:3111
+- Environments: .env.local
+✓ Ready in 155ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          36675
+- Dir:          /Users/kerim/Desktop/tg-app
+- Log:          .next/dev/logs/next-development.log
+
+Run kill 36675 to stop it.
+[?25h

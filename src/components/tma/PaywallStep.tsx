@@ -148,7 +148,7 @@ export default function PaywallStep({ t, yearPlan, monthPlan, onBuyYear, onLater
         <div className="min-h-6" />
       </div>
 
-      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3 pb-4">
+      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
         <div className="rounded-[26px]" style={{ background: "#FFFFFF" }}>
           <button
             onClick={onBuyYear}

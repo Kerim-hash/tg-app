@@ -45,7 +45,12 @@ export function TopBar({
   onClick: () => void;
 }) {
   return (
-    <div className="shrink-0 flex items-center px-3 h-[50px]">
+    <div
+      className="shrink-0 flex items-end px-3"
+      // Telegram draws its own header over the top of the web view: keep the
+      // pill below it, same offset as Home / Guide screens
+      style={{ height: "calc(76px + env(safe-area-inset-top, 0px))", paddingBottom: 8 }}
+    >
       <button
         onClick={onClick}
         className="flex items-center gap-2 h-[34px] rounded-[17px] border-none outline-none cursor-pointer active:scale-[0.97] transition-transform duration-100"

@@ -154,7 +154,7 @@ export default function TrialStep({ t, trialDays, trialEndText, onActivate }: Tr
         </div>
       </div>
 
-      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3 pb-4">
+      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
         <p
           className="m-0 text-center mx-auto"
           style={{ fontFamily: ONB_FONT_SANS, fontSize: 12.5, lineHeight: "18px", color: "#8A8D93", maxWidth: 270 }}
