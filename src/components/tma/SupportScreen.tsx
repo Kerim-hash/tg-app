@@ -88,7 +88,7 @@ export default function SupportScreen({ t, triggerHaptic, onOpenSupportForm }: S
   return (
     <div
       style={{
-        padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 40px",
+        padding: "calc(var(--app-top) + 20px) 16px 40px",
         display: "flex",
         flexDirection: "column",
         gap: "28px",

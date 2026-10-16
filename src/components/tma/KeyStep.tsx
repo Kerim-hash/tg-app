@@ -127,7 +127,7 @@ export default function KeyStep({
 }: KeyStepProps) {
   return (
     <div className="relative flex-1 flex flex-col min-h-0">
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto hide-scrollbar px-6 pt-7">
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto hide-scrollbar onb-px pt-7">
         <ProgressDots total={4} current={2} />
 
         <div className="pt-[25px]">
@@ -186,7 +186,7 @@ export default function KeyStep({
         <div className="min-h-6" />
       </div>
 
-      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
+      <div className="shrink-0 flex flex-col gap-[10px] onb-px-cta pt-3" style={{ paddingBottom: "calc(16px + var(--tg-safe-bottom))" }}>
         <PrimaryButton onClick={onOpenGuide}>{t.onboarding.ctaInstruction}</PrimaryButton>
         <SecondaryButton onClick={onNext}>{t.onboarding.next}</SecondaryButton>
       </div>

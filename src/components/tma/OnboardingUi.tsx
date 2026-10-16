@@ -46,10 +46,15 @@ export function TopBar({
 }) {
   return (
     <div
-      className="shrink-0 flex items-end px-3"
-      // Telegram draws its own header over the top of the web view: keep the
-      // pill below it, same offset as Home / Guide screens
-      style={{ height: "calc(76px + env(safe-area-inset-top, 0px))", paddingBottom: 8 }}
+      className="shrink-0 flex items-end"
+      // Telegram draws its own header over the top of the web view in
+      // fullscreen mode; --app-top is 0 in compact (in-chat) mode
+      style={{
+        paddingTop: "calc(var(--app-top) + 8px)",
+        paddingBottom: 8,
+        paddingLeft: "calc(var(--onb-pad) - 12px)",
+        paddingRight: "calc(var(--onb-pad) - 12px)",
+      }}
     >
       <button
         onClick={onClick}

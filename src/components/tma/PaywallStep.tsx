@@ -39,7 +39,7 @@ export default function PaywallStep({ t, yearPlan, monthPlan, onBuyYear, onLater
 
   return (
     <div className="relative flex-1 flex flex-col min-h-0">
-      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto hide-scrollbar px-6 pt-7">
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto hide-scrollbar onb-px pt-7">
         <ProgressDots total={4} current={3} />
 
         <div className="flex flex-col gap-[11px] pt-7">
@@ -148,7 +148,7 @@ export default function PaywallStep({ t, yearPlan, monthPlan, onBuyYear, onLater
         <div className="min-h-6" />
       </div>
 
-      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
+      <div className="shrink-0 flex flex-col gap-[10px] onb-px-cta pt-3" style={{ paddingBottom: "calc(16px + var(--tg-safe-bottom))" }}>
         <div className="rounded-[26px]" style={{ background: "#FFFFFF" }}>
           <button
             onClick={onBuyYear}

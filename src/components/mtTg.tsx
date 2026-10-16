@@ -890,8 +890,8 @@ export default function TMA() {
       }
 
       try {
-        if (WebApp.setHeaderColor) WebApp.setHeaderColor("#090B0D");
-        if (WebApp.setBackgroundColor) WebApp.setBackgroundColor("#090B0D");
+        if (WebApp.setHeaderColor) WebApp.setHeaderColor("#000000");
+        if (WebApp.setBackgroundColor) WebApp.setBackgroundColor("#000000");
       } catch (err) {
         console.warn("Failed to set WebApp colors:", err);
       }

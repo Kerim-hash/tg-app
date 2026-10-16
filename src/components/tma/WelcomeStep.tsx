@@ -80,7 +80,7 @@ export default function WelcomeStep({ t, trialDays, onContinue }: WelcomeStepPro
         <ParticleGlobe width={460} height={460} className="w-full h-full" />
       </div>
 
-      <div className="relative flex-1 flex flex-col px-6 pt-7 gap-[22px] min-h-0">
+      <div className="relative flex-1 flex flex-col onb-px pt-7 gap-[22px] min-h-0">
         <ProgressDots total={4} current={0} />
 
         {/* "Not protected" card */}
@@ -144,7 +144,7 @@ export default function WelcomeStep({ t, trialDays, onContinue }: WelcomeStepPro
         </div>
       </div>
 
-      <div className="relative shrink-0 px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
+      <div className="relative shrink-0 onb-px-cta pt-3" style={{ paddingBottom: "calc(16px + var(--tg-safe-bottom))" }}>
         <PrimaryButton onClick={onContinue}>{t.onboarding.ctaEnableFree}</PrimaryButton>
       </div>
     </div>

@@ -216,7 +216,7 @@ export default function HomeScreen({
   return (
     <div
       style={{
-        padding: "calc(76px + env(safe-area-inset-top, 0px)) 16px 24px",
+        padding: "calc(var(--app-top) + 20px) 16px 24px",
         display: "flex",
         flexDirection: "column",
         fontFamily: "var(--font-onest), sans-serif",

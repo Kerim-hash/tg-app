@@ -1,9 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090B0D;
+  --background: #000000;
   --foreground: #ffffff;
+
+  /* Telegram insets, overridden at runtime by TelegramProvider */
+  --tg-safe-top: env(safe-area-inset-top, 0px);
+  --tg-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tg-content-top: 0px;
+  /* Where app content may start: below status bar + Telegram's own header */
+  --app-top: calc(var(--tg-safe-top) + var(--tg-content-top));
+
+  /* Onboarding horizontal gutter: 24px on a 390px screen, scales with width */
+  --onb-pad: clamp(20px, 6.15vw, 30px);
 }
+
+.onb-px { padding-left: var(--onb-pad); padding-right: var(--onb-pad); }
+.onb-px-cta { padding-left: calc(var(--onb-pad) - 8px); padding-right: calc(var(--onb-pad) - 8px); }
 
 @theme inline {
   --color-background: var(--background);
@@ -18,8 +31,8 @@
 }
 
 html, body {
-  background: #090B0D !important;
-  background-color: #090B0D !important;
+  background: #000000 !important;
+  background-color: #000000 !important;
   color: #ffffff;
   font-family: var(--font-onest), ui-sans-serif, system-ui, -apple-system, sans-serif;
   margin: 0;
@@ -28,30 +41,12 @@ html, body {
 
 #app-wrapper {
   height: 100dvh;
+  width: 100%;
+  max-width: 480px;
   margin: 0 auto;
-  max-width: 390px;
-}
-/* Constrain layout on desktop */
-@media (min-width: 600px) {
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: #090B0D;
-  }
-
-  #app-wrapper {
-    width: 400px;
-    height: 644px;
-    max-height: 100vh;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid #333;
-    border-radius: 12px;
-    background: var(--background);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  }
+  position: relative;
+  overflow: hidden;
+  background: var(--background);
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera to prevent layout shift */

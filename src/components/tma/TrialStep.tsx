@@ -103,7 +103,7 @@ export default function TrialStep({ t, trialDays, trialEndText, onActivate }: Tr
       />
 
       <div className="flex-1 flex flex-col min-h-0 overflow-y-auto hide-scrollbar">
-        <div className="flex flex-col px-6 pt-7">
+        <div className="flex flex-col onb-px pt-7">
           <ProgressDots total={4} current={1} />
 
           <div className="flex flex-col gap-[11px] pt-7">
@@ -154,7 +154,7 @@ export default function TrialStep({ t, trialDays, trialEndText, onActivate }: Tr
         </div>
       </div>
 
-      <div className="shrink-0 flex flex-col gap-[10px] px-4 pt-3" style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
+      <div className="shrink-0 flex flex-col gap-[10px] onb-px-cta pt-3" style={{ paddingBottom: "calc(16px + var(--tg-safe-bottom))" }}>
         <p
           className="m-0 text-center mx-auto"
           style={{ fontFamily: ONB_FONT_SANS, fontSize: 12.5, lineHeight: "18px", color: "#8A8D93", maxWidth: 270 }}
