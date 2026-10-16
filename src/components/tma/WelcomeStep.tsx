@@ -1,175 +1,152 @@
 "use client";
 
-import React from "react";
-import GradientBlock from "../GradientBlock";
-import type { HapticType } from "./types";
+import React, { useEffect, useState } from "react";
+import { ParticleGlobe } from "../ParticleGlobe";
+import type { Translations } from "./types";
+import { fetchIpStatus, type IpStatus } from "./api";
+import { ONB_ACCENT, ONB_FONT_MONO, ONB_FONT_SANS, PrimaryButton, ProgressDots } from "./OnboardingUi";
 
 interface WelcomeStepProps {
-  campaign: string;
-  welcomeTexts: {
-    title: string;
-    subtitle: string;
-    card1Title: string;
-    card1Desc: string;
-    card1Btn: string;
-    card2Title: string;
-    card2Desc: string;
-    card2Btn: string;
-  };
-  triggerHaptic: (type: HapticType) => void;
-  trackEvent: (eventName: string, params?: any) => void;
-  setDirection: (dir: "next" | "prev") => void;
-  setCurrentStep: (step: number) => void;
-  handleSkip: () => void;
+  t: Translations;
+  trialDays: number;
+  onContinue: () => void;
 }
 
-export default function WelcomeStep({
-  campaign,
-  welcomeTexts,
-  triggerHaptic,
-  trackEvent,
-  setDirection,
-  setCurrentStep,
-  handleSkip,
-}: WelcomeStepProps) {
+function GlowDot() {
   return (
-    <div className="w-full flex flex-col gap-2.5 min-h-full pb-0 box-border">
-      {/* Top spacer for vertical centering */}
-      {/* <div className="grow min-h-[12px]" /> */}
+    <span
+      className="shrink-0"
+      style={{
+        width: 12,
+        height: 12,
+        background: ONB_ACCENT,
+        boxShadow: "0 0 0 3px rgba(64, 209, 253, 0.18), 0 0 12px rgba(64, 209, 253, 0.6)",
+      }}
+    />
+  );
+}
 
-      {/* 30-days-free promo banner — tap jumps straight to the connect step,
-          because the trial activates upon connecting in happ */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes tma-banner-glow {
-              0%, 100% { box-shadow: 0 0 0 1px rgba(64, 209, 253, 0.35), 0 0 18px rgba(64, 209, 253, 0.25), 0 0 44px rgba(64, 209, 253, 0.12); }
-              50% { box-shadow: 0 0 0 1.5px rgba(64, 209, 253, 0.75), 0 0 30px rgba(64, 209, 253, 0.5), 0 0 70px rgba(64, 209, 253, 0.25); }
-            }
-            @keyframes tma-banner-shine {
-              0% { transform: translateX(-140%) skewX(-20deg); }
-              55%, 100% { transform: translateX(320%) skewX(-20deg); }
-            }
-            .tma-promo-banner {
-              animation: tma-banner-glow 2.8s ease-in-out infinite;
-            }
-            .tma-promo-banner-shine {
-              position: absolute;
-              top: 0;
-              bottom: 0;
-              left: 0;
-              width: 45%;
-              background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.16), transparent);
-              animation: tma-banner-shine 3.6s ease-in-out infinite;
-              pointer-events: none;
-            }
-          `,
+function GlobeTag({ children, style }: { children: React.ReactNode; style: React.CSSProperties }) {
+  return (
+    <div className="absolute flex items-end gap-2" style={style}>
+      <GlowDot />
+      <span
+        style={{
+          fontFamily: ONB_FONT_MONO,
+          fontWeight: 400,
+          fontSize: 10.5,
+          lineHeight: "14px",
+          letterSpacing: "0.63px",
+          textTransform: "uppercase",
+          color: ONB_ACCENT,
+          maxWidth: 90,
         }}
-      />
-      <button
-        onClick={() => {
-          triggerHaptic("medium");
-          trackEvent("onboarding_banner_clicked", { campaign, banner: "30_days_free" });
-          setDirection("next");
-          setCurrentStep(campaign === "default" ? 3 : 4);
-        }}
-        className="tma-promo-banner relative shrink-0 w-full p-0 mt-5 mb-2 border-none bg-transparent cursor-pointer rounded-[24px] overflow-hidden active:scale-[0.98] transition-transform duration-100 ease"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/iGuard_VPN_30_Day.png"
-          alt="iGuard VPN — 30 days free trial"
-          className="block w-full h-auto"
-        />
-        <div className="tma-promo-banner-shine" />
-      </button>
+        {children}
+      </span>
+    </div>
+  );
+}
 
-      {welcomeTexts.title && (
-        <div className={`${campaign === "gaming" ? "max-w-[320px] mx-auto mb-12" : campaign === "adults" ? "mb-8" : ""} text-center`}>
-          <h2 className="text-[24px] text-white m-0 mb-2.5 leading-tight font-sans">
-            {welcomeTexts.title}
-          </h2>
-          <p className={`text-[16px] ${campaign === "adults" ? "max-w-[320px] mx-auto" : ""}  text-[#666666] m-0 leading-relaxed font-sans`}>
-            {welcomeTexts.subtitle}
+export default function WelcomeStep({ t, trialDays, onContinue }: WelcomeStepProps) {
+  // GET /ip/status: same source as the landing's status bar
+  const [ipStatus, setIpStatus] = useState<IpStatus | null>(null);
+  const [ipFailed, setIpFailed] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchIpStatus(controller.signal)
+      .then((data) => setIpStatus(data))
+      .catch(() => setIpFailed(true));
+    return () => controller.abort();
+  }, []);
+
+  const isProtected = ipStatus?.protected === true;
+  const loc = ipStatus?.location;
+  const place = loc ? [loc.city, loc.country].filter(Boolean).join(", ") : "";
+  const placeText = place ? ` · ${loc?.flag ? `${loc.flag} ` : ""}${place}` : "";
+  const ipText = ipStatus ? `${ipStatus.ip}${placeText}` : ipFailed ? "—" : t.onboarding.ipDetecting;
+  const badgeBg = isProtected ? "rgba(52, 211, 153, 0.14)" : "rgba(255, 149, 64, 0.14)";
+  const badgeDot = isProtected ? "#34D399" : "#FF9540";
+  const badgeText = isProtected ? "#6EE7B7" : "#FFA45C";
+
+  return (
+    <div className="relative flex-1 flex flex-col min-h-0">
+      {/* Particle sphere, sits behind the text */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+        style={{ top: 275, width: 460, height: 460, opacity: 0.9 }}
+      >
+        <ParticleGlobe width={460} height={460} className="w-full h-full" />
+      </div>
+
+      <div className="relative flex-1 flex flex-col px-6 pt-7 gap-[22px] min-h-0">
+        <ProgressDots total={4} current={0} />
+
+        {/* "Not protected" card */}
+        <div
+          className="flex flex-col gap-[10px] w-full"
+          style={{ background: "rgba(24, 24, 26, 0.92)", borderRadius: 16, padding: "14px 16px" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-[7px] shrink-0"
+              style={{ background: badgeBg, borderRadius: 999, padding: "5px 11px" }}
+            >
+              <span style={{ width: 7, height: 7, borderRadius: 3.5, background: badgeDot }} />
+              <span
+                style={{
+                  fontFamily: ONB_FONT_MONO,
+                  fontSize: 11.5,
+                  lineHeight: "15px",
+                  letterSpacing: "0.69px",
+                  color: badgeText,
+                  textTransform: "uppercase",
+                }}
+              >
+                {isProtected ? t.onboarding.protectedLabel : t.onboarding.notProtected}
+              </span>
+            </div>
+            <span style={{ fontFamily: ONB_FONT_SANS, fontWeight: 600, fontSize: 14.5, lineHeight: "20px", color: "#FFFFFF" }}>
+              {isProtected ? t.onboarding.protectedByIguard : t.onboarding.ipVisible}
+            </span>
+          </div>
+          <div style={{ fontFamily: ONB_FONT_MONO, fontSize: 13, lineHeight: "17px", color: "#C9CBD0" }}>
+            {t.onboarding.ipPrefix} {ipText}
+          </div>
+        </div>
+
+        {/* Heading */}
+        <div className="flex flex-col gap-[9px] pt-[5px]">
+          <h1
+            className="m-0"
+            style={{
+              fontFamily: ONB_FONT_SANS,
+              fontWeight: 700,
+              fontSize: 40,
+              lineHeight: "41px",
+              letterSpacing: "-1px",
+              color: "#FFFFFF",
+            }}
+          >
+            {t.onboarding.welcomeTitle(trialDays)}
+          </h1>
+          <p className="m-0" style={{ fontFamily: ONB_FONT_SANS, fontSize: 16, lineHeight: "23px", color: "#8A8D93" }}>
+            {t.onboarding.welcomeSubtitle}
           </p>
         </div>
-      )}
 
-      {/* Card 1: Start Walkthrough */}
-      <div className="shrink-0 w-full h-[240px]">
-        <GradientBlock
-          label=""
-          primaryColor="#D197C3" // violet/purple glow
-          secondaryColor="#8F3B81" // fuschia/violet
-          baseColor="#27071E" // base color to match the SVG fill
-          borderRadius="70px"
-          height="100%"
-          animate={true}
-          glowIntensity={4}
-          borderGlow={true}
-          enableMouseTracking={false}
-          enableHoverScale={false}
-          solidGradient="#27071E"
-          solidBoxShadow="inset 0px 0px 23.9px rgba(230, 252, 255, 0.7), inset 0px 0px 23.9px 22px rgba(230, 252, 255, 0.1), inset 0px 35px 64.8px 1px #CF579F, inset 0px 48px 67px 56px #60246A"
-          absoluteChildren={true}
-        >
-          <div className="absolute inset-0 flex flex-col items-center justify-between p-9 px-12 box-border text-center">
-            <h3 className="text-[24px] text-white m-0 mb-2.5 font-sans leading-[1.3]">
-              {welcomeTexts.card1Title}
-            </h3>
-            <p className="text-[16px] text-white/40 m-0 mb-7">
-              {welcomeTexts.card1Desc}
-            </p>
-            <button
-              onClick={() => {
-                triggerHaptic("medium");
-                trackEvent("onboarding_welcome_cta_clicked", { campaign });
-                setDirection("next");
-                setCurrentStep(1);
-              }}
-              className="bg-white text-black border-none rounded-xl px-3 py-2.5 text-[14px] cursor-pointer font-mono uppercase"
-            >
-              {welcomeTexts.card1Btn}
-            </button>
-          </div>
-        </GradientBlock>
+        {/* Tags floating around the globe */}
+        <div className="relative w-full" style={{ height: 150 }}>
+          <GlobeTag style={{ right: 0, top: 6 }}>{t.onboarding.tagNoPayment}</GlobeTag>
+          <GlobeTag style={{ left: 0, top: 64 }}>{t.onboarding.tagNoCard}</GlobeTag>
+          <GlobeTag style={{ right: 16, top: 118 }}>{t.onboarding.tagFullAccess}</GlobeTag>
+        </div>
       </div>
 
-      {/* Card 2: Skip Tour */}
-      <div className="shrink-0 w-full h-[240px]">
-        <GradientBlock
-          label=""
-          primaryColor={"#cfdfe5"}
-          secondaryColor={"#686F70"}
-          baseColor="#1C1B1A" // obsidian base color
-          borderRadius="70px"
-          height="100%"
-          animate={false}
-          glowIntensity={.4}
-          borderGlow={true}
-          enableMouseTracking={false}
-          enableHoverScale={false}
-          absoluteChildren={true}
-        >
-          <div className="absolute inset-0 flex flex-col items-center justify-between p-9 px-12 box-border text-center">
-            <h3 className={`text-[24px] text-white m-0 mb-2.5 font-sans leading-[1.3]`}>
-              {welcomeTexts.card2Title}
-            </h3>
-            <p className="text-[16px] text-white/40 m-0 mb-7">
-              {welcomeTexts.card2Desc}
-            </p>
-            <button
-              onClick={handleSkip}
-              className="bg-[#494948] text-white border-none rounded-xl px-3 py-2.5 text-[14px] cursor-pointer font-mono"
-            >
-              {welcomeTexts.card2Btn}
-            </button>
-          </div>
-        </GradientBlock>
+      <div className="relative shrink-0 px-4 pt-3 pb-4">
+        <PrimaryButton onClick={onContinue}>{t.onboarding.ctaEnableFree}</PrimaryButton>
       </div>
-
-      {/* Bottom spacer for vertical centering */}
-      <div className="grow min-h-[4px]" />
     </div>
   );
 }

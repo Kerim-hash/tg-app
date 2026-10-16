@@ -25,7 +25,15 @@ import {
   type AppliedPromo,
   type FirstPurchaseDiscount,
   type PromoFailReason,
+  type PromoValidationResult,
 } from "./tma/discount";
+import {
+  isMockMode,
+  MOCK_USER,
+  MOCK_PLANS,
+  mockFirstPurchaseDiscount,
+  mockValidatePromo,
+} from "./tma/mock";
 import { trackEvent } from "../lib/mixpanel";
 import {
   trackAppOpened,
@@ -37,6 +45,7 @@ import NavBar from "./tma/NavBar";
 import HomeScreen from "./tma/HomeScreen";
 import PaymentScreen from "./tma/PaymentScreen";
 import ErrorScreen from "./tma/ErrorScreen";
+import SuccessScreen from "./tma/SuccessScreen";
 import ProfileScreen from "./tma/ProfileScreen";
 import GuideScreen from "./tma/GuideScreen";
 import SupportScreen from "./tma/SupportScreen";
@@ -45,7 +54,6 @@ import IntercomWidget from "@/lib/intercom";
 
 // ─── Static plan catalog (fallback) ─────────────────────────────────────────
 const DEFAULT_PLANS: Plan[] = [];
-import SuccessScreen from "./tma/SuccessScreen";
 
 function formatPlanNameFromSubType(
   subType?: string,
@@ -551,10 +559,19 @@ export default function TMA() {
     return () => clearTimeout(id);
   }, [firstPurchaseDiscount]);
 
+  // The real /promo/validate request is always fired, mock mode included.
+  // In mock mode there is no JWT, so a failed real validation falls back to
+  // the local mock codes (TEST<n> / USED / EXPIRED).
+  const validatePromo = async (code: string): Promise<PromoValidationResult> => {
+    const real = await validatePromoCode(code);
+    if (real.ok || !isMockMode()) return real;
+    return mockValidatePromo(code);
+  };
+
   const handleApplyPromo = async (
     code: string,
   ): Promise<{ ok: boolean; reason?: PromoFailReason }> => {
-    const result = await validatePromoCode(code);
+    const result = await validatePromo(code);
     if (result.ok) {
       setAppliedPromo({
         code,
@@ -591,7 +608,7 @@ export default function TMA() {
   const applyDeeplinkPromo = async () => {
     const code = parsePromoStartParam(getRawStartParam());
     if (!code) return;
-    const result = await validatePromoCode(code);
+    const result = await validatePromo(code);
     if (result.ok) {
       setAppliedPromo({
         code,
@@ -971,6 +988,19 @@ export default function TMA() {
 
     if (rawInitData && rawInitData !== "string") {
       runAuth(rawInitData);
+    } else if (isMockMode()) {
+      // `?mock=1`: fake session for developing outside Telegram
+      console.warn("[IGuard] Mock mode: using a mock user, no backend auth.");
+      setUser(MOCK_USER);
+      setPlans((prev) => (prev.length > 0 ? prev : MOCK_PLANS));
+      setSelectedPlan(
+        (prev) =>
+          prev ?? MOCK_PLANS.find((p) => p.periodMonths === 12) ?? MOCK_PLANS[0],
+      );
+      setFirstPurchaseDiscount(mockFirstPurchaseDiscount());
+      applyDeeplinkPromo();
+      setAuthError(null);
+      setIsLoadingAuth(false);
     } else {
       console.warn(
         "[IGuard] App is running outside Telegram or initData is missing.",
@@ -1126,6 +1156,7 @@ export default function TMA() {
                 completeOnboarding();
               }
               handleReset();
+              setPaymentStatus("success");
               setAppliedPromo(null);
               triggerHaptic("success");
               refreshUserData();
@@ -1156,7 +1187,6 @@ export default function TMA() {
         });
 
         setIsPaying(false);
-              setPaymentStatus("success");
         const link = data?.link || data?.invoice_url;
         if (link) {
           trackEvent("payment_external_opened", {
@@ -1253,6 +1283,7 @@ export default function TMA() {
                 completeOnboarding();
               }
               handleReset();
+              setPaymentStatus("success");
               setAppliedPromo(null);
               triggerHaptic("success");
               refreshUserData();
@@ -1283,7 +1314,6 @@ export default function TMA() {
         setIsPaying(false);
         const link = data?.link || data?.invoice_url;
         if (link) {
-              setPaymentStatus("success");
           trackEvent("payment_external_opened", {
             method: foundDynamic.method_type,
             amount: selectedPlan.usdTotal,
@@ -1466,7 +1496,10 @@ export default function TMA() {
           personalKey={personalKey}
           campaign={campaign}
           expiration={user.expiration}
+          isTrial={user.isTrial}
+          trialDays={user.trialDuration}
           firstPurchaseDiscount={firstPurchaseDiscount}
+          onOpenGuide={() => setCurrentTab("guide")}
           onSelectPlanForPayment={(planId) => {
             const targetPlan = plans.find((p) => p.id === planId);
             if (targetPlan) {
@@ -1656,6 +1689,8 @@ export default function TMA() {
           setCurrentTab(tab);
         }}
       />
+
+      {paymentPopups}
 
       {/* Payment screen overlay */}
       {showPayment && selectedPlan && (

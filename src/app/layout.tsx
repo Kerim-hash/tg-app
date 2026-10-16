@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Onest, JetBrains_Mono } from "next/font/google";
+import { Onest, JetBrains_Mono, Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
@@ -10,8 +10,14 @@ const onest = Onest({
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
   variable: "--font-mono",
+  display: "swap",
+});
+
+const manrope = Manrope({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
@@ -34,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className={`${onest.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="ru" className={`${onest.variable} ${jetbrainsMono.variable} ${manrope.variable}`} suppressHydrationWarning>
       <head>
         <Script
           src="https://telegram.org/js/telegram-web-app.js"

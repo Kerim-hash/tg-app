@@ -64,3 +64,42 @@ export const recordPushClick = (campaignId: number, action: string, telegramId: 
     console.error("[IGuard] Failed to record push click:", err);
   });
 };
+
+// GET /ip/status — whether the current connection exits through iGuard servers.
+// Mirrors the landing's IpStatusBar: the IP is shown transiently, never stored.
+export interface IpStatusLocation {
+  country_code: string;
+  country: string;
+  city?: string;
+  flag: string;
+}
+
+export interface IpStatus {
+  ip: string;
+  protected: boolean;
+  location: IpStatusLocation | null;
+  server?: { region: string; region_ru?: string };
+}
+
+const IP_STATUS_TIMEOUT_MS = 8000;
+
+export const fetchIpStatus = async (signal?: AbortSignal): Promise<IpStatus> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), IP_STATUS_TIMEOUT_MS);
+  signal?.addEventListener("abort", () => controller.abort());
+  try {
+    const response = await fetch(`${API_BASE}/ip/status`, {
+      headers: { "X-Product": "Iguard" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`ip status: ${response.status}`);
+    const data = (await response.json()) as Partial<IpStatus>;
+    if (typeof data.ip !== "string" || typeof data.protected !== "boolean") {
+      throw new Error("ip status: malformed response");
+    }
+    return { ip: data.ip, protected: data.protected, location: data.location ?? null, server: data.server };
+  } finally {
+    clearTimeout(timer);
+  }
+};
